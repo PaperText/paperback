@@ -5,11 +5,55 @@ description = ""
 authors = ["Danil Kireev <danilunrandom@gmail.com>"]
 license = "MIT"
 
+[tool.poetry.scripts]
+paperback = "paperback.__main__:run_app"
+lint = "paperback.__main__:flake_lint"
+fix = "paperback.__main__:fix_all"
+
 [tool.poetry.dependencies]
-python = "^3.8"
+python = "^3.7"
+python-dotenv = "^0.10.5"
+python-configuration = {extras = ["toml"], version = "^0.6.0"}
+fastapi = "^0.44.0"
+uvicorn = "^0.10.8"
+email-validator = "^1.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
+flake8 = "^3.7"
+flakehell = "^0.3.2"
+flake8-fixme = "^1.1"
+flake8-mypy = "^17.8"
+pep8-naming = "^0.9.1"
+black = "19.10b0"
+isort = "^4.3"
+mypy = "^0.761"
+
+[tool.flakehell]
+exclude = ["__pycahce__"]
+format = "grouped"
+show_source = true
+max_line_length = 88
+
+[tool.flakehell.plugins]
+"flake8-*" = ["+*"]
+"pep8-naming" = ["+*"]
+"mccabe" = ["+*"]
+"pycodestyle" = ["+*"]
+"pyflakes" = ["+*"]
+"pylint" = ["+*"]
+
+[tool.black]
+target-version = ['py38']
+line_length=88
+
+[tool.isort]
+multi_line_output=3
+include_trailing_comma=true
+force_grid_wrap=0
+use_parentheses=true
+line_length=88
+balanced_wrapping=true
 
 [build-system]
 requires = ["poetry>=0.12"]
