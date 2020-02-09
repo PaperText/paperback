@@ -3,6 +3,8 @@
 from pathlib import Path
 from subprocess import call
 
+from . import cli
+
 path: Path = Path(__file__) / ".." / ".."
 path = path.resolve()
 
@@ -22,3 +24,7 @@ def fix_isort():
 def fix_all():
     fix_black()
     fix_isort()
+
+
+if __name__ == "__main__":
+    cli()
