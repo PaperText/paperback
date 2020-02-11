@@ -1,5 +1,7 @@
+import importlib.util
 from pathlib import Path
-from typing import Any, Mapping
+from typing import Any, Mapping, NoReturn
+from sys import modules
 
 from config import ConfigurationSet, config_from_dict, config_from_env, config_from_toml
 
@@ -20,12 +22,12 @@ class App:
                 f"given config path ({self.config_dir_path}) doesn't exist"
             )
 
-        self.config_file_path = self.config_dir_path / "config.yaml"
+        self.config_file_path = self.config_dir_path / "config.toml"
         if create_config:
             self.config_file_path.open("w")
         if not self.config_file_path.exists():
             raise ValueError(
-                f"given config path ({self.config_dir_path}) doesn't contain 'config.yaml'"
+                f"given config path ({self.config_dir_path}) doesn't contain 'config.toml'"
             )
 
         self.modules_dir_path = self.config_dir_path / "modules"
@@ -42,15 +44,36 @@ class App:
         self.modules: Mapping[str, Any] = {}
         self.default_dict: Mapping[str, Any] = {}
 
-        self.cfg: ConfigurationSet = self.recreate_config()
-
-    def load_modules(self) -> Mapping[str, Any]:
-        pass
-
-    def recreate_config(self) -> ConfigurationSet:
-        self.cfg = ConfigurationSet(
-            config_from_env(prefix="PT_", separator="__"),
+        self.cfg: ConfigurationSet = ConfigurationSet(
+            config_from_env(prefix="PT", separator="__"),
             config_from_toml(str(self.config_file_path), read_from_file=True),
             config_from_dict(dict(self.default_dict)),
         )
-        return self.cfg
+
+    def load_modules(self):
+        self.load_local_modules()
+    
+    def load_local_modules(self):
+        for obj in self.modules_dir_path.iterdir():
+            if obj.name == "__pycache__":
+                continue
+            if obj.is_dir():
+                name: str = obj.name
+                location = obj / "__init__.py"
+            elif obj.suffix == ".py":
+                name: str = obj.name
+                if "." in name:
+                    name = name.split(".")[0]
+                location = obj
+            else:
+                continue
+
+            spec = importlib.util.spec_from_file_location(name, location)
+            module = importlib.util.module_from_spec(spec)
+            if name in self.modules:
+                # TODO: change to DuplicateModuleError
+                raise ValueError(f"Module with name {name} already registered")
+            modules[name] = module
+            spec.loader.exec_module(module)
+            self.modules[name] = module
+            self.default_dict[name] = module.DEFAULTS
