@@ -11,7 +11,7 @@ path = path.resolve()
 src_path: Path = path / ".."
 src_path = path.resolve()
 
-pyproject_path = path / ".." / "pyproject.toml"
+pyproject_path = src_path / "pyproject.toml"
 pyproject_path = pyproject_path.resolve()
 
 
