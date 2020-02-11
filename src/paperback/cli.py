@@ -43,7 +43,9 @@ def run(config: Path, create_config: bool, debug: bool) -> NoReturn:
     main comand for running API
     """
     if debug:
-        click.echo(f"config dir: {config}\ncreate_config: {create_config}\ndebug: {debug}")
+        click.echo(
+            f"config dir: {config}\ncreate_config: {create_config}\ndebug: {debug}"
+        )
         click.echo("initializing...", nl=False)
     try:
         app = App(config_path=config, create_config=create_config, verbose=debug)
