@@ -1,16 +1,17 @@
 import importlib.util
 from pathlib import Path
-from typing import Any, Mapping, NoReturn
 from sys import modules
+from typing import Any, Mapping
 
 from config import ConfigurationSet, config_from_dict, config_from_env, config_from_toml
 
 
 class App:
-    def __init__(self, config_path: Path, create_config: bool):
+    def __init__(self, config_path: Path, create_config: bool, verbose: bool):
         """
         helper function for setting up necessary directory structure
         """
+        self.verbose = verbose
         # resolve path to follow symlinks and remove "/../"
         self.config_dir_path = config_path.resolve()
         if self.config_dir_path.exists() and not self.config_dir_path.is_dir():
@@ -27,7 +28,8 @@ class App:
             self.config_file_path.open("w")
         if not self.config_file_path.exists():
             raise ValueError(
-                f"given config path ({self.config_dir_path}) doesn't contain 'config.toml'"
+                f"given config path ({self.config_dir_path})"
+                " doesn't contain 'config.toml'"
             )
 
         self.modules_dir_path = self.config_dir_path / "modules"
@@ -39,10 +41,13 @@ class App:
             self.modules_dir_path.mkdir(parents=True, exist_ok=True)
         elif not self.modules_dir_path.exists():
             raise ValueError(
-                f"given config path ({self.config_dir_path}) doesn't contain 'modules' directory"
+                f"given config path ({self.config_dir_path})"
+                " doesn't contain 'modules' directory"
             )
         self.modules: Mapping[str, Any] = {}
-        self.default_dict: Mapping[str, Any] = {}
+        self.default_dict: Mapping[str, Any] = {
+            "core": {"host": "127.0.0.1", "port": "7878"}
+        }
 
         self.cfg: ConfigurationSet = ConfigurationSet(
             config_from_env(prefix="PT", separator="__"),
@@ -52,7 +57,7 @@ class App:
 
     def load_modules(self):
         self.load_local_modules()
-    
+
     def load_local_modules(self):
         for obj in self.modules_dir_path.iterdir():
             if obj.name == "__pycache__":
@@ -60,6 +65,8 @@ class App:
             if obj.is_dir():
                 name: str = obj.name
                 location = obj / "__init__.py"
+                if not location.exists():
+                    continue
             elif obj.suffix == ".py":
                 name: str = obj.name
                 if "." in name:
@@ -76,4 +83,7 @@ class App:
             modules[name] = module
             spec.loader.exec_module(module)
             self.modules[name] = module
+
             self.default_dict[name] = module.DEFAULTS
+            if self.verbose:
+                print(f"loaded {module}")
