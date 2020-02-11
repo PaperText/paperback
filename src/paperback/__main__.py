@@ -5,11 +5,11 @@ from subprocess import call
 
 from . import cli
 
-path: Path = Path(__file__) / ".." / ".."
+path = Path(__file__) / ".." / ".."
 path = path.resolve()
 
-src_path: Path = path / ".."
-src_path = path.resolve()
+src_path = path / ".."
+src_path = src_path.resolve()
 
 pyproject_path = src_path / "pyproject.toml"
 pyproject_path = pyproject_path.resolve()
