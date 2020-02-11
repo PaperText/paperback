@@ -1,4 +1,3 @@
-import sys
 from pathlib import Path
 from typing import NoReturn
 
@@ -16,7 +15,6 @@ def cli():
     """
     Comand Line Interface for using papertext's backend
     """
-    # click.echo("u used cli")
     pass
 
 
@@ -42,6 +40,7 @@ def run(config: Path, create_config: bool, debug: bool) -> NoReturn:
     """
     if debug:
         click.echo(f"config: {config}\ncreate_config: {create_config}\ndebug: {debug}")
+        click.echo("initializing...", nl=False)
     try:
         app = App(config_path=config, create_config=create_config)
     except Exception as e:
@@ -50,6 +49,15 @@ def run(config: Path, create_config: bool, debug: bool) -> NoReturn:
         else:
             click.echo(click.style(f"[ {type(e).__name__} ]", fg="red"))
             click.echo(f"\t{e}")
+            return
+    if debug:
+        click.echo("done")
+        click.echo(app.default_dict)
+        click.echo("loading modules...")
+    app.load_modules()
+    if debug:
+        click.echo("done")
+    click.echo(app.default_dict)
 
 
 cli.add_command(run)
