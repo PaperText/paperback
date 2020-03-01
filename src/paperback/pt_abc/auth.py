@@ -1,25 +1,28 @@
 from abc import ABCMeta, abstractmethod
-from typing import Any, Dict, List, Tuple
+from typing import Any, Dict, List, NoReturn, Tuple
 
-# from fastapi import APIRouter
+from fastapi import APIRouter, FastAPI
+
+from .base import Base
 
 
-class BaseAuth(metaclass=ABCMeta):
-    @abstractmethod
-    def __init__(
-        self, cfg: Dict[str, Any],
-    ):
-        """
-        ABC or Auth module of paperback
+class BaseAuth(Base, metaclass=ABCMeta):
+    """
+    base class for all auth modules of PaperText
 
-        * db should be initialized here
+    Attributes
+    ----------
+    TYPE: str
+        type of module
+    DEFAULTS: Dict[str, int]
+        python dict of default values for configuration
+    PERMISSIONS: Dict[str, Any]
+        python dict of routes and minimum required access level
+    ROUTER: APIRouter
+        instance of Fastapi.APIRouter
+    """
 
-        Parameters
-        ----------
-        cfg: dict
-            python dict for accessing config
-        """
-        raise NotImplementedError
+    TYPE: str = "AUTH"
 
     @abstractmethod
     def create_user(
@@ -130,26 +133,7 @@ class BaseAuth(metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def check_login_pass(self, email: str, password: str,) -> bool:
-        """
-        checks email and password
-
-        Parameters
-        ----------
-        email: string
-            email of user
-        password: str
-            password of user
-
-        Returns
-        -------
-        bool
-            `True` if successful, `False` otherwise
-        """
-        raise NotImplementedError
-
-    @abstractmethod
-    def login(self, email: str, password: str,) -> str:
+    def sign_in(self, email: str, password: str,) -> str:
         """
         checks email and password and returns new token
 
@@ -168,7 +152,7 @@ class BaseAuth(metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def logout(self,) -> bool:
+    def sign_out(self,) -> bool:
         """
         removes token with which request was sent
 
@@ -180,7 +164,7 @@ class BaseAuth(metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def logout_everywhere(self,) -> bool:
+    def sign_out_everywhere(self,) -> bool:
         """
         removes all tokens of current user
 
@@ -224,3 +208,22 @@ class BaseAuth(metaclass=ABCMeta):
             `True` if successful, `False` otherwise
         """
         raise NotImplementedError
+
+    @abstractmethod
+    def create_middleware(self, api: FastAPI) -> NoReturn:
+        """
+        sets up middleware in main API
+
+        Note
+        ----
+        very unsecured method, has access to whole API
+
+        Parameters
+        ----------
+        api: FastAPI
+            main instance of API
+        """
+        raise NotImplementedError
+
+    def create_router(self) -> APIRouter:
+        pass
