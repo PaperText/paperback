@@ -1,5 +1,5 @@
 from abc import ABCMeta, abstractmethod
-from typing import Any, Dict
+from typing import Any, Dict, NoReturn, Tuple
 
 from fastapi import APIRouter
 
@@ -14,10 +14,6 @@ class Base(metaclass=ABCMeta):
         type of module
     DEFAULTS: Dict[str, int]
         python dict of default values for configuration
-    PERMISSIONS: Dict[str, Any]
-        python dict of routes and minimum required access level
-    ROUTER: APIRouter
-        instance of Fastapi.APIRouter
     """
 
     TYPE: str = "MISC"
@@ -26,17 +22,14 @@ class Base(metaclass=ABCMeta):
         """
         modified new to add specific fields (only) to class instance
         """
+        if not hasattr(cls, "DEFAULTS"):
+            raise NotImplementedError("Class should have `DEFAULTS` as class attribute")
         instance = super(Base, cls).__new__(cls)
-        instance.DEFAULTS: Dict[str, int] = {}
-        instance.PERMISSIONS: Dict[str, Any] = {}
-        instance.ROUTER: APIRouter = APIRouter()
         return instance
 
-    def __init__(
-        self, cfg: Dict[str, Any],
-    ):
+    def __init__(self, cfg: Dict[str, Any]):
         """
-        constructor for all modules
+        constructor for all classes
 
         Note
         ----
@@ -50,7 +43,7 @@ class Base(metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def create_router(self) -> APIRouter:
+    def create_router(self) -> Tuple[APIRouter, Dict[Tuple[str, str], int]]:
         """
         creates Router to mount to the main app
 

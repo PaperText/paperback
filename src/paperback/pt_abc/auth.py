@@ -1,5 +1,5 @@
 from abc import ABCMeta, abstractmethod
-from typing import Any, Dict, List, NoReturn, Tuple
+from typing import Dict, List, NoReturn, Tuple
 
 from fastapi import APIRouter, FastAPI
 
@@ -16,10 +16,6 @@ class BaseAuth(Base, metaclass=ABCMeta):
         type of module
     DEFAULTS: Dict[str, int]
         python dict of default values for configuration
-    PERMISSIONS: Dict[str, Any]
-        python dict of routes and minimum required access level
-    ROUTER: APIRouter
-        instance of Fastapi.APIRouter
     """
 
     TYPE: str = "AUTH"
@@ -210,7 +206,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def create_middleware(self, api: FastAPI) -> NoReturn:
+    def create_middleware(self, api: FastAPI, permissions: Dict[str, int]) -> NoReturn:
         """
         sets up middleware in main API
 
@@ -222,8 +218,25 @@ class BaseAuth(Base, metaclass=ABCMeta):
         ----------
         api: FastAPI
             main instance of API
+        permissions: Dict[str, int]
+            permission to set in middleware
         """
         raise NotImplementedError
 
-    def create_router(self) -> APIRouter:
-        pass
+    def create_router(self) -> Tuple[APIRouter, Dict[Tuple[str, str], int]]:
+        router = APIRouter()
+        permissions = {}
+
+        permissions[("GET", "/user")] = 0
+
+        @router.get("/user")
+        async def test():
+            return ["test", "successful"]
+
+        permissions[("POST", "/user")] = 0
+
+        @router.post("/user")
+        async def test():
+            return ["test", "successful"]
+
+        return router, permissions
