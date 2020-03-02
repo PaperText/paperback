@@ -3,7 +3,7 @@
 from pathlib import Path
 from subprocess import call
 
-from . import cli
+from . import cli, run
 
 path = Path(__file__) / ".." / ".."
 path = path.resolve()
@@ -33,4 +33,4 @@ def fix_all():
 
 
 if __name__ == "__main__":
-    cli()
+    call("paperback run --debug".split(" "))

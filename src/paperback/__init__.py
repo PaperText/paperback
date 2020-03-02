@@ -4,6 +4,6 @@
 
 __version__ = "0.1.0"
 
-from .cli import cli
+from .cli import cli, run
 from .core import App
-from .pt_abc import BaseAuth
+from .pt_abc import Base, BaseAuth
