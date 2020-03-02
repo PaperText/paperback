@@ -1,9 +1,14 @@
 import importlib.util
 from pathlib import Path
 from sys import modules
-from typing import Any, Mapping
+from typing import Any, MutableMapping, Union
 
 from config import ConfigurationSet, config_from_dict, config_from_env, config_from_toml
+from fastapi import FastAPI
+from pkg_resources import iter_entry_points
+
+from .exceptions import DuplicateModuleError, InheritanceError
+from .pt_abc import Base, BaseAuth
 
 
 class App:
@@ -44,8 +49,11 @@ class App:
                 f"given config path ({self.config_dir_path})"
                 " doesn't contain 'modules' directory"
             )
-        self.modules: Mapping[str, Any] = {}
-        self.default_dict: Mapping[str, Any] = {
+
+        self.classes: MutableMapping[str, Any] = {}
+        self.modules: MutableMapping[str, Any] = {}
+        self.permissions: MutableMapping[str, Any] = {}
+        self.default_dict: MutableMapping[str, Any] = {
             "core": {"host": "127.0.0.1", "port": "7878"}
         }
 
@@ -55,35 +63,75 @@ class App:
             config_from_dict(dict(self.default_dict)),
         )
 
-    def load_modules(self):
-        self.load_local_modules()
+    def find_local_modules(self):
+        pass
+    #     for obj in self.modules_dir_path.iterdir():
+    #         if obj.name == "__pycache__" and obj.is_dir():
+    #             continue
+    #         elif obj.is_dir():
+    #             name: str = obj.name
+    #             location = obj / "__init__.py"
+    #             if not location.exists():
+    #                 continue
+    #         elif obj.suffix == ".py":
+    #             name: str = obj.name
+    #             if "." in name:
+    #                 name = name.split(".")[0]
+    #             location = obj
+    #         else:
+    #             continue
+    #         spec = importlib.util.spec_from_file_location(name, location)
+    #         module = importlib.util.module_from_spec(spec)
+    #         spec.loader.exec_module(module)
+    #
+    #         self.modules[name] = module
+    #         self.default_dict[name] = module.DEFAULTS
+    #         self.default_dict[name] = module.DEFAULTS
+    #
+    #         if self.verbose:
+    #             print(f"loaded {module}")
 
-    def load_local_modules(self):
-        for obj in self.modules_dir_path.iterdir():
-            if obj.name == "__pycache__":
-                continue
-            if obj.is_dir():
-                name: str = obj.name
-                location = obj / "__init__.py"
-                if not location.exists():
-                    continue
-            elif obj.suffix == ".py":
-                name: str = obj.name
-                if "." in name:
-                    name = name.split(".")[0]
-                location = obj
+    def find_pip_modules(self):
+        for entry_point in iter_entry_points("paperback.modules"):
+            name = entry_point.name
+            cls = entry_point.load()
+            if cls.TYPE == "AUTH":
+                name = "auth"
+            elif cls.TYPE == "TEXTS":
+                name = "texts"
+
+            if name in self.classes:
+                raise DuplicateModuleError(
+                    f'module with name "{name}" already registered'
+                )
             else:
-                continue
+                self.classes[name] = cls
 
-            spec = importlib.util.spec_from_file_location(name, location)
-            module = importlib.util.module_from_spec(spec)
-            if name in self.modules:
-                # TODO: change to DuplicateModuleError
-                raise ValueError(f"Module with name {name} already registered")
-            modules[name] = module
-            spec.loader.exec_module(module)
+    def load_modules(self):
+        for name, cls in self.classes.items():
+            if not any(issubclass(cls, class_i) for class_i in [Base, BaseAuth]):
+                raise InheritanceError(
+                    "anu module should ne subclass of Base or BaseAuth"
+                )
+            self.default_dict[name] = cls.DEFAULTS.copy()
+            module = cls(self.cfg[name])
             self.modules[name] = module
 
-            self.default_dict[name] = module.DEFAULTS
-            if self.verbose:
-                print(f"loaded {module}")
+    def add_routers(self, api: FastAPI):
+        found_auth: bool = False
+        auth_name: Union[str, None] = None
+
+        for name, module in self.modules.items():
+            router, permissions = module.create_router()
+            self.permissions[name] = permissions
+            api.include_router(
+                router, prefix=f"/{name}",
+            )
+            if name == "auth":
+                auth_name = name
+                found_auth = True
+
+        if found_auth:
+            self.modules[auth_name].create_middleware(api, self.permissions)
+        else:
+            raise Exception("no auth module found")

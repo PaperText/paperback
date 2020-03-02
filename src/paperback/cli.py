@@ -10,7 +10,11 @@ from . import __version__
 from .core import App
 
 default_config_path = Path.home() / ".papertext"
-api = FastAPI()
+api = FastAPI(
+    title="PaperText backend [Paperback]",
+    description="BackEnd API for PaperText",
+    version=__version__,
+)
 
 
 @click.group()
@@ -58,8 +62,24 @@ def run(config: Path, create_config: bool, debug: bool) -> NoReturn:
             return
     if debug:
         click.echo("done")
-        click.echo("loading modules...")
+        click.echo("loading local modules...", nl=False)
+    app.find_local_modules()
+
+    if debug:
+        click.echo("done")
+        click.echo("loading pip modules...", nl=False)
+    app.find_pip_modules()
+
+    if debug:
+        click.echo("done")
+        click.echo("loading modules...", nl=False)
     app.load_modules()
+
+    if debug:
+        click.echo("done")
+        click.echo("adding routers...", nl=False)
+    app.add_routers(api)
+
     if debug:
         click.echo("done")
 
