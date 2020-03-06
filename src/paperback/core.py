@@ -1,7 +1,7 @@
 import importlib.util
 from pathlib import Path
 from sys import modules
-from typing import Any, MutableMapping, Union, NoReturn
+from typing import Any, MutableMapping, NoReturn, Union
 
 from config import ConfigurationSet, config_from_dict, config_from_env, config_from_toml
 from fastapi import FastAPI
@@ -52,7 +52,7 @@ class App:
 
         self.classes: MutableMapping[str, Any] = {}
         self.modules: MutableMapping[str, Any] = {}
-        self.permissions: MutableMapping[str, Any] = {}
+
         self.default_dict: MutableMapping[str, Any] = {
             "core": {"host": "127.0.0.1", "port": "7878"}
         }
@@ -63,8 +63,9 @@ class App:
             config_from_dict(dict(self.default_dict)),
         )
 
-    def find_local_modules(self):
+    def find_local_modules(self) -> NoReturn:
         pass
+
     #     for obj in self.modules_dir_path.iterdir():
     #         if obj.name == "__pycache__" and obj.is_dir():
     #             continue
@@ -91,7 +92,7 @@ class App:
     #         if self.verbose:
     #             print(f"loaded {module}")
 
-    def find_pip_modules(self):
+    def find_pip_modules(self) -> NoReturn:
         for entry_point in iter_entry_points("paperback.modules"):
             name = entry_point.name
             cls = entry_point.load()
@@ -107,7 +108,7 @@ class App:
             else:
                 self.classes[name] = cls
 
-    def load_modules(self):
+    def load_modules(self) -> NoReturn:
         for name, cls in self.classes.items():
             if not any(issubclass(cls, class_i) for class_i in [Base, BaseAuth]):
                 raise InheritanceError(
@@ -125,8 +126,5 @@ class App:
                 api.include_router(router)
             else:
                 api.include_router(
-                    router,
-                    prefix=f"/{name}",
+                    router, prefix=f"/{name}",
                 )
-
-
