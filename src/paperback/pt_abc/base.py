@@ -46,9 +46,5 @@ class Base(metaclass=ABCMeta):
     def create_router(self) -> APIRouter:
         """
         creates Router to mount to the main app
-
-        Note
-        ----
-        Router is already defined as `instance.ROUTER: APIRouter = APIRouter()`
         """
         raise NotImplementedError
