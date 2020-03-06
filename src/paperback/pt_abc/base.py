@@ -1,7 +1,7 @@
 from abc import ABCMeta, abstractmethod
-from typing import Any, Dict, NoReturn, Tuple
+from typing import Any, Callable, Dict, NoReturn
 
-from fastapi import APIRouter
+from fastapi import APIRouter, Header
 
 
 class Base(metaclass=ABCMeta):
@@ -43,7 +43,9 @@ class Base(metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def create_router(self) -> APIRouter:
+    def create_router(
+        self, token: Callable[[int], Callable[[Header], NoReturn]]
+    ) -> APIRouter:
         """
         creates Router to mount to the main app
         """
