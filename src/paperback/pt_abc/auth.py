@@ -1,7 +1,8 @@
 from abc import ABCMeta, abstractmethod
-from typing import Dict, List, NoReturn, Tuple
+from pathlib import Path
+from typing import Any, Callable, Dict, List, NoReturn, Tuple
 
-from fastapi import APIRouter, Depends, FastAPI
+from fastapi import APIRouter, Body, Depends, FastAPI, Header
 from pydantic import BaseModel
 
 from .base import Base
@@ -225,7 +226,31 @@ class BaseAuth(Base, metaclass=ABCMeta):
         """
         raise NotImplementedError
 
-    def create_router(self) -> APIRouter:
+    @abstractmethod
+    def test_token(
+        self, greater_or_equal: int, one_of: List[int]
+    ) -> Callable[[Header], NoReturn]:
+        """
+        check is token is correct and if tokens loa is gte ml
+
+        Parameters
+        ----------
+        greater_or_equal: int
+            minimum loa, tokens loa should be `>=`
+        one_of: List[str]
+            list of loa, tokens load should be `loa in one_of`
+
+        Returns
+        -------
+        Callable[[Header], NoReturn]
+            FastAPIs dependency, which raises Exception
+            #TODO: add Error for wrong token
+        """
+        raise NotImplementedError
+
+    def create_router(
+        self, token: Callable[[int], Callable[[Header], NoReturn]]
+    ) -> APIRouter:
         router = APIRouter()
 
         @router.post("/signin", tags=["auth"])
