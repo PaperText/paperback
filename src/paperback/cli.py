@@ -88,7 +88,7 @@ def run(config: Path, create_config: bool, debug: bool) -> NoReturn:
         return {"msg": "Hello, World!"}
 
     uvicorn.run(
-        "paperback.cli:api", host=app.cfg.core.host, port=int(app.cfg.core.port),
+        "paperback.cli:api", host=app.cfg.core.host, port=int(app.cfg.core.port), reload=debug
     )
 
 
