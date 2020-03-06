@@ -1,7 +1,7 @@
 import importlib.util
 from pathlib import Path
 from sys import modules
-from typing import Any, MutableMapping, NoReturn, Union
+from typing import Any, MutableMapping, NoReturn
 
 from config import ConfigurationSet, config_from_dict, config_from_env, config_from_toml
 from fastapi import FastAPI
@@ -119,8 +119,10 @@ class App:
             self.modules[name] = module
 
     def add_routers(self, api: FastAPI) -> NoReturn:
+        token = self.modules["auth"].test_token
+
         for name, module in self.modules.items():
-            router = module.create_router()
+            router = module.create_router(token)
 
             if module.TYPE in ["AUTH", "DOCS"]:
                 api.include_router(router)
