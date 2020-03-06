@@ -1,7 +1,7 @@
 from abc import ABCMeta, abstractmethod
 from typing import Dict, List, NoReturn, Tuple
 
-from fastapi import APIRouter, FastAPI, Depends
+from fastapi import APIRouter, Depends, FastAPI
 from pydantic import BaseModel
 
 from .base import Base
@@ -149,7 +149,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def sign_in(self, email: str, password: str, ) -> str:
+    def sign_in(self, email: str, password: str,) -> str:
         """
         checks email and password and returns new token
 
@@ -168,7 +168,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def sign_out(self, ) -> bool:
+    def sign_out(self,) -> bool:
         """
         removes token with which request was sent
 
@@ -180,7 +180,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def sign_out_everywhere(self, ) -> bool:
+    def sign_out_everywhere(self,) -> bool:
         """
         removes all tokens of current user
 
@@ -228,56 +228,56 @@ class BaseAuth(Base, metaclass=ABCMeta):
     def create_router(self) -> APIRouter:
         router = APIRouter()
 
-        @router.post("/signin")
+        @router.post("/signin", tags=["auth"])
         async def signin(user: Credentials):
             """
             generates new token if provided email and password are correct
             """
             return True
 
-        @router.get("/signout")
+        @router.get("/signout", tags=["auth"])
         async def signout():
             """
             removes token from request
             """
             return True
 
-        @router.get("/signout_everywhere")
+        @router.get("/signout_everywhere", tags=["auth"])
         async def signout_everywhere():
             """
             removes all tokens, associated with tokens user
             """
             return True
 
-        @router.post("/signup")
+        @router.post("/signup", tags=["auth"])
         async def signup(user: NewUser):
             """
             creates new user with provided email, password, organization, access_level and invitation code
             """
             return True
 
-        @router.get("/users/me")
+        @router.get("/users/me", tags=["user"])
         async def read_user():
             """
             return info about user, associated with user from token in request
             """
             return True
 
-        @router.put("/users/me")
+        @router.put("/users/me", tags=["user"])
         async def update_user(user: FullUser):
             """
             updates info of user, associated with user from token in request
             """
             return True
 
-        @router.delete("/users/me")
+        @router.delete("/users/me", tags=["user"])
         async def delete_user(user: FullUser):
             """
             removes user, associated with user from token in request
             """
             return True
 
-        @router.post("/users")
+        @router.post("/users", tags=["user"])
         async def create_user(user: FullUser):
             """
             creates user with provided email, password, organization and access_level
@@ -289,35 +289,35 @@ class BaseAuth(Base, metaclass=ABCMeta):
             """
             return True
 
-        @router.get("/users/{user_email}")
+        @router.get("/users/{user_email}", tags=["user"])
         async def read_users(user_email: str):
             """
             reads info about requested user
             """
             return user_email
 
-        @router.put("/users/{user_email}")
+        @router.put("/users/{user_email}", tags=["user"])
         async def update_users(user_email: str):
             """
             updates info about requested user
             """
             return user_email
 
-        @router.delete("/users/{user_email}")
+        @router.delete("/users/{user_email}", tags=["user"])
         async def remove_users(user_email: str):
             """
             removes requested user
             """
             return user_email
 
-        @router.delete("/token")
+        @router.delete("/token", tags=["token"])
         async def delete_token(token_identifier: str):
             """
             removes token by provided identifier: either token itself or token uuid
             """
             return token_identifier
 
-        @router.get("/tokens")
+        @router.get("/tokens", tags=["token"])
         async def get_tokens():
             """
             returns all tokens, associated with user from token in request
