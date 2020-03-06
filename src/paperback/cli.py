@@ -1,4 +1,3 @@
-from logging import getLogger
 from pathlib import Path
 from typing import NoReturn
 
@@ -21,7 +20,7 @@ api = FastAPI(
 @click.version_option(version=__version__)
 def cli():
     """
-    Comand Line Interface for using papertext's backend
+    Command Line Interface for using papertext's backend
     """
     pass
 
@@ -83,12 +82,8 @@ def run(config: Path, create_config: bool, debug: bool) -> NoReturn:
     if debug:
         click.echo("done")
 
-    @api.get("/")
-    def root():
-        return {"msg": "Hello, World!"}
-
     uvicorn.run(
-        "paperback.cli:api", host=app.cfg.core.host, port=int(app.cfg.core.port), reload=debug
+        "paperback.cli:api", host=app.cfg.core.host, port=int(app.cfg.core.port),
     )
 
 
