@@ -1,7 +1,7 @@
 import importlib.util
 from pathlib import Path
 from sys import modules
-from typing import Any, MutableMapping, Union
+from typing import Any, MutableMapping, Union, NoReturn
 
 from config import ConfigurationSet, config_from_dict, config_from_env, config_from_toml
 from fastapi import FastAPI
@@ -117,21 +117,16 @@ class App:
             module = cls(self.cfg[name])
             self.modules[name] = module
 
-    def add_routers(self, api: FastAPI):
-        found_auth: bool = False
-        auth_name: Union[str, None] = None
-
+    def add_routers(self, api: FastAPI) -> NoReturn:
         for name, module in self.modules.items():
-            router, permissions = module.create_router()
-            self.permissions[name] = permissions
-            api.include_router(
-                router, prefix=f"/{name}",
-            )
-            if name == "auth":
-                auth_name = name
-                found_auth = True
+            router = module.create_router()
 
-        if found_auth:
-            self.modules[auth_name].create_middleware(api, self.permissions)
-        else:
-            raise Exception("no auth module found")
+            if module.TYPE in ["AUTH", "DOCS"]:
+                api.include_router(router)
+            else:
+                api.include_router(
+                    router,
+                    prefix=f"/{name}",
+                )
+
+

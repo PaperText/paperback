@@ -1,9 +1,29 @@
 from abc import ABCMeta, abstractmethod
 from typing import Dict, List, NoReturn, Tuple
 
-from fastapi import APIRouter, FastAPI
+from fastapi import APIRouter, FastAPI, Depends
+from pydantic import BaseModel
 
 from .base import Base
+
+
+class Credentials(BaseModel):
+    email: str
+    password: str
+
+
+class UserInfo(BaseModel):
+    email: str
+    organization: int = 0
+    access_level: int = 0
+
+
+class FullUser(Credentials, UserInfo):
+    pass
+
+
+class NewUser(FullUser):
+    invitation_code: str
 
 
 class BaseAuth(Base, metaclass=ABCMeta):
@@ -129,7 +149,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def sign_in(self, email: str, password: str,) -> str:
+    def sign_in(self, email: str, password: str, ) -> str:
         """
         checks email and password and returns new token
 
@@ -148,7 +168,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def sign_out(self,) -> bool:
+    def sign_out(self, ) -> bool:
         """
         removes token with which request was sent
 
@@ -160,7 +180,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def sign_out_everywhere(self,) -> bool:
+    def sign_out_everywhere(self, ) -> bool:
         """
         removes all tokens of current user
 
@@ -205,38 +225,103 @@ class BaseAuth(Base, metaclass=ABCMeta):
         """
         raise NotImplementedError
 
-    @abstractmethod
-    def create_middleware(self, api: FastAPI, permissions: Dict[str, int]) -> NoReturn:
-        """
-        sets up middleware in main API
-
-        Note
-        ----
-        very unsecured method, has access to whole API
-
-        Parameters
-        ----------
-        api: FastAPI
-            main instance of API
-        permissions: Dict[str, int]
-            permission to set in middleware
-        """
-        raise NotImplementedError
-
-    def create_router(self) -> Tuple[APIRouter, Dict[Tuple[str, str], int]]:
+    def create_router(self) -> APIRouter:
         router = APIRouter()
-        permissions = {}
 
-        permissions[("GET", "/user")] = 0
+        @router.post("/signin")
+        async def signin(user: Credentials):
+            """
+            generates new token if provided email and password are correct
+            """
+            return True
 
-        @router.get("/user")
-        async def test():
-            return ["test", "successful"]
+        @router.get("/signout")
+        async def signout():
+            """
+            removes token from request
+            """
+            return True
 
-        permissions[("POST", "/user")] = 0
+        @router.get("/signout_everywhere")
+        async def signout_everywhere():
+            """
+            removes all tokens, associated with tokens user
+            """
+            return True
 
-        @router.post("/user")
-        async def test():
-            return ["test", "successful"]
+        @router.post("/signup")
+        async def signup(user: NewUser):
+            """
+            creates new user with provided email, password, organization, access_level and invitation code
+            """
+            return True
 
-        return router, permissions
+        @router.get("/users/me")
+        async def read_user():
+            """
+            return info about user, associated with user from token in request
+            """
+            return True
+
+        @router.put("/users/me")
+        async def update_user(user: FullUser):
+            """
+            updates info of user, associated with user from token in request
+            """
+            return True
+
+        @router.delete("/users/me")
+        async def delete_user(user: FullUser):
+            """
+            removes user, associated with user from token in request
+            """
+            return True
+
+        @router.post("/users")
+        async def create_user(user: FullUser):
+            """
+            creates user with provided email, password, organization and access_level
+
+            Note
+            ----
+            * only users with access level of 2 and more can use this function
+            * users are created in the same organization as the requester
+            """
+            return True
+
+        @router.get("/users/{user_email}")
+        async def read_users(user_email: str):
+            """
+            reads info about requested user
+            """
+            return user_email
+
+        @router.put("/users/{user_email}")
+        async def update_users(user_email: str):
+            """
+            updates info about requested user
+            """
+            return user_email
+
+        @router.delete("/users/{user_email}")
+        async def remove_users(user_email: str):
+            """
+            removes requested user
+            """
+            return user_email
+
+        @router.delete("/token")
+        async def delete_token(token_identifier: str):
+            """
+            removes token by provided identifier: either token itself or token uuid
+            """
+            return token_identifier
+
+        @router.get("/tokens")
+        async def get_tokens():
+            """
+            returns all tokens, associated with user from token in request
+            """
+            return True
+
+        return router

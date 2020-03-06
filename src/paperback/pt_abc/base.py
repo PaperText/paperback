@@ -43,7 +43,7 @@ class Base(metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def create_router(self) -> Tuple[APIRouter, Dict[Tuple[str, str], int]]:
+    def create_router(self) -> APIRouter:
         """
         creates Router to mount to the main app
 
