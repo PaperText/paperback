@@ -1,21 +1,22 @@
 from abc import ABCMeta, abstractmethod
 from pathlib import Path
-from typing import Any, Callable, Dict, List, NoReturn, Tuple
+from typing import Any, Callable, Dict, List, NoReturn, Tuple, Mapping, ClassVar
 
 from fastapi import APIRouter, Body, Depends, FastAPI, Header
 from pydantic import BaseModel
 
+from ..exceptions import TokenException
 from .base import Base
 
 
 class Credentials(BaseModel):
-    email: str
+    username: str
     password: str
 
 
 class UserInfo(BaseModel):
-    email: str
-    organization: int = 0
+    username: str
+    organization: str = "Public"
     access_level: int = 0
 
 
@@ -25,6 +26,14 @@ class FullUser(Credentials, UserInfo):
 
 class NewUser(FullUser):
     invitation_code: str
+
+
+class Token(BaseModel):
+    token: str
+
+
+class Tokens(BaseModel):
+    tokens: List[str]
 
 
 class BaseAuth(Base, metaclass=ABCMeta):
@@ -39,17 +48,32 @@ class BaseAuth(Base, metaclass=ABCMeta):
         python dict of default values for configuration
     """
 
-    TYPE: str = "AUTH"
+    TYPE: ClassVar[str] = "AUTH"
+
+    @abstractmethod
+    def __init__(self, cfg: Mapping[str, Any]):
+        """
+        constructor for all classes
+
+        Note
+        ----
+        DB connections should be created here
+
+        Parameters
+        ----------
+        cfg: dict
+            python dict for accessing config
+        """
+        raise NotImplementedError
 
     @abstractmethod
     def create_user(
         self,
-        email: str,
+        username: str,
         password: str,
-        name: str = "",
-        organization: str = 0,
         access_level: int = 0,
-    ) -> bool:
+        organization: str = "Public",
+    ):
         """
         Creates user with declared parameters
         * Should meet these criteria:
@@ -60,8 +84,8 @@ class BaseAuth(Base, metaclass=ABCMeta):
 
         Parameters
         ----------
-        email: string
-            email of user to delete
+        username: string
+            username of user to delete
         password: str
             password of user
         name: str, optional
@@ -79,14 +103,14 @@ class BaseAuth(Base, metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def read_user(self, email: str) -> Dict[str, Tuple[str, int]]:
+    def read_user(self, username: str) -> Dict[str, Tuple[str, int]]:
         """
-        Get information about user with given email
+        Get information about user with given username
 
         Parameters
         ----------
-        email: string
-            email of user to delete
+        username: string
+            username of user to delete
 
         Returns
         -------
@@ -103,19 +127,19 @@ class BaseAuth(Base, metaclass=ABCMeta):
     @abstractmethod
     def update_user(
         self,
-        email: str,
+        username: str,
         password: str = None,
         name: str = None,
-        organization: int = None,
         access_level: int = None,
+        organization: str = None,
     ) -> bool:
         """
-        Updates user with given email
+        Updates user with given username
 
         Parameters
         ----------
-        email: string
-            email of user to delete
+        username: string
+            username of user to delete
         password: str, optional
             password of user
         name: str, optional
@@ -133,14 +157,14 @@ class BaseAuth(Base, metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def delete_user(self, email: str) -> bool:
+    def delete_user(self, username: str) -> bool:
         """
-        Removes user with given email
+        Removes user with given username
 
         Parameters
         ----------
-        email: string
-            email of user to delete
+        username: string
+            username of user to delete
 
         Returns
         -------
@@ -150,14 +174,14 @@ class BaseAuth(Base, metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def sign_in(self, email: str, password: str,) -> str:
+    def sign_in(self, username: str, password: str,) -> str:
         """
-        checks email and password and returns new token
+        checks username and password and returns new token
 
         Parameters
         ----------
-        email: string
-            email of user
+        username: string
+            username of user
         password: str
             password of user
 
@@ -189,6 +213,23 @@ class BaseAuth(Base, metaclass=ABCMeta):
         -------
         bool
             `True` if successful, `False` otherwise
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def sign_up(self, user: NewUser) -> str:
+        """
+        creates new user with given info if invite code exists
+
+        Parameters
+        ----------
+        user: NewUser
+            info about new user
+
+        Returns
+        -------
+        str
+            generated token
         """
         raise NotImplementedError
 
@@ -227,9 +268,19 @@ class BaseAuth(Base, metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def test_token(
-        self, greater_or_equal: int, one_of: List[int]
-    ) -> Callable[[Header], NoReturn]:
+    def add_CORS(self, api: FastAPI) -> NoReturn:
+        """
+        adds CORS policy to api
+
+        Parameters
+        ----------
+        api: FastAPI
+            instance of api
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def test_token(self, greater_or_equal: int, one_of: List[int]) -> bool:
         """
         check is token is correct and if tokens loa is gte ml
 
@@ -242,21 +293,41 @@ class BaseAuth(Base, metaclass=ABCMeta):
 
         Returns
         -------
-        Callable[[Header], NoReturn]
-            FastAPIs dependency, which raises Exception
-            #TODO: add Error for wrong token
+        bool
+            returns `True` if token is active and
         """
         raise NotImplementedError
+
+    def token(
+        self, greater_or_equal: int = None, one_of: List[int] = None
+    ) -> Callable[[List[str]], NoReturn]:
+        if not greater_or_equal and not one_of:
+            raise ValueError("either greater_or_equal or one_of should be set")
+
+        def fn(authorization: str = Header(...)) -> NoReturn:
+            if not self.test_token(greater_or_equal, one_of):
+                raise TokenException(name=authorization)
+
+        return fn
 
     def create_router(
         self, token: Callable[[int], Callable[[Header], NoReturn]]
     ) -> APIRouter:
         router = APIRouter()
 
-        @router.post("/signin", tags=["auth"])
+        @router.get(
+            "/test", tags=["test"], dependencies=[Depends(token(greater_or_equal=2))]
+        )
+        async def tststs():
+            """
+            test
+            """
+            return True
+
+        @router.post("/signin", tags=["auth"], response_model=Token)
         async def signin(user: Credentials):
             """
-            generates new token if provided email and password are correct
+            generates new token if provided username and password are correct
             """
             return True
 
@@ -274,14 +345,14 @@ class BaseAuth(Base, metaclass=ABCMeta):
             """
             return True
 
-        @router.post("/signup", tags=["auth"])
+        @router.post("/signup", tags=["auth"], response_model=Token)
         async def signup(user: NewUser):
             """
-            creates new user with provided email, password, organization, access_level and invitation code
+            creates new user with provided username, password, organization, access_level and invitation code
             """
             return True
 
-        @router.get("/users/me", tags=["user"])
+        @router.get("/users/me", tags=["user"], response_model=UserInfo)
         async def read_user():
             """
             return info about user, associated with user from token in request
@@ -303,37 +374,38 @@ class BaseAuth(Base, metaclass=ABCMeta):
             return True
 
         @router.post("/users", tags=["user"])
-        async def create_user(user: FullUser):
+        async def create_users(user: FullUser):
             """
-            creates user with provided email, password, organization and access_level
+            creates user with provided username, password, organization and access_level
 
             Note
             ----
             * only users with access level of 2 and more can use this function
             * users are created in the same organization as the requester
             """
-            return True
+            await self.create_user(user.username, user.password, user.access_level, user.organization)
 
-        @router.get("/users/{user_email}", tags=["user"])
-        async def read_users(user_email: str):
+
+        @router.get("/users/{user_username}", tags=["user"], response_model=UserInfo)
+        async def read_users(user_username: str):
             """
             reads info about requested user
             """
-            return user_email
+            return user_username
 
-        @router.put("/users/{user_email}", tags=["user"])
-        async def update_users(user_email: str):
+        @router.put("/users/{user_username}", tags=["user"])
+        async def update_users(user_username: str):
             """
             updates info about requested user
             """
-            return user_email
+            return user_username
 
-        @router.delete("/users/{user_email}", tags=["user"])
-        async def remove_users(user_email: str):
+        @router.delete("/users/{user_username}", tags=["user"])
+        async def remove_users(user_username: str):
             """
             removes requested user
             """
-            return user_email
+            return user_username
 
         @router.delete("/token", tags=["token"])
         async def delete_token(token_identifier: str):
@@ -342,7 +414,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
             """
             return token_identifier
 
-        @router.get("/tokens", tags=["token"])
+        @router.get("/tokens", tags=["token"], response_model=Tokens)
         async def get_tokens():
             """
             returns all tokens, associated with user from token in request
