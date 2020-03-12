@@ -1,14 +1,16 @@
 import importlib.util
+from copy import deepcopy
 from pathlib import Path
 from sys import modules
 from typing import Any, MutableMapping, NoReturn
 
 from config import ConfigurationSet, config_from_dict, config_from_env, config_from_toml
-from fastapi import FastAPI
+from fastapi import FastAPI, Request
+from fastapi.responses import JSONResponse
 from pkg_resources import iter_entry_points
 
-from .exceptions import DuplicateModuleError, InheritanceError
-from .pt_abc import Base, BaseAuth
+from .exceptions import DuplicateModuleError, InheritanceError, TokenException
+from .pt_abc import Base, BaseAuth, BaseTexts
 
 
 class App:
@@ -56,11 +58,13 @@ class App:
         self.default_dict: MutableMapping[str, Any] = {
             "core": {"host": "127.0.0.1", "port": "7878"}
         }
+        self.update_cfg()
 
+    def update_cfg(self):
         self.cfg: ConfigurationSet = ConfigurationSet(
             config_from_env(prefix="PT", separator="__"),
             config_from_toml(str(self.config_file_path), read_from_file=True),
-            config_from_dict(dict(self.default_dict)),
+            config_from_dict(self.default_dict),
         )
 
     def find_local_modules(self) -> NoReturn:
@@ -110,21 +114,34 @@ class App:
 
     def load_modules(self) -> NoReturn:
         for name, cls in self.classes.items():
-            if not any(issubclass(cls, class_i) for class_i in [Base, BaseAuth]):
+            if not any(
+                issubclass(cls, class_i) for class_i in [Base, BaseAuth, BaseTexts]
+            ):
                 raise InheritanceError(
                     "anu module should ne subclass of Base or BaseAuth"
                 )
-            self.default_dict[name] = cls.DEFAULTS.copy()
+            self.default_dict[name] = deepcopy(cls.DEFAULTS)
+            self.update_cfg()
             module = cls(self.cfg[name])
             self.modules[name] = module
 
+    def add_handlers(self, api: FastAPI) -> NoReturn:
+        @api.exception_handler(TokenException)
+        async def token_exception_handler(request: Request, exc: TokenException):
+            return JSONResponse(
+                status_code=418,
+                content={"message": f"Error: invalid token ({exc.name})"},
+            )
+
+        self.modules["auth"].add_CORS(api)
+
     def add_routers(self, api: FastAPI) -> NoReturn:
-        token = self.modules["auth"].test_token
+        token = self.modules["auth"].token
 
         for name, module in self.modules.items():
             router = module.create_router(token)
 
-            if module.TYPE in ["AUTH", "DOCS"]:
+            if module.TYPE in ["AUTH", "TEXTS"]:
                 api.include_router(router)
             else:
                 api.include_router(
