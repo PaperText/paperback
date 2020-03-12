@@ -81,6 +81,11 @@ def run(config: Path, create_config: bool, debug: bool) -> NoReturn:
 
     if debug:
         click.echo("done")
+        click.echo("adding routers...", nl=False)
+    app.add_handlers(api)
+
+    if debug:
+        click.echo("done")
 
     uvicorn.run(
         "paperback.cli:api", host=app.cfg.core.host, port=int(app.cfg.core.port),
