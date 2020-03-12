@@ -1,5 +1,5 @@
 from abc import ABCMeta, abstractmethod
-from typing import Any, Callable, Dict, NoReturn
+from typing import Any, Callable, Dict, NoReturn, Mapping, ClassVar
 
 from fastapi import APIRouter, Header
 
@@ -16,7 +16,7 @@ class Base(metaclass=ABCMeta):
         python dict of default values for configuration
     """
 
-    TYPE: str = "MISC"
+    TYPE: ClassVar[str] = "MISC"
 
     def __new__(cls, *args, **kwargs):
         """
@@ -27,13 +27,10 @@ class Base(metaclass=ABCMeta):
         instance = super(Base, cls).__new__(cls)
         return instance
 
-    def __init__(self, cfg: Dict[str, Any]):
+    @abstractmethod
+    def __init__(self, cfg: Mapping[str, Any]):
         """
         constructor for all classes
-
-        Note
-        ----
-        DB connections should be created here
 
         Parameters
         ----------
