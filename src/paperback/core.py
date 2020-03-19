@@ -19,6 +19,7 @@ class App:
         self.verbose = verbose
         # resolve path to follow symlinks and remove "/../"
         self.config_dir_path = config_path.resolve()
+
         if self.config_dir_path.exists() and not self.config_dir_path.is_dir():
             raise ValueError(f"given config path ({self.config_dir_path}) isn't a dir")
         if create_config:
