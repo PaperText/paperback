@@ -43,7 +43,7 @@ def cli():
 @click.option("--debug", default=False, help="show debug information", is_flag=True)
 def run(config: Path, create_config: bool, debug: bool) -> NoReturn:
     """
-    main comand for running API
+    main command for running API
     """
     if debug:
         click.echo(
