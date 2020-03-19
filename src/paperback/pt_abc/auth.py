@@ -51,7 +51,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
     TYPE: ClassVar[str] = "AUTH"
 
     @abstractmethod
-    def __init__(self, cfg: Mapping[str, Any]):
+    def __init__(self, cfg: Mapping[str, Any], keys_dir: Path):
         """
         constructor for all classes
 
