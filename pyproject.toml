@@ -18,6 +18,7 @@ uvicorn = "^0.10.8"
 email-validator = "^1.0"
 pydantic = "^1.4"
 python-multipart = "^0.0.5"
+fastecdsa = "^2.1.0"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
