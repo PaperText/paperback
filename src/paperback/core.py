@@ -53,13 +53,17 @@ class App:
         self.classes: MutableMapping[str, Any] = {}
         self.modules: MutableMapping[str, Any] = {}
 
-        self.default_dict: MutableMapping[str, Any] = {
+        self.default_dict: Dict[str, Any] = {
             "core": {"host": "127.0.0.1", "port": "7878"}
         }
-        self.update_cfg()
+        self.cfg: ConfigurationSet = ConfigurationSet(
+            config_from_env(prefix="PT", separator="__"),
+            config_from_toml(str(self.config_file_path), read_from_file=True),
+            config_from_dict(self.default_dict),
+        )
 
     def update_cfg(self):
-        self.cfg: ConfigurationSet = ConfigurationSet(
+        self.cfg = ConfigurationSet(
             config_from_env(prefix="PT", separator="__"),
             config_from_toml(str(self.config_file_path), read_from_file=True),
             config_from_dict(self.default_dict),
@@ -98,17 +102,27 @@ class App:
         for entry_point in iter_entry_points("paperback.modules"):
             name = entry_point.name
             cls = entry_point.load()
+
             if cls.TYPE == "AUTH":
                 name = "auth"
             elif cls.TYPE == "TEXTS":
                 name = "texts"
 
+            if not any(
+                issubclass(cls, class_i) for class_i in [Base, BaseAuth, BaseTexts]
+            ):
+                raise InheritanceError(
+                    "anu module should ne subclass of Base or BaseAuth"
+                )
+
             if name in self.classes:
                 raise DuplicateModuleError(
                     f'module with name "{name}" already registered'
                 )
-            else:
-                self.classes[name] = cls
+
+            self.classes[name] = cls
+            self.default_dict[name] = deepcopy(cls.DEFAULTS)
+        self.update_cfg()
 
     def load_modules(self) -> NoReturn:
         for name, cls in self.classes.items():
