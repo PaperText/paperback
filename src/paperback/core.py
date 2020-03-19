@@ -1,15 +1,13 @@
-import importlib.util
 from copy import deepcopy
 from pathlib import Path
-from sys import modules
-from typing import Any, MutableMapping, NoReturn
+from typing import Any, MutableMapping, NoReturn, Dict
 
 from config import ConfigurationSet, config_from_dict, config_from_env, config_from_toml
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from pkg_resources import iter_entry_points
 
-from .exceptions import DuplicateModuleError, InheritanceError, TokenException
+from .exceptions import DuplicateModuleError, InheritanceError, TokenException, GeneralException
 from .pt_abc import Base, BaseAuth, BaseTexts
 
 
@@ -131,6 +129,13 @@ class App:
             return JSONResponse(
                 status_code=418,
                 content={"message": f"Error: invalid token ({exc.name})"},
+            )
+
+        @api.exception_handler(GeneralException)
+        async def token_exception_handler(request: Request, exc: GeneralException):
+            return JSONResponse(
+                status_code=exc.code,
+                content={"message": "An error occurred", "reason": exc.message},
             )
 
         self.modules["auth"].add_CORS(api)
