@@ -17,7 +17,6 @@ class App:
         helper function for setting up necessary directory structure
         """
         self.verbose = verbose
-        # resolve path to follow symlinks and remove "/../"
         self.config_dir_path = config_path.resolve()
 
         if self.config_dir_path.exists() and not self.config_dir_path.is_dir():
