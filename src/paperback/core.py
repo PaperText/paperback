@@ -55,6 +55,10 @@ class App:
                 " doesn't contain 'modules' directory"
             )
 
+        self.keys_dir: Path = (self.config_dir_path / "keys").resolve()
+        if not self.keys_dir.exists():
+            self.keys_dir.mkdir(exist_ok=True)
+
         self.classes: MutableMapping[str, Any] = {}
         self.modules: MutableMapping[str, Any] = {}
 
@@ -131,15 +135,10 @@ class App:
 
     def load_modules(self) -> NoReturn:
         for name, cls in self.classes.items():
-            if not any(
-                issubclass(cls, class_i) for class_i in [Base, BaseAuth, BaseTexts]
-            ):
-                raise InheritanceError(
-                    "anu module should ne subclass of Base or BaseAuth"
-                )
-            self.default_dict[name] = deepcopy(cls.DEFAULTS)
-            self.update_cfg()
-            module = cls(self.cfg[name])
+            if name == "auth":
+                module = cls(self.cfg[name], self.keys_dir)
+            else:
+                module = cls(self.cfg[name])
             self.modules[name] = module
 
     def add_handlers(self, api: FastAPI) -> NoReturn:
