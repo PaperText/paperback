@@ -1,7 +1,7 @@
 from abc import ABCMeta, abstractmethod
-from typing import Any, Callable, Dict, NoReturn, Mapping, ClassVar
+from typing import Any, Callable, ClassVar, Dict, Mapping, NoReturn, Optional
 
-from fastapi import APIRouter, Header
+from fastapi import APIRouter
 
 
 class Base(metaclass=ABCMeta):
@@ -41,7 +41,7 @@ class Base(metaclass=ABCMeta):
 
     @abstractmethod
     def create_router(
-        self, token: Callable[[int], Callable[[Header], NoReturn]]
+        self, token: Callable[[Optional[int], Optional[int]], Callable[[str], NoReturn]]
     ) -> APIRouter:
         """
         creates Router to mount to the main app
