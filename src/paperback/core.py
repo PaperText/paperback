@@ -147,7 +147,7 @@ class App:
         async def token_exception_handler(request: Request, exc: TokenException):
             return JSONResponse(
                 status_code=418,
-                content={"message": f"Error: invalid token ({exc.name})"},
+                content={"message": f"Error: invalid token ({exc.token})"},
             )
 
         @api.exception_handler(GeneralException)
