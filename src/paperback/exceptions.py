@@ -13,5 +13,5 @@ class GeneralException(Exception):
 
 
 class TokenException(Exception):
-    def __init__(self, name: str):
-        self.name = name
+    def __init__(self, token: str):
+        self.token = token
