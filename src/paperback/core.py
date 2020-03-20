@@ -1,14 +1,19 @@
 from copy import deepcopy
 from pathlib import Path
-from typing import Any, MutableMapping, NoReturn, Dict
+from typing import Any, Dict, MutableMapping, NoReturn
 
 from config import ConfigurationSet, config_from_dict, config_from_env, config_from_toml
 from fastapi import FastAPI, Request
 from fastapi.responses import JSONResponse
 from pkg_resources import iter_entry_points
 
-from .exceptions import DuplicateModuleError, InheritanceError, TokenException, GeneralException
-from .pt_abc import Base, BaseAuth, BaseTexts
+from .exceptions import (
+    DuplicateModuleError,
+    GeneralException,
+    InheritanceError,
+    TokenException,
+)
+from .pt_abc import Base, BaseAuth, BaseText
 
 
 class App:
@@ -109,7 +114,7 @@ class App:
                 name = "texts"
 
             if not any(
-                issubclass(cls, class_i) for class_i in [Base, BaseAuth, BaseTexts]
+                issubclass(cls, class_i) for class_i in [Base, BaseAuth, BaseText]
             ):
                 raise InheritanceError(
                     "anu module should ne subclass of Base or BaseAuth"
