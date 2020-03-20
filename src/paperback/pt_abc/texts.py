@@ -1,16 +1,21 @@
-from typing import ClassVar, Callable, NoReturn, Mapping, Any
-
-from fastapi import Header, APIRouter
+from typing import ClassVar
 
 from .base import Base
 
 
-class BaseTexts(Base):
+class BaseText(Base):
+    """
+    base class for all text modules of PaperText
+
+    Attributes
+    ----------
+    TYPE: str
+        type of module
+    DEFAULTS: Dict[str, int]
+        python dict of default values for configuration
+    """
     TYPE: ClassVar[str] = "TEXTS"
 
-    def __init__(self, cfg: Mapping[str, Any]):
-        # super().__init__(cfg)
-        pass
+    # def __init__(self, cfg: Mapping[str, Any]):
+        # pass
 
-    def create_router(self, token: Callable[[int], Callable[[Header], NoReturn]]) -> APIRouter:
-        pass
