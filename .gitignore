@@ -4,6 +4,7 @@
 .mypy_cache
 .venv
 dist
+docs_out
 
 poetry.lock
 

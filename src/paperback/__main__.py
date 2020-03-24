@@ -3,8 +3,6 @@
 from pathlib import Path
 from subprocess import call
 
-from . import cli, run
-
 path = Path(__file__) / ".." / ".."
 path = path.resolve()
 
@@ -31,6 +29,8 @@ def fix_all():
     fix_black()
     fix_isort()
 
+def build_docs():
+    call(f"sphinx-build -b html {source_path/'docs'} {source_path/'docs_out'}".split(" "))
 
 if __name__ == "__main__":
     call("paperback run --debug".split(" "))
