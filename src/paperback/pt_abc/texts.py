@@ -14,8 +14,8 @@ class BaseText(Base):
     DEFAULTS: Dict[str, int]
         python dict of default values for configuration
     """
+
     TYPE: ClassVar[str] = "TEXTS"
 
     # def __init__(self, cfg: Mapping[str, Any]):
-        # pass
-
+    # pass

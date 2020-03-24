@@ -29,8 +29,14 @@ def fix_all():
     fix_black()
     fix_isort()
 
+
 def build_docs():
-    call(f"sphinx-build -b html {source_path/'docs'} {source_path/'docs_out'}".split(" "))
+    call(
+        f"sphinx-build -b html {source_path / 'docs'} {source_path / 'docs_out'}".split(
+            " "
+        )
+    )
+
 
 if __name__ == "__main__":
     call("paperback run --debug".split(" "))
