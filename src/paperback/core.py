@@ -13,7 +13,7 @@ from .exceptions import (
     InheritanceError,
     TokenException,
 )
-from .pt_abc import Base, BaseAuth, BaseText
+from .pt_abc import Base, BaseAuth, BaseDocs
 
 
 class App:
@@ -114,15 +114,13 @@ class App:
 
             if cls.TYPE == "AUTH":
                 name = "auth"
-            elif cls.TYPE == "TEXTS":
-                name = "texts"
+            elif cls.TYPE == "DOCS":
+                name = "docs"
 
             if not any(
-                issubclass(cls, class_i) for class_i in [Base, BaseAuth, BaseText]
+                issubclass(cls, class_i) for class_i in [Base, BaseAuth, BaseDocs]
             ):
-                raise InheritanceError(
-                    "anu module should ne subclass of Base or BaseAuth"
-                )
+                raise InheritanceError("anu module should ne subclass of Base or BaseAuth of BaseDocs")
 
             if name in self.classes:
                 raise DuplicateModuleError(
@@ -164,7 +162,7 @@ class App:
         for name, module in self.modules.items():
             router = module.create_router(token)
 
-            if module.TYPE in ["AUTH", "TEXTS"]:
+            if module.TYPE in ["AUTH", "DOCS"]:
                 api.include_router(router)
             else:
                 api.include_router(
