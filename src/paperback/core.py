@@ -55,9 +55,9 @@ class App:
                 " doesn't contain 'modules' directory"
             )
 
-        self.keys_dir: Path = (self.config_dir_path / "keys").resolve()
-        if not self.keys_dir.exists():
-            self.keys_dir.mkdir(exist_ok=True)
+        self.storage_dir: Path = (self.config_dir_path / "storage").resolve()
+        if not self.storage_dir.exists():
+            self.storage_dir.mkdir(exist_ok=True)
 
         self.classes: MutableMapping[str, Any] = {}
         self.modules: MutableMapping[str, Any] = {}
@@ -133,10 +133,10 @@ class App:
 
     def load_modules(self) -> NoReturn:
         for name, cls in self.classes.items():
-            if name == "auth":
-                module = cls(self.cfg[name], self.keys_dir)
-            else:
-                module = cls(self.cfg[name])
+            module_dir = self.storage_dir/name
+            if not module_dir.exists():
+                module_dir.mkdir(exist_ok=True)
+            module = cls(self.cfg[name], module_dir)
             self.modules[name] = module
 
     def add_handlers(self, api: FastAPI) -> NoReturn:
