@@ -1,5 +1,7 @@
 from abc import ABCMeta, abstractmethod
-from typing import Any, Callable, ClassVar, Dict, Mapping, NoReturn, Optional
+from pathlib import Path
+from types import SimpleNamespace
+from typing import Callable, ClassVar, Dict, NoReturn, Optional
 
 from fastapi import APIRouter
 
@@ -14,9 +16,12 @@ class Base(metaclass=ABCMeta):
         type of module
     DEFAULTS: Dict[str, int]
         python dict of default values for configuration
+    requires_dir: bool
+        describes if directory for storage will be provide to __init__ call, default is `False`
     """
 
-    TYPE: ClassVar[str] = "MISC"
+    TYPE: ClassVar[str]
+    requires_dir: ClassVar[bool] = False
 
     def __new__(cls, *args, **kwargs):
         """
@@ -28,7 +33,7 @@ class Base(metaclass=ABCMeta):
         return instance
 
     @abstractmethod
-    def __init__(self, cfg: Mapping[str, Any]):
+    def __init__(self, cfg: SimpleNamespace, storage_dir: Path):
         """
         constructor for all classes
 
@@ -36,6 +41,8 @@ class Base(metaclass=ABCMeta):
         ----------
         cfg: dict
             python dict for accessing config
+        storage_dir: Path
+            pathlib object pointing to directory for module
         """
         raise NotImplementedError
 
