@@ -3,7 +3,7 @@ from pathlib import Path
 from typing import Any, Dict, MutableMapping, NoReturn
 
 from config import ConfigurationSet, config_from_dict, config_from_env, config_from_toml
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
 from pkg_resources import iter_entry_points
 
@@ -143,12 +143,12 @@ class App:
         @api.exception_handler(TokenException)
         async def token_exception_handler(request: Request, exc: TokenException):
             return JSONResponse(
-                status_code=418,
+                status_code=status.HTTP_401_UNAUTHORIZED,
                 content={"message": f"Error: invalid token ({exc.token})"},
             )
 
         @api.exception_handler(GeneralException)
-        async def token_exception_handler(request: Request, exc: GeneralException):
+        async def exception_handler(request: Request, exc: GeneralException):
             return JSONResponse(
                 status_code=exc.code,
                 content={"message": "An error occurred", "reason": exc.message},
