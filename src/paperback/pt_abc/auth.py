@@ -1,6 +1,5 @@
 from abc import ABCMeta, abstractmethod
-from pathlib import Path
-from typing import Any, Callable, ClassVar, Dict, List, Mapping, NoReturn, Optional
+from typing import Callable, ClassVar, Dict, List, NoReturn, Optional
 
 from fastapi import APIRouter, Depends, FastAPI, Header
 from pydantic import BaseModel
@@ -39,27 +38,11 @@ class BaseAuth(Base, metaclass=ABCMeta):
         type of module
     DEFAULTS: Dict[str, int]
         python dict of default values for configuration
+    requires_dir: bool
+        describes if directory for storage will be provide to __init__ call
     """
 
     TYPE: ClassVar[str] = "AUTH"
-
-    @abstractmethod
-    def __init__(self, cfg: Mapping[str, Any], keys_dir: Path):
-        """
-        constructor for all classes
-
-        Note
-        ----
-        DB connections should be created here
-
-        Parameters
-        ----------
-        cfg: dict
-            python dict for accessing config
-        keys_dir: Path
-            python object which points to folder for private.key and public.key files
-        """
-        raise NotImplementedError
 
     @abstractmethod
     async def add_CORS(self, api: FastAPI) -> NoReturn:
