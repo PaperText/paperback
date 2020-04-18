@@ -31,7 +31,9 @@ class Misc(Base, metaclass=ABCMeta):
     requires_docs: ClassVar[bool] = False
 
     @abstractmethod
-    def __init__(self, cfg: SimpleNamespace, storage_dir: Path, auth: BaseAuth, docs: BaseDocs):
+    def __init__(
+        self, cfg: SimpleNamespace, storage_dir: Path, auth: BaseAuth, docs: BaseDocs
+    ):
         """
         constructor for all classes
 

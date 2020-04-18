@@ -1,5 +1,5 @@
 from abc import ABCMeta
-from typing import ClassVar, Callable, Optional, NoReturn
+from typing import Callable, ClassVar, NoReturn, Optional
 
 from fastapi import APIRouter
 

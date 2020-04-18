@@ -120,7 +120,9 @@ class App:
             if not any(
                 issubclass(cls, class_i) for class_i in [Base, BaseAuth, BaseDocs]
             ):
-                raise InheritanceError("anu module should ne subclass of Base or BaseAuth of BaseDocs")
+                raise InheritanceError(
+                    "anu module should ne subclass of Base or BaseAuth of BaseDocs"
+                )
 
             if name in self.classes:
                 raise DuplicateModuleError(
@@ -133,7 +135,7 @@ class App:
 
     def load_modules(self) -> NoReturn:
         for name, cls in self.classes.items():
-            module_dir = self.storage_dir/name
+            module_dir = self.storage_dir / name
             if not module_dir.exists():
                 module_dir.mkdir(exist_ok=True)
             module = cls(self.cfg[name], module_dir)
