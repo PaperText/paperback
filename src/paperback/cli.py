@@ -81,7 +81,7 @@ def run(config: Path, create_config: bool, debug: bool) -> NoReturn:
 
     if debug:
         click.echo("done")
-        click.echo("adding routers...", nl=False)
+        click.echo("adding handlers...", nl=False)
     app.add_handlers(api)
 
     if debug:
