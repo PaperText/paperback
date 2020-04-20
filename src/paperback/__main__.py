@@ -1,6 +1,8 @@
 from pathlib import Path
 from subprocess import call
 
+from .cli import cli
+
 src_path = Path(__file__) / ".." / ".."
 src_path = src_path.resolve()
 
@@ -11,7 +13,7 @@ pyproject_path = source_path / "pyproject.toml"
 pyproject_path = pyproject_path.resolve()
 
 
-def flake_lint():
+def lint():
     call(f"python -m flakehell lint {src_path}".split(" "))
 
 
@@ -23,12 +25,12 @@ def fix_isort():
     call(f"python -m isort -rc {src_path}".split(" "))
 
 
-def fix_all():
+def fix():
     fix_black()
     fix_isort()
 
 
-def build_docs():
+def docs():
     call(
         f"sphinx-build -b html {source_path / 'docs'} {source_path / 'docs_out'}".split(
             " "
@@ -37,4 +39,4 @@ def build_docs():
 
 
 if __name__ == "__main__":
-    call("paperback run --debug".split(" "))
+    cli()

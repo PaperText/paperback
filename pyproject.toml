@@ -7,9 +7,9 @@ license = "MIT"
 
 [tool.poetry.scripts]
 paperback = "paperback.__init__:cli"
-docs = "paperback.__main__:build_docs"
-lint = "paperback.__main__:flake_lint"
-fix = "paperback.__main__:fix_all"
+fix = "paperback.__main__:fix"
+lint = "paperback.__main__:lint"
+docs = "paperback.__main__:docs"
 
 [tool.poetry.dependencies]
 python = "^3.7"
