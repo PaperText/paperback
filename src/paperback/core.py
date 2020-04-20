@@ -18,7 +18,7 @@ from .exceptions import (
     InheritanceError,
     TokenException,
 )
-from .pt_abc import BaseMisc, BaseAuth, BaseDocs
+from .abc import BaseMisc, BaseAuth, BaseDocs
 
 
 class App:
