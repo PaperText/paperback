@@ -5,10 +5,10 @@ from typing import Callable, ClassVar, Dict, NoReturn, Optional
 
 from fastapi import APIRouter
 
-from . import Base, BaseAuth, BaseDocs
+from . import Base, BaseAuth, BaseDocs, UserInfo
 
 
-class Misc(Base, metaclass=ABCMeta):
+class BaseMisc(Base, metaclass=ABCMeta):
     """
     base class for all miscellaneous modules of PaperText
 
@@ -26,13 +26,28 @@ class Misc(Base, metaclass=ABCMeta):
         weather docs will be provided to init
     """
 
-    TYPE: ClassVar[str] = "MISC"
-    requires_auth: ClassVar[bool] = False
-    requires_docs: ClassVar[bool] = False
+    TYPE: Optional[ClassVar[str]] = "MISC"
+    requires_auth: Optional[ClassVar[bool]]
+    requires_docs: Optional[ClassVar[bool]]
+
+    def __new__(cls, *args, **kwargs):
+        """
+        extends new to check for existence of specific fields in class instance
+        """
+        if not hasattr(cls, "requires_auth"):
+            raise NotImplementedError("Class can't have class attribute `requires_auth` as `None`")
+        if not hasattr(cls, "requires_docs"):
+            raise NotImplementedError("Class can't have class attribute `requires_docs` as `None`")
+        instance = super(Base, cls).__new__(cls)
+        return instance
 
     @abstractmethod
     def __init__(
-        self, cfg: SimpleNamespace, storage_dir: Path, auth: BaseAuth, docs: BaseDocs
+        self,
+        cfg: SimpleNamespace,
+        storage_dir: Path,
+        auth: BaseAuth,
+        docs: BaseDocs,
     ):
         """
         constructor for all classes
@@ -51,7 +66,10 @@ class Misc(Base, metaclass=ABCMeta):
         raise NotImplementedError
 
     def create_router(
-        self, token: Callable[[Optional[int], Optional[int]], Callable[[str], NoReturn]]
+        self,
+        token: Callable[
+            [Optional[int], Optional[int]], Callable[[str], UserInfo]
+        ],
     ) -> APIRouter:
         """
         creates Router to mount to the main app

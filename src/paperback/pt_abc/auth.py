@@ -4,8 +4,8 @@ from typing import Callable, ClassVar, Dict, List, NoReturn, Optional
 from fastapi import APIRouter, Depends, FastAPI, Header
 from pydantic import BaseModel
 
-from .base import Base
 from ..exceptions import TokenException
+from .base import Base
 
 
 class Credentials(BaseModel):
@@ -57,9 +57,14 @@ class BaseAuth(Base, metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    async def get_user_from_token(self) -> UserInfo:
+    def token2user(self, token: str) -> UserInfo:
         """
         decodes and validates token, returning user from token in "Auth" header
+
+        Parameters
+        ----------
+        token: str
+            token to decode
 
         Returns
         -------
@@ -74,15 +79,17 @@ class BaseAuth(Base, metaclass=ABCMeta):
                 access_level of user
 
         """
+        raise NotImplementedError
 
-    @abstractmethod
-    async def test_token(
-        self, greater_or_equal: Optional[int] = None, one_of: Optional[List[int]] = None
-    ) -> bool:
+    def token(
+        self,
+        greater_or_equal: Optional[int] = None,
+        one_of: Optional[List[int]] = None,
+    ) -> Callable[[str], UserInfo]:
         """
-        check if token is correct and if tokens suits parameters
+        validates token with given parameters
 
-        validates tokens fields and checks that access level is
+        validates tokens fields and checks that
             * access_level >= greater_or_equal if greater_or_equal is non None, and
             * if access_level exists ib one_of if one_of is not None
 
@@ -95,20 +102,18 @@ class BaseAuth(Base, metaclass=ABCMeta):
 
         Returns
         -------
-        bool
-            returns `True` if token is active and
-        """
-        raise NotImplementedError
+        Callable[[str], UserInfo]
+            function which accept `Auth` header and returns UserInfo from token
 
-    def token(
-        self, greater_or_equal: Optional[int] = None, one_of: Optional[List[int]] = None
-    ) -> Callable[[str], NoReturn]:
+        """
         if not greater_or_equal and not one_of:
             raise ValueError("either greater_or_equal or one_of should be set")
 
-        def fn(authorization: str = Header(...)) -> NoReturn:
-            if not self.test_token(greater_or_equal, one_of):
+        def fn(authorization: str = Header(...)) -> UserInfo:
+            user: UserInfo = self.token2user(authorization)
+            if not (user.access_level < greater_or_equal or user.access_level in one_of):
                 raise TokenException(token=authorization)
+            return user
 
         return fn
 
@@ -202,7 +207,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    async def delete_user(self, username: str, test) -> NoReturn:
+    async def delete_user(self, username: str) -> NoReturn:
         """
         Removes user with given username
 
@@ -299,7 +304,10 @@ class BaseAuth(Base, metaclass=ABCMeta):
         """
 
     def create_router(
-        self, token: Callable[[Optional[int], Optional[int]], Callable[[str], NoReturn]]
+        self,
+        token: Callable[
+            [Optional[int], Optional[int]], Callable[[str], UserInfo]
+        ],
     ) -> APIRouter:
         router = APIRouter()
 
@@ -348,7 +356,9 @@ class BaseAuth(Base, metaclass=ABCMeta):
             )
             return
 
-        @router.get("/users/{username}", tags=["user"], response_model=UserInfo)
+        @router.get(
+            "/users/{username}", tags=["user"], response_model=UserInfo
+        )
         async def read_user(username: str) -> UserInfo:
             """
             reads info about requested user

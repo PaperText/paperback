@@ -3,8 +3,7 @@ from typing import Callable, ClassVar, NoReturn, Optional
 
 from fastapi import APIRouter
 
-from .base import Base
-
+from .base import Base, UserInfo
 
 class BaseDocs(Base, metaclass=ABCMeta):
     """
@@ -23,6 +22,17 @@ class BaseDocs(Base, metaclass=ABCMeta):
     TYPE: ClassVar[str] = "DOCS"
 
     def create_router(
-        self, token: Callable[[Optional[int], Optional[int]], Callable[[str], NoReturn]]
+        self,
+        token: Callable[
+            [Optional[int], Optional[int]], Callable[[str], UserInfo]
+        ],
     ) -> APIRouter:
-        pass
+        router = APIRouter()
+
+        @router.get(
+            "/docs-test", tags=["docs"], response_model=str,
+        )
+        def test():
+            return "success"
+
+        return router
