@@ -40,7 +40,9 @@ def cli():
     help="flag for creating necessary folders",
     is_flag=True,
 )
-@click.option("--debug", default=False, help="show debug information", is_flag=True)
+@click.option(
+    "--debug", default=False, help="show debug information", is_flag=True
+)
 def run(config: Path, create_config: bool, debug: bool) -> NoReturn:
     """
     main command for running API
@@ -51,7 +53,9 @@ def run(config: Path, create_config: bool, debug: bool) -> NoReturn:
         )
         click.echo("initializing...", nl=False)
     try:
-        app = App(config_path=config, create_config=create_config, verbose=debug)
+        app = App(
+            config_path=config, create_config=create_config, verbose=debug
+        )
     except Exception as e:
         if debug:
             raise
@@ -88,7 +92,9 @@ def run(config: Path, create_config: bool, debug: bool) -> NoReturn:
         click.echo("done")
 
     uvicorn.run(
-        "paperback.cli:api", host=app.cfg.core.host, port=int(app.cfg.core.port),
+        "paperback.cli:api",
+        host=app.cfg.core.host,
+        port=int(app.cfg.core.port),
     )
 
 

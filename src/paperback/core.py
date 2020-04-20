@@ -2,7 +2,12 @@ from copy import deepcopy
 from pathlib import Path
 from typing import Any, Dict, MutableMapping, NoReturn
 
-from config import ConfigurationSet, config_from_dict, config_from_env, config_from_toml
+from config import (
+    ConfigurationSet,
+    config_from_dict,
+    config_from_env,
+    config_from_toml,
+)
 from fastapi import FastAPI, Request, status
 from fastapi.responses import JSONResponse
 from pkg_resources import iter_entry_points
@@ -13,7 +18,7 @@ from .exceptions import (
     InheritanceError,
     TokenException,
 )
-from .pt_abc import Base, BaseAuth, BaseDocs
+from .pt_abc import BaseMisc, BaseAuth, BaseDocs
 
 
 class App:
@@ -25,7 +30,9 @@ class App:
         self.config_dir_path = config_path.resolve()
 
         if self.config_dir_path.exists() and not self.config_dir_path.is_dir():
-            raise ValueError(f"given config path ({self.config_dir_path}) isn't a dir")
+            raise ValueError(
+                f"given config path ({self.config_dir_path}) isn't a dir"
+            )
         if create_config:
             self.config_dir_path.mkdir(parents=True, exist_ok=True)
         elif not self.config_dir_path.exists():
@@ -43,7 +50,10 @@ class App:
             )
 
         self.modules_dir_path = self.config_dir_path / "modules"
-        if self.modules_dir_path.exists() and not self.modules_dir_path.is_dir():
+        if (
+            self.modules_dir_path.exists()
+            and not self.modules_dir_path.is_dir()
+        ):
             raise ValueError(
                 f"file {self.modules_dir_path} exists and isn't a directory"
             )
@@ -118,7 +128,8 @@ class App:
                 name = "docs"
 
             if not any(
-                issubclass(cls, class_i) for class_i in [Base, BaseAuth, BaseDocs]
+                issubclass(cls, class_i)
+                for class_i in [BaseMisc, BaseAuth, BaseDocs]
             ):
                 raise InheritanceError(
                     "anu module should ne subclass of Base or BaseAuth of BaseDocs"
@@ -143,7 +154,9 @@ class App:
 
     def add_handlers(self, api: FastAPI) -> NoReturn:
         @api.exception_handler(TokenException)
-        async def token_exception_handler(request: Request, exc: TokenException):
+        async def token_exception_handler(
+            request: Request, exc: TokenException
+        ):
             return JSONResponse(
                 status_code=status.HTTP_401_UNAUTHORIZED,
                 content={"message": f"Error: invalid token ({exc.token})"},
@@ -153,7 +166,10 @@ class App:
         async def exception_handler(request: Request, exc: GeneralException):
             return JSONResponse(
                 status_code=exc.code,
-                content={"message": "An error occurred", "reason": exc.message},
+                content={
+                    "message": "An error occurred",
+                    "reason": exc.message,
+                },
             )
 
         self.modules["auth"].add_CORS(api)
