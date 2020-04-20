@@ -2,6 +2,7 @@ from abc import ABCMeta, abstractmethod
 from typing import Callable, ClassVar, Dict, List, NoReturn, Optional
 
 from fastapi import APIRouter, Depends, FastAPI, Header
+from fastapi.middleware.cors import CORSMiddleware
 
 from ..exceptions import TokenException
 from . import Base, Credentials, UserInfo, FullUser, NewUser
@@ -23,8 +24,8 @@ class BaseAuth(Base, metaclass=ABCMeta):
 
     TYPE: ClassVar[str] = "AUTH"
 
-    @abstractmethod
-    async def add_CORS(self, api: FastAPI) -> NoReturn:
+    @staticmethod
+    def add_CORS(api: FastAPI) -> NoReturn:
         """
         adds CORS policy to api
 
@@ -33,7 +34,13 @@ class BaseAuth(Base, metaclass=ABCMeta):
         api: FastAPI
             instance of api
         """
-        raise NotImplementedError
+        api.add_middleware(
+            CORSMiddleware,
+            allow_origins=["*"],
+            allow_credentials=True,
+            allow_methods=["*"],
+            allow_headers=["*"],
+        )
 
     @abstractmethod
     def token2user(self, token: str) -> UserInfo:
