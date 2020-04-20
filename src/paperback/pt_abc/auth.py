@@ -2,30 +2,9 @@ from abc import ABCMeta, abstractmethod
 from typing import Callable, ClassVar, Dict, List, NoReturn, Optional
 
 from fastapi import APIRouter, Depends, FastAPI, Header
-from pydantic import BaseModel
 
 from ..exceptions import TokenException
-from .base import Base
-
-
-class Credentials(BaseModel):
-    username: str
-    password: str
-
-
-class UserInfo(BaseModel):
-    username: str
-    full_name: Optional[str] = None
-    organization: str = "Public"
-    access_level: int = 0
-
-
-class FullUser(Credentials, UserInfo):
-    pass
-
-
-class NewUser(FullUser):
-    invitation_code: str
+from . import Base, Credentials, UserInfo, FullUser, NewUser
 
 
 class BaseAuth(Base, metaclass=ABCMeta):

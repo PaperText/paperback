@@ -1,7 +1,7 @@
 from abc import ABCMeta, abstractmethod
 from pathlib import Path
 from types import SimpleNamespace
-from typing import Callable, ClassVar, Dict, NoReturn, Optional
+from typing import Callable, ClassVar, Dict, NoReturn, Optional, Any
 
 from fastapi import APIRouter
 
@@ -21,20 +21,22 @@ class Base(metaclass=ABCMeta):
         describes if directory for storage will be provide to __init__ call, default is `False`
     """
 
-    TYPE: Optional[ClassVar[str]] = None
-    requires_dir: Optional[ClassVar[bool]] = None
+    TYPE: ClassVar[Optional[str]] = None
+    DEFAULTS: ClassVar[Optional[Dict[str, Any]]] = None
+    requires_dir: ClassVar[Optional[bool]] = None
 
     def __new__(cls, *args, **kwargs):
         """
         extends new to check for existence of specific fields in class instance
         """
         if cls.TYPE is None:
-            raise ValueError("Class can't have class attribute `TYPE` as `None`, "
+            raise ValueError(f"Class {cls} can't have class attribute "
+                             "`TYPE` as `None`, "
                              "class should only inherit from `BaseMisc`, `BaseDocs` or `BaseAuth`")
+        if cls.DEFAULTS is None:
+            raise NotImplementedError(f"Class {cls} can't have class attribute `DEFAULTS` as `None`")
         if cls.requires_dir is None:
-            raise NotImplementedError("Class can't have class attribute `DEFAULTS` as `None`")
-        if not hasattr(cls, "requires_dir"):
-            raise NotImplementedError("Class can't have class attribute `requires_dir` as `None`")
+            raise NotImplementedError(f"Class {cls} can't have class attribute `requires_dir` as `None`")
         instance = super().__new__(cls)
         return instance
 

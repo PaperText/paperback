@@ -3,7 +3,7 @@ from typing import Callable, ClassVar, NoReturn, Optional
 
 from fastapi import APIRouter
 
-from .base import Base, UserInfo
+from . import Base, UserInfo
 
 class BaseDocs(Base, metaclass=ABCMeta):
     """
