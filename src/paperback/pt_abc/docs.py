@@ -35,4 +35,5 @@ class BaseDocs(Base, metaclass=ABCMeta):
         def test():
             return "success"
 
+        self.add_routes(router)
         return router

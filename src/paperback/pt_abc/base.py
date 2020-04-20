@@ -63,5 +63,23 @@ class Base(metaclass=ABCMeta):
     ) -> APIRouter:
         """
         creates Router to mount to the main app
+
+        should create `router` of type `fastapi.APIRouter`, call `self.add_routes` on router before return
+        and return `router`
+            ```self.router: APIRouter = APIRouter()
+               ...
+               self.add_routes(router)
+               return router
+            ```
         """
-        raise NotImplementedError
+        raise NotImplementedError("Unsupported class inheritance: cant inherit from `Base`")
+
+    def add_routes(self, router: APIRouter) -> NoReturn:
+        """
+
+        Parameters
+        ----------
+        router: APIRouter
+            instance of APIRouter to add custom routes without redefining predefined self.create_router
+        """
+        pass

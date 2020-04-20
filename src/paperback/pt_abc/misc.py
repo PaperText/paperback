@@ -64,14 +64,3 @@ class BaseMisc(Base, metaclass=ABCMeta):
             docs module
         """
         raise NotImplementedError
-
-    def create_router(
-        self,
-        token: Callable[
-            [Optional[int], Optional[int]], Callable[[str], UserInfo]
-        ],
-    ) -> APIRouter:
-        """
-        creates Router to mount to the main app
-        """
-        raise NotImplementedError

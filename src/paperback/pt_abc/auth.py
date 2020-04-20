@@ -414,4 +414,5 @@ class BaseAuth(Base, metaclass=ABCMeta):
             """
             return ["tokens"]
 
+        self.add_routes(router)
         return router
