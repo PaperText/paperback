@@ -145,11 +145,40 @@ class App:
         self.update_cfg()
 
     def load_modules(self) -> NoReturn:
-        for name, cls in self.classes.items():
-            module_dir = self.storage_dir / name
-            if not module_dir.exists():
-                module_dir.mkdir(exist_ok=True)
-            module = cls(self.cfg[name], module_dir)
+        for name, cls in sorted(
+            self.classes.items(),
+            key=lambda el: 1 if el[0] in ["auth", "docs"] else 0,
+        ):
+            if cls.requires_dir:
+                module_dir = self.storage_dir / name
+                if not module_dir.exists():
+                    module_dir.mkdir(exist_ok=True)
+            else:
+                module_dir = None
+
+            if name in ["auth", "docs"]:
+                try:
+                    module = cls(self.cfg[name], module_dir)
+                except KeyError:
+                    module = cls({}, module_dir)
+
+            else:
+                if cls.requires_auth:
+                    auth_module = self.modules["auth"]
+                else:
+                    auth_module = None
+
+                if cls.requires_docs:
+                    docs_module = self.modules["docs"]
+                else:
+                    docs_module = None
+
+                try:
+                    module = cls(
+                        self.cfg[name], module_dir, auth_module, docs_module
+                    )
+                except KeyError:
+                    module = cls({}, module_dir, auth_module, docs_module)
             self.modules[name] = module
 
     def add_handlers(self, api: FastAPI) -> NoReturn:
