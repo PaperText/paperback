@@ -5,6 +5,7 @@ from fastapi import APIRouter
 
 from . import Base, UserInfo
 
+
 class BaseDocs(Base, metaclass=ABCMeta):
     """
     base class for all text modules of PaperText

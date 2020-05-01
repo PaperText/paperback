@@ -1,5 +1,5 @@
-from pathlib import Path
 from typing import NoReturn
+from pathlib import Path
 
 import click
 import uvicorn

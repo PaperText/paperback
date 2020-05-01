@@ -1,24 +1,24 @@
 from copy import deepcopy
+from typing import Any, Dict, NoReturn, MutableMapping
 from pathlib import Path
-from typing import Any, Dict, MutableMapping, NoReturn
 
 from config import (
     ConfigurationSet,
-    config_from_dict,
     config_from_env,
+    config_from_dict,
     config_from_toml,
 )
 from fastapi import FastAPI, Request, status
-from fastapi.responses import JSONResponse
 from pkg_resources import iter_entry_points
+from fastapi.responses import JSONResponse
 
+from .abc import BaseAuth, BaseDocs, BaseMisc
 from .exceptions import (
-    DuplicateModuleError,
+    TokenException,
     GeneralException,
     InheritanceError,
-    TokenException,
+    DuplicateModuleError,
 )
-from .abc import BaseMisc, BaseAuth, BaseDocs
 
 
 class App:

@@ -1,11 +1,12 @@
 from abc import ABCMeta, abstractmethod
-from pathlib import Path
 from types import SimpleNamespace
-from typing import Callable, ClassVar, Dict, NoReturn, Optional, Any
+from typing import Any, Dict, Callable, ClassVar, NoReturn, Optional
+from pathlib import Path
 
 from fastapi import APIRouter
 
 from . import UserInfo
+
 
 class Base(metaclass=ABCMeta):
     """
@@ -30,13 +31,19 @@ class Base(metaclass=ABCMeta):
         extends new to check for existence of specific fields in class instance
         """
         if cls.TYPE is None:
-            raise ValueError(f"Class {cls} can't have class attribute "
-                             "`TYPE` as `None`, "
-                             "class should only inherit from `BaseMisc`, `BaseDocs` or `BaseAuth`")
+            raise ValueError(
+                f"Class {cls} can't have class attribute "
+                "`TYPE` as `None`, "
+                "class should only inherit from `BaseMisc`, `BaseDocs` or `BaseAuth`"
+            )
         if cls.DEFAULTS is None:
-            raise NotImplementedError(f"Class {cls} can't have class attribute `DEFAULTS` as `None`")
+            raise NotImplementedError(
+                f"Class {cls} can't have class attribute `DEFAULTS` as `None`"
+            )
         if cls.requires_dir is None:
-            raise NotImplementedError(f"Class {cls} can't have class attribute `requires_dir` as `None`")
+            raise NotImplementedError(
+                f"Class {cls} can't have class attribute `requires_dir` as `None`"
+            )
         instance = super().__new__(cls)
         return instance
 
@@ -72,7 +79,9 @@ class Base(metaclass=ABCMeta):
                return router
             ```
         """
-        raise NotImplementedError("Unsupported class inheritance: cant inherit from `Base`")
+        raise NotImplementedError(
+            "Unsupported class inheritance: cant inherit from `Base`"
+        )
 
     def add_routes(self, router: APIRouter) -> NoReturn:
         """

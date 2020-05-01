@@ -1,11 +1,11 @@
 from abc import ABCMeta, abstractmethod
-from typing import Callable, ClassVar, Dict, List, NoReturn, Optional
+from typing import Dict, List, Callable, ClassVar, NoReturn, Optional
 
-from fastapi import APIRouter, Depends, FastAPI, Header
+from fastapi import Header, Depends, FastAPI, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 
+from . import Base, NewUser, FullUser, UserInfo, Credentials
 from ..exceptions import TokenException
-from . import Base, Credentials, UserInfo, FullUser, NewUser
 
 
 class BaseAuth(Base, metaclass=ABCMeta):
@@ -97,7 +97,10 @@ class BaseAuth(Base, metaclass=ABCMeta):
 
         def fn(authorization: str = Header(...)) -> UserInfo:
             user: UserInfo = self.token2user(authorization)
-            if not (user.access_level < greater_or_equal or user.access_level in one_of):
+            if not (
+                user.access_level < greater_or_equal
+                or user.access_level in one_of
+            ):
                 raise TokenException(token=authorization)
             return user
 
