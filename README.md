@@ -7,12 +7,14 @@ Usage
     You can use standard implementation, 
     i.e. [`papertext_auth`]() and [`papertext_docs`]().
 2. Install any miscellaneous modules you want.
-3. Run paperback with `paperback run --create config`
+3. Run paperback with `paperback run --create-config`\
+Note 📓:\
+    You don't need to always run paperback with `--create-config` flag.
+    After first startup you can just use `paperback run`.
 4. Optionally, configure paperback at `~/.paperback/config.yaml`
 
 Development
 -----------
-
 1. install [poetry](https://python-poetry.org/),
     preferably with [pipx](https://pipxproject.github.io/pipx/)
 1. download `paperback` from `git` and `cd` into it
