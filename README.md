@@ -5,6 +5,13 @@ PaperBack
 \
 [![Documentation Status](https://readthedocs.org/projects/paperback/badge/?version=latest&style=flat-square)](https://paperback.readthedocs.io/en/latest/?badge=latest)
 
+Features
+--------
+- Uses modern async typed python framework [fastapi](https://fastapi.tiangolo.com/)
+- Manages package as `pyproject.toml` with [poetry](https://python-poetry.org/)
+- Implements module system with 3 types of modules 
+    managed by python's package manager pypi
+
 Usage
 -----
 1. Install `paperback` with any `auth` and `docs` modules.
@@ -15,7 +22,7 @@ Usage
 Note 📓:\
     You don't need to always run paperback with `--create-config` flag.
     After first startup you can just use `paperback run`.
-4. Optionally, configure paperback at `~/.paperback/config.yaml`
+4. Optionally, configure paperback at `~/.paperback/config.toml`
 
 Development
 -----------
@@ -33,3 +40,16 @@ You're all set up. Poetry will install dependencies and
 If you want to test your changes you can test them with `paperback run --debug`
 
 After you're done, push your cahnges to git.
+
+Contribute
+----------
+- [Source Code](https://github.com/PaperText/paperback)
+- [Issue Tracker](https://github.com/PaperText/paperback/issues)
+
+Support
+-------
+If you are having issues, please let us know.
+
+License
+-------
+The project is licensed under the MIT license.
