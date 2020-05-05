@@ -2,11 +2,8 @@
 
 """🗄API of 📎PaperText app"""
 
-__version__ = "0.1.0"
+from .core import App
+from .exceptions import TokenException, GeneralException
+from .__main__ import get_version
 
-try:
-    from .core import App
-    from .exceptions import TokenException, GeneralException
-#TODO: remove when package will be available at pypi
-except ModuleNotFoundError:
-    pass
+__version__ = get_version()

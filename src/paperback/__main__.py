@@ -1,7 +1,6 @@
 from pathlib import Path
 from subprocess import call
 
-from .cli import cli
 
 src_path = Path(__file__) / ".." / ".."
 src_path = src_path.resolve()
@@ -36,6 +35,14 @@ def docs():
         )
     )
 
+def get_version():
+    import yaml
+
+    pyproject = yaml.load(pyproject_path)
+    version = pyproject["tool"]["poetry"]["version"]
+
+    return version
 
 if __name__ == "__main__":
+    from .cli import cli
     cli()
