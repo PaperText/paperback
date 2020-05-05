@@ -11,13 +11,16 @@
 # documentation root, use os.path.abspath to make it absolute, like shown here.
 #
 # import os
-import sys
+# import sys
 from pathlib import Path
 
 from recommonmark.transform import AutoStructify
 
-sys.path.append(str( Path("..").resolve() ))
-from paperback.__version__ import __version__ as pt_version
+ver_file = (Path("..")/"paperback"/"__version__.py").resolve().read_text().strip()
+
+pt_version = {}
+exec(ver_file, pt_version)
+pt_version = pt_version["__version__"]
 
 master_doc = 'index'
 
