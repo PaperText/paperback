@@ -4,5 +4,9 @@
 
 __version__ = "0.1.0"
 
-from .core import App
-from .exceptions import TokenException, GeneralException
+try:
+    from .core import App
+    from .exceptions import TokenException, GeneralException
+#TODO: remove when package will be available at pypi
+except ModuleNotFoundError:
+    pass
