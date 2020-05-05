@@ -31,7 +31,7 @@ def fix():
 
 def docs():
     call(
-        f"sphinx-build -b html {source_path / 'docs'} {source_path / 'docs_out'}".split(
+        f"sphinx-build -b html {src_path / 'docs'} {source_path / 'docs_out'}".split(
             " "
         )
     )
