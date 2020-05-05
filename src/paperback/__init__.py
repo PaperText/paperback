@@ -4,6 +4,4 @@
 
 from .core import App
 from .exceptions import TokenException, GeneralException
-from .__main__ import get_version
-
-__version__ = get_version()
+from .__version__ import __version__

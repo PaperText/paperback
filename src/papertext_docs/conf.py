@@ -17,7 +17,7 @@ from pathlib import Path
 from recommonmark.transform import AutoStructify
 
 sys.path.append(str( Path("..").resolve() ))
-from paperback.__main__ import get_version
+from paperback.__version__ import __version__ as pt_version
 
 master_doc = 'index'
 
@@ -26,7 +26,6 @@ master_doc = 'index'
 project = "PaperText"
 copyright = "2020, Danil Kireev"
 author = "Danil Kireev"
-pt_version = get_version()
 version, release = pt_version, pt_version
 
 

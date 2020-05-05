@@ -35,13 +35,6 @@ def docs():
         )
     )
 
-def get_version():
-    import yaml
-
-    pyproject = yaml.load(pyproject_path)
-    version = pyproject["tool"]["poetry"]["version"]
-
-    return version
 
 if __name__ == "__main__":
     from .cli import cli
