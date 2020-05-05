@@ -17,7 +17,7 @@ from pathlib import Path
 from paperback import __version__ as pt_version
 from recommonmark.transform import AutoStructify
 
-sys.path.insert(0, (Path("..") / "paperback").resolve())
+sys.path.insert(0, (Path("..") / ".." / "paperback").resolve())
 
 
 # -- Project information -----------------------------------------------------
