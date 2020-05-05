@@ -5,7 +5,8 @@
 .mypy_cache
 .venv
 dist
-docs_out
+docs
+poetry.toml
 
 poetry.lock
 
