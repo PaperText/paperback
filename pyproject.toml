@@ -19,9 +19,6 @@ uvicorn = "^0.10.8"
 email-validator = "^1.0"
 pydantic = "^1.4"
 python-multipart = "^0.0.5"
-recommonmark = "^0.6.0"
-sphinx = "^2.4.4"
-sphinx_rtd_theme = "^0.4.3"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
@@ -34,6 +31,9 @@ black = "19.10b0"
 isort = "^4.3"
 mypy = "^0.761"
 rope = "^0.16.0"
+recommonmark = "^0.6.0"
+sphinx = "^2.4.4"
+sphinx_rtd_theme = "^0.4.3"
 
 [tool.flakehell]
 exclude = ["__pycahce__"]
