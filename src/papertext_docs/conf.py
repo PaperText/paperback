@@ -19,6 +19,7 @@ from recommonmark.transform import AutoStructify
 sys.path.append(str( Path("..").resolve() ))
 from paperback import __version__ as pt_version
 
+master_doc = 'index'
 
 # -- Project information -----------------------------------------------------
 
