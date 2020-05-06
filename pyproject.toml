@@ -4,9 +4,16 @@ version = "0.1.0"
 description = ""
 authors = ["Danil Kireev <danilunrandom@gmail.com>"]
 license = "MIT"
+readme="README.md"
+homepage="https://github.com/PaperText/paperback"
+repository="https://github.com/PaperText/paperback"
+documentation="https://paperback.readthedocs.io/en/latest/"
+
+[tool.poetry.urls]
+"Issue Tracker" = "https://github.com/PaperText/paperback/issues"
 
 [tool.poetry.scripts]
-paperback = "paperback.__main__:cli"
+paperback = "paperback.cli:cli"
 fix = "paperback.__main__:fix"
 lint = "paperback.__main__:lint"
 docs = "paperback.__main__:docs"
