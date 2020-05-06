@@ -8,9 +8,11 @@ PaperBack
 Features
 --------
 - Uses modern async typed python framework [fastapi](https://fastapi.tiangolo.com/)
-- Manages package as `pyproject.toml` with [poetry](https://python-poetry.org/)
+- Manages package in `pyproject.toml` with [poetry](https://python-poetry.org/)
 - Implements module system with 3 types of modules 
-    managed by python's package manager pypi
+    managed by python's package manager `pip`
+- Has a multilayer configuration system,
+    capable of picking up environment variables with separators
 
 Usage
 -----
@@ -39,7 +41,7 @@ You're all set up. Poetry will install dependencies and
 
 If you want to test your changes you can test them with `paperback run --debug`
 
-After you're done, push your cahnges to git.
+After you're done, push your changes to git.
 
 Contribute
 ----------
