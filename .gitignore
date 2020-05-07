@@ -9,6 +9,7 @@ docs
 poetry.toml
 
 poetry.lock
+.env
 
 **/__pycache__
 **/*.egg-info
