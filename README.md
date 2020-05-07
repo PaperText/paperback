@@ -43,6 +43,36 @@ If you want to test your changes you can test them with `paperback run --debug`
 
 After you're done, push your changes to git.
 
+Container
+---------
+Paperback is also available as docker-compliant container.
+
+#### Requirements
+Private SSH key with access to pyexling repository.
+To pass this key, use `SSH_PRIVATE_KEY` environment variable.
+
+You can configure used modules with `MODULES` environment variable.
+
+Example of usage:
+
+Basic:
+
+Advanced:
+
+note 📓: this requires SSH_PRIVATE_KEY environment variable and mounts
+local instances of papertext_auth and papertext_docs.
+This also requires postgres container for auth module.
+```shell script
+podman build . --tag paperback && \
+podman run -it --rm \
+  -v ../papertext_auth:/root/Projects/papertext_auth:z \
+  -v ../papertext_docs:/root/Projects/papertext_docs:z \
+  -e SSH_PRIVATE_KEY=$SSH_PRIVATE_KEY \
+  -e MODULES="[/root/Projects/papertext_auth,/root/Projects/papertext_docs]" \
+  --network host \
+  --name paperback paperback
+```
+
 Contribute
 ----------
 - [Source Code](https://github.com/PaperText/paperback)
