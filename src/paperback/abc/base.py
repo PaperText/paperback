@@ -5,7 +5,7 @@ from pathlib import Path
 
 from fastapi import APIRouter
 
-from . import UserInfo
+from .models import UserInfo
 
 
 class Base(metaclass=ABCMeta):

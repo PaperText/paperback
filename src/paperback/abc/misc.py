@@ -5,7 +5,8 @@ from pathlib import Path
 
 from fastapi import APIRouter
 
-from . import Base, BaseAuth, BaseDocs, UserInfo
+from . import Base, BaseAuth, BaseDocs
+from .models import UserInfo
 
 
 class BaseMisc(Base, metaclass=ABCMeta):

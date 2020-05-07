@@ -4,7 +4,8 @@ from typing import Dict, List, Callable, ClassVar, NoReturn, Optional
 from fastapi import Header, Depends, FastAPI, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 
-from . import Base, NewUser, FullUser, UserInfo, Credentials
+from .base import Base
+from .models import NewUser, FullUser, UserInfo, Credentials
 from ..exceptions import TokenException
 
 
