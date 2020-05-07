@@ -1,11 +1,11 @@
 version: 2
 
 sphinx:
-  configuration: src/papertext_docs/conf.py
+  configuration: src/paperback_docs/conf.py
 
 formats: all
 
 python:
   version: 3.8
 #  install:
-#    - requirements: papertext_docs/requirements.txt
+#    - requirements: paperback_docs/requirements.txt
