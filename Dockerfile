@@ -10,7 +10,11 @@ ENV MODULES="\
 
 ENV SSH_PRIVATE_KEY=""
 
-ENV CONFIG=""
+ENV CONFIG="
+[auth]
+    [auth.hash]
+        algo = \"argon2\"
+"
 
 RUN apt-get update
 RUN apt-get install --no-install-recommends -y build-essential git openssh-server

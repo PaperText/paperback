@@ -67,7 +67,11 @@ To configure, pass  variables to docker with `-e`
     </tr>
     <tr>
         <td>CONFIG</td>
-        <td>""</td>
+        <td><pre>"
+[auth]
+    [auth.hash]
+        algo = "argon2"
+"</pre></td>
         <td>Config to use for paperback instance</td>
     </tr>
 </table> 
