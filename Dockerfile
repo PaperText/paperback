@@ -10,10 +10,10 @@ ENV MODULES="\
 
 ENV SSH_PRIVATE_KEY=""
 
-ENV CONFIG="
-[auth]
-    [auth.hash]
-        algo = \"argon2\"
+ENV CONFIG="\
+[auth]\
+    [auth.hash]\
+        algo = \"argon2\"\
 "
 
 RUN apt-get update
