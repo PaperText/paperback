@@ -63,7 +63,7 @@ To configure, pass  variables to docker with `-e`
     <tr>
         <td>MODULES</td>
         <td>"git+https://github.com/PaperText/papertext_auth, git+https://github.com/PaperText/papertext_docs"</td>
-        <td>List of pip installable modules</td>
+        <td>string of comma separeted, pip installable modules</td>
     </tr>
 </table> 
 
