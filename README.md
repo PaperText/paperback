@@ -57,13 +57,18 @@ To configure, pass  variables to docker with `-e`
     </tr>
     <tr>
         <td>SSH_PRIVATE_KEY</td>
-        <td>None, <i><b>required</b></i></td>
+        <td>"", <i><b>required</b></i></td>
         <td>SSH key to use for downloading modules<br>Can be RSA or ecdsa</td>
     </tr>
     <tr>
         <td>MODULES</td>
         <td>"git+https://github.com/PaperText/papertext_auth, git+https://github.com/PaperText/papertext_docs"</td>
         <td>List of comma separeted, pip installable modules</td>
+    </tr>
+    <tr>
+        <td>CONFIG</td>
+        <td>""</td>
+        <td>Config to use for paperback instance</td>
     </tr>
 </table> 
 

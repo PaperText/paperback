@@ -10,18 +10,19 @@ ENV MODULES="\
 
 ENV SSH_PRIVATE_KEY=""
 
+ENV CONFIG=""
+
 RUN apt-get update
 RUN apt-get install --no-install-recommends -y build-essential git openssh-server
 RUN apt-get clean
 RUN rm -rf /var/lib/apt/lists/*
 
-COPY src/paperback /root/paperback/src/paperback
-COPY pyproject.toml /root/paperback/
 COPY README.md /root/paperback/
+COPY pyproject.toml /root/paperback/
+COPY src/paperback /root/paperback/src/paperback
 
 WORKDIR /root/paperback
 RUN pip install .
 
-WORKDIR /root
-COPY src/docker /root
+COPY src/docker/entrypoint.sh /root/entrypoint.sh
 CMD ~/entrypoint.sh

@@ -8,6 +8,9 @@ chmod 700 ~/.ssh
 ssh-keyscan github.com >> ~/.ssh/known_hosts
 chmod 644 ~/.ssh/known_hosts
 
+mkdir -p ~/.papertext
+echo "$CONFIG" > ~/.papertext/config.toml
+
 modules=$(python3.8 -c '
 import os
 
