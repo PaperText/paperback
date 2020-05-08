@@ -75,7 +75,7 @@ To configure, pass  variables to docker with `-e`
 
 You can configure used modules with `MODULES` environment variable.
 
-Example of usage:
+Example of usage with [`podman`](https://podman.io/):
 1. Basic:
 ```shell script
 podman build . --tag paperback && \
