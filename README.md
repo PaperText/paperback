@@ -94,6 +94,7 @@ podman run -it --rm \
   -v ../papertext_docs:/root/Projects/papertext_docs:z \
   -e SSH_PRIVATE_KEY=$SSH_PRIVATE_KEY \
   -e MODULES="[/root/Projects/papertext_auth,/root/Projects/papertext_docs]" \
+  -e CONFIG=$CONFIG \
   --network host \
   --name paperback paperback
 ```
