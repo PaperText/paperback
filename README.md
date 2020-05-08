@@ -80,6 +80,7 @@ podman run -d \
   --name paperback paperback
 ```
 2. Advanced:
+
 This script will mount local folders inside container and install them as modules. This is usefull when you want to develop new module and can't install all dependencies.
 ```shell script
 podman build . --tag paperback && \
