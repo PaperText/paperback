@@ -24,7 +24,6 @@ from .exceptions import (
 class App:
     def __init__(self, config_path: Path, create_config: bool, verbose: bool):
         """
-        helper function for setting up necessary directory structure
         """
         self.verbose = verbose
         self.config_dir_path = config_path.resolve()
@@ -37,12 +36,12 @@ class App:
             self.config_dir_path.mkdir(parents=True, exist_ok=True)
         elif not self.config_dir_path.exists():
             raise ValueError(
-                f"given config path ({self.config_dir_path}) doesn't exist"
+                f"given config folder ({self.config_dir_path}) doesn't exist"
             )
 
         self.config_file_path = self.config_dir_path / "config.toml"
         if create_config:
-            self.config_file_path.open("w")
+            self.config_file_path.touch()
         if not self.config_file_path.exists():
             raise ValueError(
                 f"given config path ({self.config_dir_path})"
