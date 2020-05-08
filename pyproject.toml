@@ -8,9 +8,16 @@ readme="README.md"
 homepage="https://github.com/PaperText/paperback"
 repository="https://github.com/PaperText/paperback"
 documentation="https://paperback.readthedocs.io/en/latest/"
+classifiers=[
+    "Topic :: Software Development :: Build Tools",
+    "Topic :: Software Development :: Libraries :: Python Modules"
+]
 
 [tool.poetry.urls]
+"Source Code" = "https://github.com/PaperText/paperback#container"
 "Issue Tracker" = "https://github.com/PaperText/paperback/issues"
+"Documentation" = "https://paperback.readthedocs.io/en/latest/?badge=latest"
+"Homepage" = ""
 
 [tool.poetry.scripts]
 paperback = "paperback.cli:cli"
