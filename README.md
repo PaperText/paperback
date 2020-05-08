@@ -49,7 +49,6 @@ Paperback is also available as docker-compliant container.
 
 #### Configuration
 To configure, pass  variables to docker with `-e`
- <!-- <table style="width:100%"> -->
 <table>
     <tr>
         <th>Variable name</th>
@@ -58,7 +57,7 @@ To configure, pass  variables to docker with `-e`
     </tr>
     <tr>
         <td>SSH_PRIVATE_KEY</td>
-        <td>None, required</td>
+        <td>None, <i><b>required</b></i></td>
         <td>SSH key to use for downloading modules<br>Can be RSA or ecdsa</td>
     </tr>
     <tr>
@@ -67,11 +66,6 @@ To configure, pass  variables to docker with `-e`
         <td>List of pip installable modules</td>
     </tr>
 </table> 
-
-To pass this key, use `SSH_PRIVATE_KEY` environment variable.
-
-Private SSH key with access to pyexling repository.
-#### Requirements
 
 
 You can configure used modules with `MODULES` environment variable.
@@ -86,6 +80,7 @@ podman run -d \
   --name paperback paperback
 ```
 2. Advanced:
+This script will mount local folders inside container and install them as modules. This is usefull when you want to develop new module and can't install all dependencies.
 ```shell script
 podman build . --tag paperback && \
 podman run -it --rm \
