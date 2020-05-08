@@ -47,21 +47,45 @@ Container
 ---------
 Paperback is also available as docker-compliant container.
 
-#### Requirements
-Private SSH key with access to pyexling repository.
+#### Configuration
+To configure, pass  variables to docker with `-e`
+ <!-- <table style="width:100%"> -->
+<table>
+    <tr>
+        <th>Variable name</th>
+        <th>Default value</th>
+        <th>Description</th>
+    </tr>
+    <tr>
+        <td>SSH_PRIVATE_KEY</td>
+        <td>None, required</td>
+        <td>SSH key to use for downloading modules<br>Can be RSA or ecdsa</td>
+    </tr>
+    <tr>
+        <td>MODULES</td>
+        <td>"git+https://github.com/PaperText/papertext_auth, git+https://github.com/PaperText/papertext_docs"</td>
+        <td>List of pip installable modules</td>
+    </tr>
+</table> 
+
 To pass this key, use `SSH_PRIVATE_KEY` environment variable.
+
+Private SSH key with access to pyexling repository.
+#### Requirements
+
 
 You can configure used modules with `MODULES` environment variable.
 
 Example of usage:
-
-Basic:
-
-Advanced:
-
-note 📓: this requires SSH_PRIVATE_KEY environment variable and mounts
-local instances of papertext_auth and papertext_docs.
-This also requires postgres container for auth module.
+1. Basic:
+```shell script
+podman build . --tag paperback && \
+podman run -d \
+  -e SSH_PRIVATE_KEY=$SSH_PRIVATE_KEY \
+  --network host \
+  --name paperback paperback
+```
+2. Advanced:
 ```shell script
 podman build . --tag paperback && \
 podman run -it --rm \
