@@ -156,28 +156,16 @@ class App:
                 module_dir = None
 
             if name in {"auth", "docs"}:
-                try:
-                    module = cls(self.cfg[name], module_dir)
-                except KeyError:
-                    module = cls({}, module_dir)
-
+                module = cls(
+                    self.cfg[name] if name in self.cfg else {}, module_dir,
+                )
             else:
-                if cls.requires_auth:
-                    auth_module = self.modules["auth"]
-                else:
-                    auth_module = None
-
-                if cls.requires_docs:
-                    docs_module = self.modules["docs"]
-                else:
-                    docs_module = None
-
-                if name in self.cfg:
-                    module = cls(
-                        self.cfg[name], module_dir, auth_module, docs_module
-                    )
-                else:
-                    module = cls({}, module_dir, auth_module, docs_module)
+                module = cls(
+                    self.cfg[name] if name in self.cfg else {},
+                    module_dir,
+                    self.modules["auth"] if cls.requires_auth else None,
+                    self.modules["docs"] if cls.requires_docs else None,
+                )
             self.modules[name] = module
 
     def add_handlers(self, api: FastAPI) -> NoReturn:
@@ -203,10 +191,10 @@ class App:
         self.modules["auth"].add_CORS(api)
 
     def add_routers(self, api: FastAPI) -> NoReturn:
-        token = self.modules["auth"].token
+        token_tester = self.modules["auth"].token_tester
 
         for name, module in self.modules.items():
-            router = module.create_router(token)
+            router = module.create_router(token_tester)
 
             if module.TYPE in ["AUTH", "DOCS"]:
                 api.include_router(router)
