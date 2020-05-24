@@ -1,11 +1,19 @@
 from abc import ABCMeta, abstractmethod
-from typing import Dict, List, Callable, ClassVar, NoReturn, Optional
+from typing import List, Callable, ClassVar, NoReturn, Optional
 
 from fastapi import Header, Depends, FastAPI, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 
 from .base import Base
-from .models import NewUser, FullUser, UserInfo, Credentials
+from .models import (
+    NewUser,
+    FullUser,
+    UserInfo,
+    Credentials,
+    TokenTester,
+    OrganisationInfo,
+    FullOrganisationInfo,
+)
 from ..exceptions import TokenException
 
 
@@ -26,7 +34,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
     TYPE: ClassVar[str] = "AUTH"
 
     @staticmethod
-    def add_CORS(api: FastAPI) -> NoReturn:
+    def add_CORS(api: FastAPI) -> NoReturn:  # noqa: N802
         """
         adds CORS policy to api
 
@@ -68,7 +76,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
         """
         raise NotImplementedError
 
-    def token(
+    def token_tester(
         self,
         greater_or_equal: Optional[int] = None,
         one_of: Optional[List[int]] = None,
@@ -77,7 +85,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
         validates token with given parameters
 
         validates tokens fields and checks that
-            * access_level >= greater_or_equal if greater_or_equal is non None, and
+            * access_level >= greater_or_equal if greater_or_equal is non None
             * if access_level exists ib one_of if one_of is not None
 
         Parameters
@@ -93,14 +101,14 @@ class BaseAuth(Base, metaclass=ABCMeta):
             function which accept `Auth` header and returns UserInfo from token
 
         """
-        if not greater_or_equal and not one_of:
+        if greater_or_equal is None and one_of is None:
             raise ValueError("either greater_or_equal or one_of should be set")
 
         def fn(authorization: str = Header(...)) -> UserInfo:
             user: UserInfo = self.token2user(authorization)
-            if not (
+            if (
                 user.access_level < greater_or_equal
-                or user.access_level in one_of
+                or user.access_level not in one_of
             ):
                 raise TokenException(token=authorization)
             return user
@@ -141,6 +149,16 @@ class BaseAuth(Base, metaclass=ABCMeta):
             default: 0
         """
         raise NotImplementedError
+
+    @abstractmethod
+    async def get_users(self) -> List[UserInfo]:
+        """
+        Administrative function, get list of all users
+
+        Returns
+        -------
+            List[UserInfo]: list of users without password
+        """
 
     @abstractmethod
     async def read_user(self, username: str) -> UserInfo:
@@ -292,20 +310,95 @@ class BaseAuth(Base, metaclass=ABCMeta):
         List[str]
             list containing found tokens
         """
+        raise NotImplementedError
 
-    def create_router(
-        self,
-        token: Callable[
-            [Optional[int], Optional[int]], Callable[[str], UserInfo]
-        ],
-    ) -> APIRouter:
+    @abstractmethod
+    async def create_org(self, name: str, title: str):
+        """
+        creates organisation with given name and title
+
+        Parameters
+        ----------
+        name: str
+            unique name of organisation, sequence of english letters
+                without spaces
+        title: str
+            title of organisation, can be anything
+
+        Returns
+        -------
+
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    async def update_org(self, org_name: str, org_title: str):
+        """
+        updates title of organisation with given name
+
+        Parameters
+        ----------
+        org_name: str
+            name of organisation
+        org_title: str
+            new title of organisation
+
+        Returns
+        -------
+
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    async def delete_org(self, org_name: str):
+        """
+        removes organisation with given name
+
+        Parameters
+        ----------
+        org_name: str
+            name of organisation
+        org_title: str
+            new title of organisation
+
+        Returns
+        -------
+
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    async def get_orgs(self) -> List[OrganisationInfo]:
+        """
+        returns list with all organisations
+
+        Returns
+        -------
+        List[OrganisationInfo]
+            list of organisations
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    async def get_org_with_users(self, org_name: str) -> FullOrganisationInfo:
+        """
+        returns info about organisations with given name including list of users
+
+        Returns
+        -------
+        FullOrganisationInfo
+            organisations info with users
+        """
+        raise NotImplementedError
+
+    def create_router(self, token_tester: TokenTester,) -> APIRouter:
         router = APIRouter()
 
         @router.get(
             "/users/me",
             tags=["user"],
             response_model=str,
-            dependencies=[Depends(self.token(greater_or_equal=1))],
+            dependencies=[Depends(token_tester(greater_or_equal=0))],
         )
         async def read_current_user(authorization=Header(...)):
             """
@@ -327,27 +420,43 @@ class BaseAuth(Base, metaclass=ABCMeta):
             """
             return True
 
-        @router.post("/users", tags=["user"])
-        async def create_user(user: FullUser) -> NoReturn:
+        @router.get("/users", tags=["user"], response_model=List[UserInfo])
+        async def get_users(user: FullUser) -> List[UserInfo]:
             """
-            creates user with provided username, password, organization and access_level
+            creates user with provided
+                username, password, organization and access_level
 
             Note
             ----
             * only users with access level of 2 and more can use this function
             * users are created in the same organization as the requester
             """
-            await self.create_user(
+            return await self.get_users()
+
+        @router.post("/users", tags=["user"])
+        async def create_user(user: FullUser) -> NoReturn:
+            """
+            creates user with provided
+                username, password, organization and access_level
+
+            Note
+            ----
+            * only users with access level of 2 and more can use this function
+            * users are created in the same organization as the requester
+            """
+            return await self.create_user(
                 user.username,
                 user.password,
                 user.full_name,
                 user.access_level,
                 user.organization,
             )
-            return
 
         @router.get(
-            "/users/{username}", tags=["user"], response_model=UserInfo
+            "/users/{username}",
+            tags=["user"],
+            response_model=UserInfo,
+            dependencies=[Depends(token_tester(greater_or_equal=0))],
         )
         async def read_user(username: str) -> UserInfo:
             """
@@ -356,11 +465,11 @@ class BaseAuth(Base, metaclass=ABCMeta):
             return await self.read_user(username)
 
         @router.put("/users/{user_username}", tags=["user"])
-        async def update_users(user_username: str):
+        async def update_users(username: str):
             """
             updates info about requested user
             """
-            return user_username
+            return username
 
         @router.delete("/users/{user_username}", tags=["user"])
         async def remove_users(user_username: str):
@@ -393,21 +502,25 @@ class BaseAuth(Base, metaclass=ABCMeta):
         @router.post("/signup", tags=["auth"], response_model=str)
         async def signup(user: NewUser):
             """
-            creates new user with provided username, password, organization, access_level and invitation code
+            creates new user with provided
+                username, password, organization,
+                access_level and invitation code
             """
             return True
 
         @router.delete("/token", tags=["token"])
         async def delete_token(token_identifier: str):
             """
-            removes token by provided identifier: either token itself or token uuid
+            removes token by provided identifier:
+                either token itself or token uuid
             """
             return token_identifier
 
         @router.delete("/tokens", tags=["token"])
         async def delete_tokens(token_identifiers: List[str]):
             """
-            removes token by provided identifier: either token itself or token uuid
+            removes token by provided identifier:
+                either token itself or token uuid
             """
             return token_identifiers
 
@@ -417,6 +530,51 @@ class BaseAuth(Base, metaclass=ABCMeta):
             returns all tokens, associated with user from token in request
             """
             return ["tokens"]
+
+        # Organisations
+        @router.post("/org", tags=["organisations"])
+        async def create_organisation(org_info: OrganisationInfo):
+            """
+            creates organisation with given parameters
+            """
+            return await self.create_org(org_info.name, org_info.title)
+
+        @router.put("/org/{org_name}", tags=["organisations"])
+        async def update_organisation(org_name: str, org_title: str):
+            """
+            updates title of organisation with given name to given
+                organisation title
+            """
+            return await self.update_org(org_name, org_title)
+
+        @router.delete("/org/{org_name}", tags=["organisations"])
+        async def delete_organisation(org_name: str):
+            """
+            removes organisation with given name
+            """
+            return await self.delete_org(org_name)
+
+        @router.get(
+            "/org",
+            tags=["organisations"],
+            response_model=List[OrganisationInfo],
+        )
+        async def get_organisations() -> List[OrganisationInfo]:
+            """
+            returns list of organisations
+            """
+            return await self.get_orgs()
+
+        @router.get(
+            "/org/{org_name}",
+            tags=["organisations"],
+            response_model=FullOrganisationInfo,
+        )
+        async def get_info(org_name: str) -> FullOrganisationInfo:
+            """
+            return information about organisation with list of users in it
+            """
+            return await self.get_org_with_users(org_name)
 
         self.add_routes(router)
         return router
