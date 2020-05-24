@@ -146,7 +146,7 @@ class App:
     def load_modules(self) -> NoReturn:
         for name, cls in sorted(
             self.classes.items(),
-            key=lambda el: 1 if el[0] in ["auth", "docs"] else 0,
+            key=lambda el: 1 if el[0] in {"auth", "docs"} else 0,
         ):
             if cls.requires_dir:
                 module_dir = self.storage_dir / name
@@ -172,11 +172,11 @@ class App:
                 else:
                     docs_module = None
 
-                try:
+                if name in self.cfg:
                     module = cls(
                         self.cfg[name], module_dir, auth_module, docs_module
                     )
-                except KeyError:
+                else:
                     module = cls({}, module_dir, auth_module, docs_module)
             self.modules[name] = module
 
