@@ -16,13 +16,15 @@ from pathlib import Path
 
 from recommonmark.transform import AutoStructify
 
-ver_file = (Path("..")/"paperback"/"__version__.py").resolve().read_text().strip()
+ver_file = (
+    (Path("..") / "paperback" / "__version__.py").resolve().read_text().strip()
+)
 
 pt_version = {}
 exec(ver_file, pt_version)
 pt_version = pt_version["__version__"]
 
-master_doc = 'index'
+master_doc = "index"
 
 # -- Project information -----------------------------------------------------
 

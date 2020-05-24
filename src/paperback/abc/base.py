@@ -5,7 +5,7 @@ from pathlib import Path
 
 from fastapi import APIRouter
 
-from .models import UserInfo
+from .models import UserInfo, TokenTester
 
 
 class Base(metaclass=ABCMeta):
@@ -62,12 +62,7 @@ class Base(metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def create_router(
-        self,
-        token: Callable[
-            [Optional[int], Optional[int]], Callable[[str], UserInfo]
-        ],
-    ) -> APIRouter:
+    def create_router(self, token: TokenTester,) -> APIRouter:
         """
         creates Router to mount to the main app
 

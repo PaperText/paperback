@@ -32,7 +32,7 @@ class BaseDocs(Base, metaclass=ABCMeta):
         router = APIRouter()
 
         @router.get(
-            "/docs-test", tags=["docs"], response_model=str,
+            "/docs", tags=["docs"], response_model=str,
         )
         def test():
             return "success"
