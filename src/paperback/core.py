@@ -155,7 +155,7 @@ class App:
             else:
                 module_dir = None
 
-            if name in ["auth", "docs"]:
+            if name in {"auth", "docs"}:
                 try:
                     module = cls(self.cfg[name], module_dir)
                 except KeyError:
