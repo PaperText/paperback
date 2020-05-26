@@ -1,0 +1,10 @@
+[clog]
+repository = "https://github.com/PaperText/paperback"
+subtitle = """PaperBack
+🗄API of 📎PaperText app"""
+
+link-style = "github"
+
+changelog = "changelog.md"
+
+from-latest-tag = true
