@@ -35,12 +35,12 @@ extensions = [
 ]
 
 # Add any paths that contain templates here, relative to this directory.
-templates_path = ["templates"]
+# templates_path = ["templates"]
 
 # List of patterns, relative to docs directory, that match files and
 # directories to ignore when looking for docs files.
 # This pattern also affects html_static_path and html_extra_path.
-exclude_patterns = []
+# exclude_patterns = []
 
 # -- Options for HTML output -------------------------------------------------
 
@@ -48,11 +48,27 @@ exclude_patterns = []
 # a list of builtin themes.
 #
 html_theme = "sphinx_typlog_theme"
+html_theme_options = {
+    "logo_name": "PaperBack",
+    "description": "🗄API of 📎PaperText app",
+    "github_user": "PaperText",
+    "github_repo": "paperback",
+}
+html_sidebars = {
+    "**": [
+        "logo.html",
+        "github.html",
+        "searchbox.html",
+        "globaltoc.html",
+        "relations.html",
+    ]
+}
+
 
 # Add any paths that contain custom static files (such as style sheets) here,
 # relative to this directory. They are copied after the builtin static files,
 # so a file named "default.css" will overwrite the builtin "default.css".
-html_static_path = ["static"]
+# html_static_path = ["static"]
 
 
 # app setup hook
@@ -66,6 +82,7 @@ def setup(app):
             "enable_math": False,
             "enable_inline_math": False,
             "enable_eval_rst": True,
+            "enable_auto_doc_ref": True,
             # 'url_resolver': lambda url: github_doc_root + url,
         },
         True,
