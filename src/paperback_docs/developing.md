@@ -37,8 +37,10 @@ To configure, pass  variables to docker with `-e`
     </tr>
     <tr>
         <td>SSH_PRIVATE_KEY</td>
-        <td>"", <i><b>required</b></i></td>
-        <td>SSH key to use for downloading modules<br>Can be RSA or ecdsa</td>
+        <td>""</td>
+        <td>SSH key to use for downloading modules<br>
+        Can be RSA or ecdsa<br>
+        <i><b>required</b></i> when used with standard implementation</td>
     </tr>
     <tr>
         <td>MODULES</td>
