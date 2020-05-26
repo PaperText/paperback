@@ -10,4 +10,4 @@ python:
   install:
       - method: pip
         path: .
-#    - requirements: paperback_docs/requirements.txt
+      - requirements: src/paperback_docs/requirments.txt
