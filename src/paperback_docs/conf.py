@@ -29,6 +29,7 @@ source_suffix = [".rst", ".md"]
 # ones.
 extensions = [
     "sphinx.ext.autodoc",
+    "sphinx.ext.viewcode",
     "sphinx.ext.napoleon",
     "recommonmark",
     "sphinx_rtd_theme",
