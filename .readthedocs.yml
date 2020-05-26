@@ -7,5 +7,7 @@ formats: all
 
 python:
   version: 3.8
-#  install:
+  install:
+      - method: pip
+        path: .
 #    - requirements: paperback_docs/requirements.txt
