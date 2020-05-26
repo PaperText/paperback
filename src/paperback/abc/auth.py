@@ -24,11 +24,12 @@ class BaseAuth(Base, metaclass=ABCMeta):
     Attributes
     ----------
     TYPE: str
-        type of module
+        type of module (the default is "AUTH" and shouldn't be changed)
     DEFAULTS: Dict[str, int]
-        python dict of default values for configuration
+        python dict of default values for configuration (the default is {})
     requires_dir: bool
         describes if directory for storage will be provide to __init__ call
+            (default is False)
     """
 
     TYPE: ClassVar[str] = "AUTH"
@@ -50,31 +51,6 @@ class BaseAuth(Base, metaclass=ABCMeta):
             allow_methods=["*"],
             allow_headers=["*"],
         )
-
-    @abstractmethod
-    def token2user(self, token: str) -> UserInfo:
-        """
-        decodes and validates token, returning user from token in "Auth" header
-
-        Parameters
-        ----------
-        token: str
-            token to decode
-
-        Returns
-        -------
-        UserInfo (instance with those attributes)
-            username: str
-                username of user
-            name: str
-                name of user
-            organization: str
-                organization of user
-            access_level: int
-                access_level of user
-
-        """
-        raise NotImplementedError
 
     def token_tester(
         self,
@@ -114,6 +90,117 @@ class BaseAuth(Base, metaclass=ABCMeta):
             return user
 
         return fn
+
+    @abstractmethod
+    def token2user(self, token: str) -> UserInfo:
+        """
+        decodes and validates token, returning user from token in "Auth" header
+
+        Parameters
+        ----------
+        token: str
+            token to decode
+
+        Returns
+        -------
+        UserInfo (instance with those attributes)
+            username: str
+                username of user
+            name: str
+                name of user
+            organization: str
+                organization of user
+            access_level: int
+                access_level of user
+
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    async def sign_in(self, username: str, password: str, ) -> str:
+        """
+        checks username and password and returns new token
+
+        Parameters
+        ----------
+        username: str
+            username of user
+        password: str
+            password of user
+
+        Returns
+        -------
+        str
+            signed token
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    async def sign_out(self, ) -> NoReturn:
+        """
+        removes token with which request was sent
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    async def sign_out_everywhere(self, ) -> NoReturn:
+        """
+        removes all tokens of current user
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    async def sign_up(self, user: NewUser) -> NoReturn:
+        """
+        creates new user with given info if invite code exists
+
+        Parameters
+        ----------
+        user: NewUser
+            info about new user
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    async def remove_token(self, token: str) -> NoReturn:
+        """
+        removes token
+
+        Parameters
+        ----------
+        token: str
+            token to remove
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    async def remove_tokens(self, token: List[str]) -> NoReturn:
+        """
+        removes tokens
+
+        Parameters
+        ----------
+        token: List[str]
+            list of tokens to remove
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    async def get_tokens(self, username: str) -> List[str]:
+        """
+        returns list of tokens issued to user with given username
+
+        Parameters
+        ----------
+        username: str
+            username of user for which to sort tokens
+
+        Returns
+        -------
+        List[str]
+            list containing found tokens
+        """
+        raise NotImplementedError
 
     @abstractmethod
     async def create_user(
@@ -227,92 +314,6 @@ class BaseAuth(Base, metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    async def sign_in(self, username: str, password: str,) -> str:
-        """
-        checks username and password and returns new token
-
-        Parameters
-        ----------
-        username: str
-            username of user
-        password: str
-            password of user
-
-        Returns
-        -------
-        str
-            signed token
-        """
-        raise NotImplementedError
-
-    @abstractmethod
-    async def sign_out(self,) -> NoReturn:
-        """
-        removes token with which request was sent
-        """
-        raise NotImplementedError
-
-    @abstractmethod
-    async def sign_out_everywhere(self,) -> NoReturn:
-        """
-        removes all tokens of current user
-        """
-        raise NotImplementedError
-
-    @abstractmethod
-    async def sign_up(self, user: NewUser) -> NoReturn:
-        """
-        creates new user with given info if invite code exists
-
-        Parameters
-        ----------
-        user: NewUser
-            info about new user
-        """
-        raise NotImplementedError
-
-    @abstractmethod
-    async def remove_token(self, token: str) -> NoReturn:
-        """
-        removes token
-
-        Parameters
-        ----------
-        token: str
-            token to remove
-        """
-        raise NotImplementedError
-
-    @abstractmethod
-    async def remove_tokens(self, token: List[str]) -> NoReturn:
-        """
-        removes tokens
-
-        Parameters
-        ----------
-        token: List[str]
-            list of tokens to remove
-        """
-        raise NotImplementedError
-
-    @abstractmethod
-    async def get_tokens(self, username: str) -> List[str]:
-        """
-        returns list of tokens issued to user with given username
-
-        Parameters
-        ----------
-        username: str
-            username of user for which to sort tokens
-
-        Returns
-        -------
-        List[str]
-            list containing found tokens
-        """
-        raise NotImplementedError
-
-    @abstractmethod
     async def create_org(self, name: str, title: str):
         """
         creates organisation with given name and title
@@ -392,8 +393,80 @@ class BaseAuth(Base, metaclass=ABCMeta):
         raise NotImplementedError
 
     def create_router(self, token_tester: TokenTester,) -> APIRouter:
+        """
+        creates router
+
+        Note
+        ----
+        If programmer of a module wishes to add functionality the preferred way
+            is to implement method `add_routes`
+
+        Parameters
+        ----------
+        token_tester: TokenTester,
+            function to use as a token manager in dependencies
+
+        Returns
+        -------
+
+        """
         router = APIRouter()
 
+        # token and signin
+        @router.post("/signin", tags=["auth"], response_model=str)
+        async def signin(user: Credentials) -> str:
+            """
+            generates new token if provided username and password are correct
+            """
+            return await self.sign_in(user.username, user.password)
+
+        @router.get("/signout", tags=["auth"])
+        async def signout():
+            """
+            removes token from request
+            """
+            return True
+
+        @router.get("/signout_everywhere", tags=["auth"])
+        async def signout_everywhere():
+            """
+            removes all tokens, associated with tokens user
+            """
+            return True
+
+        @router.post("/signup", tags=["auth"], response_model=str)
+        async def signup(user: NewUser):
+            """
+            creates new user with provided
+                username, password, organization,
+                access_level and invitation code
+            """
+            return True
+
+        @router.delete("/token", tags=["token"])
+        async def delete_token(token_identifier: str):
+            """
+            removes token by provided identifier:
+                either token itself or token uuid
+            """
+            return token_identifier
+
+        @router.delete("/tokens", tags=["token"])
+        async def delete_tokens(token_identifiers: List[str]):
+            """
+            removes token by provided identifier:
+                either token itself or token uuid
+            """
+            return token_identifiers
+
+        @router.get("/tokens", tags=["token"], response_model=List[str])
+        async def get_tokens() -> List[str]:
+            """
+            returns all tokens, associated with user from token in request
+            """
+            return ["tokens"]
+
+        # current user
         @router.get(
             "/users/me",
             tags=["user"],
@@ -420,6 +493,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
             """
             return True
 
+        # all users
         @router.get("/users", tags=["user"], response_model=List[UserInfo])
         async def get_users(user: FullUser) -> List[UserInfo]:
             """
@@ -477,59 +551,6 @@ class BaseAuth(Base, metaclass=ABCMeta):
             removes requested user
             """
             return user_username
-
-        @router.post("/signin", tags=["auth"], response_model=str)
-        async def signin(user: Credentials) -> str:
-            """
-            generates new token if provided username and password are correct
-            """
-            return await self.sign_in(user.username, user.password)
-
-        @router.get("/signout", tags=["auth"])
-        async def signout():
-            """
-            removes token from request
-            """
-            return True
-
-        @router.get("/signout_everywhere", tags=["auth"])
-        async def signout_everywhere():
-            """
-            removes all tokens, associated with tokens user
-            """
-            return True
-
-        @router.post("/signup", tags=["auth"], response_model=str)
-        async def signup(user: NewUser):
-            """
-            creates new user with provided
-                username, password, organization,
-                access_level and invitation code
-            """
-            return True
-
-        @router.delete("/token", tags=["token"])
-        async def delete_token(token_identifier: str):
-            """
-            removes token by provided identifier:
-                either token itself or token uuid
-            """
-            return token_identifier
-
-        @router.delete("/tokens", tags=["token"])
-        async def delete_tokens(token_identifiers: List[str]):
-            """
-            removes token by provided identifier:
-                either token itself or token uuid
-            """
-            return token_identifiers
-
-        @router.get("/tokens", tags=["token"], response_model=List[str])
-        async def get_tokens() -> List[str]:
-            """
-            returns all tokens, associated with user from token in request
-            """
-            return ["tokens"]
 
         # Organisations
         @router.post("/org", tags=["organisations"])
