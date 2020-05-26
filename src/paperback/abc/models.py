@@ -1,7 +1,7 @@
 from typing import List, Callable, Optional
 
 from pydantic import BaseModel
-from typing_extensions import Protocol
+from typing import Protocol
 
 
 class Credentials(BaseModel):
