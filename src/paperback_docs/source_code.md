@@ -11,17 +11,27 @@ implemented in their own modules.
 Base module
 -----------
 ```eval_rst
-    .. automodule:: paperback.abc.Base
+    .. autoclass:: paperback.abc.Base
+       :members:
 ```
 
 Auth module
 -----------
 ```eval_rst
-    .. automodule:: paperback.abc.Auth
+    .. autoclass:: paperback.abc.BaseAuth
+       :members:
 ```
 
 Docs module
 -----------
 ```eval_rst
-    .. automodule:: paperback.abc.Docs
+    .. autoclass:: paperback.abc.BaseDocs
+       :members:
+```
+
+Misc module
+-----------
+```eval_rst
+    .. autoclass:: paperback.abc.BaseMisc
+       :members:
 ```

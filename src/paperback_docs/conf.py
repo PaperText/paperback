@@ -4,25 +4,11 @@
 # list see the documentation:
 # https://www.sphinx-doc.org/en/master/usage/configuration.html
 
-# -- Path setup --------------------------------------------------------------
-
-# If extensions (or modules to document with autodoc) are in another directory,
-# add these directories to sys.path here. If the directory is relative to the
-# documentation root, use os.path.abspath to make it absolute, like shown here.
-#
-# import os
-# import sys
-from pathlib import Path
-
 from recommonmark.transform import AutoStructify
 
-ver_file = (
-    (Path("..") / "paperback" / "__version__.py").resolve().read_text().strip()
-)
+import paperback
 
-pt_version = {}
-exec(ver_file, pt_version)
-pt_version = pt_version["__version__"]
+pt_version = paperback.__version__
 
 master_doc = "index"
 
@@ -36,7 +22,7 @@ version, release = pt_version, pt_version
 
 # -- General configuration ---------------------------------------------------
 
-source_suffix = [".md"]
+source_suffix = [".rst", ".md"]
 
 # Add any Sphinx extension module names here, as strings. They can be
 # extensions coming with Sphinx (named 'sphinx.ext.*') or your custom
