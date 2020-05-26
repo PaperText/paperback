@@ -18,6 +18,12 @@ If you want to test your changes you can test them with `paperback run --debug`
 
 After you're done, push your changes to git.
 
+Maintaining changelog
+---------------------
+1. tag with a new version
+1. change version in  `__version__.py` file
+1. push to github with tags, i.e. `git push --tags`
+
 Running in a container
 ----------------------
 
