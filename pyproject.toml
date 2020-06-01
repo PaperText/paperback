@@ -21,9 +21,10 @@ classifiers=[
 
 [tool.poetry.scripts]
 paperback = "paperback.cli:cli"
-fix = "paperback.__main__:fix"
-lint = "paperback.__main__:lint"
-docs = "paperback.__main__:docs"
+fix = "paperback.__main__:Scripts.fix"
+lint = "paperback.__main__:Scripts.lint"
+docs-build = "paperback.__main__:Scripts.docs_build"
+docs-clean = "paperback.__main__:Scripts.docs_clean"
 
 [tool.poetry.dependencies]
 python = "^3.7"
