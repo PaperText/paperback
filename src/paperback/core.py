@@ -1,5 +1,5 @@
 from copy import deepcopy
-from typing import Any, Dict, NoReturn, MutableMapping
+from typing import Any, Dict, NoReturn, MutableMapping, List
 from pathlib import Path
 
 from config import (
@@ -9,6 +9,7 @@ from config import (
     config_from_toml,
 )
 from fastapi import FastAPI, Request, status
+from fastapi.openapi.utils import get_openapi
 from pkg_resources import iter_entry_points
 from fastapi.responses import JSONResponse
 
@@ -189,6 +190,33 @@ class App:
             )
 
         self.modules["auth"].add_CORS(api)
+
+    @staticmethod
+    def modify_openapi(api: FastAPI) -> NoReturn:
+        def custom_openapi():
+            # stop from remaking schema
+            if api.openapi_schema:
+                return api.openapi_schema
+            # create fresh instance of openAPI
+            openapi_schema = get_openapi(
+                title=api.title,
+                version=api.version,
+                description=api.description,
+                routes=api.routes,
+            )
+            # add tags
+            openapi_schema["tags"]: List[Dict[str, str]] = [
+                {"name": "auth", "description": "authorization"},
+                {"name": "token", "description": "token manipulation"},
+                {"name": "user", "description": "users manipulation"},
+                {"name": "organisations", "description": "organisation manipulation"},
+                {"name": "docs", "description": "corpus, document and dictionary manipulation"},
+            ]
+            # redefine schema
+            api.openapi_schema = openapi_schema
+            return api.openapi_schema
+        # redefine schema getter
+        api.openapi = custom_openapi
 
     def add_routers(self, api: FastAPI) -> NoReturn:
         token_tester = self.modules["auth"].token_tester

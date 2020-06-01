@@ -90,6 +90,11 @@ def run(config: Path, create_config: bool, debug: bool) -> NoReturn:
 
     if debug:
         click.echo("done")
+        click.echo("modifying openAPI...", nl=False)
+    app.modify_openapi(api)
+
+    if debug:
+        click.echo("done")
 
     uvicorn.run(
         "paperback.cli:api",
