@@ -77,6 +77,7 @@ def run(config: Path, create_config: bool, debug: bool) -> NoReturn:
             return
     if debug:
         click.echo("done")
+        click.echo(f"config: {app.cfg}")
         click.echo("loading local modules...", nl=False)
     app.find_local_modules()
 
