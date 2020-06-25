@@ -28,7 +28,7 @@ class BaseDocs(Base, metaclass=ABCMeta):
 
         # document access
         @router.get(
-            "/docs", tags=["docs"], response_model=List[str],
+            "/docs", tags=["docs_module", "docs"], response_model=List[str],
         )
         def read_docs() -> List[str]:
             """
@@ -37,7 +37,7 @@ class BaseDocs(Base, metaclass=ABCMeta):
             return []
 
         @router.post(
-            "/doc", tags=["docs"], response_model=str,
+            "/doc", tags=["docs_module", "docs"], response_model=str,
         )
         def create_doc(doc: str):
             """
@@ -46,7 +46,7 @@ class BaseDocs(Base, metaclass=ABCMeta):
             return ""
 
         @router.get(
-            "/doc/{doc_id}", tags=["docs"], response_model=str,
+            "/doc/{doc_id}", tags=["docs_module", "docs"], response_model=str,
         )
         def read_doc(doc_id: str) -> str:
             """
@@ -55,7 +55,7 @@ class BaseDocs(Base, metaclass=ABCMeta):
             return ""
 
         @router.put(
-            "/doc/{doc_id}", tags=["docs"], response_model=str,
+            "/doc/{doc_id}", tags=["docs_module", "docs"], response_model=str,
         )
         def update_doc(doc_id: str, doc: str):
             """
@@ -64,7 +64,7 @@ class BaseDocs(Base, metaclass=ABCMeta):
             return ""
 
         @router.delete(
-            "/doc/{doc_id}", tags=["docs"], response_model=str,
+            "/doc/{doc_id}", tags=["docs_module", "docs"], response_model=str,
         )
         def delete_doc(doc_id: str):
             """
@@ -74,7 +74,7 @@ class BaseDocs(Base, metaclass=ABCMeta):
 
         # corpus management
         @router.get(
-            "/corps", tags=["docs", "corps"], response_model=List[str],
+            "/corps", tags=["docs_module", "corps"], response_model=List[str],
         )
         def read_corps() -> List[str]:
             """
@@ -83,7 +83,7 @@ class BaseDocs(Base, metaclass=ABCMeta):
             return []
 
         @router.post(
-            "/corp", tags=["docs", "corps"], response_model=str,
+            "/corp", tags=["docs_module", "corps"], response_model=str,
         )
         def create_corp(corp: str):
             """
@@ -92,7 +92,9 @@ class BaseDocs(Base, metaclass=ABCMeta):
             return ""
 
         @router.get(
-            "/corp/{corp_id}", tags=["docs", "corps"], response_model=str,
+            "/corp/{corp_id}",
+            tags=["docs_module", "corps"],
+            response_model=str,
         )
         def read_corp(corp_id: str) -> str:
             """
@@ -101,7 +103,9 @@ class BaseDocs(Base, metaclass=ABCMeta):
             return ""
 
         @router.put(
-            "/corp/{corp_id}", tags=["docs", "corps"], response_model=str,
+            "/corp/{corp_id}",
+            tags=["docs_module", "corps"],
+            response_model=str,
         )
         def update_corp(corp_id: str, corp: str):
             """
@@ -110,7 +114,9 @@ class BaseDocs(Base, metaclass=ABCMeta):
             return ""
 
         @router.delete(
-            "/corp/{corp_id}", tags=["docs", "corps"], response_model=str,
+            "/corp/{corp_id}",
+            tags=["docs_module", "corps"],
+            response_model=str,
         )
         def delete_corp(corp_id: str):
             """
@@ -120,7 +126,7 @@ class BaseDocs(Base, metaclass=ABCMeta):
 
         # dictionary management
         @router.get(
-            "/dicts", tags=["docs", "dicts"], response_model=List[str],
+            "/dicts", tags=["docs_module", "dict"], response_model=List[str],
         )
         def read_dicts() -> List[str]:
             """
@@ -129,7 +135,7 @@ class BaseDocs(Base, metaclass=ABCMeta):
             return []
 
         @router.post(
-            "/dict", tags=["docs", "dicts"], response_model=str,
+            "/dict", tags=["docs_module", "dict"], response_model=str,
         )
         def create_dict(dict: str):
             """
@@ -138,7 +144,9 @@ class BaseDocs(Base, metaclass=ABCMeta):
             return ""
 
         @router.get(
-            "/dict/{dict_id}", tags=["docs", "dicts"], response_model=str,
+            "/dict/{dict_id}",
+            tags=["docs_module", "dict"],
+            response_model=str,
         )
         def read_dict(dict_id: str) -> str:
             """
@@ -147,7 +155,9 @@ class BaseDocs(Base, metaclass=ABCMeta):
             return ""
 
         @router.put(
-            "/dict/{dict_id}", tags=["docs", "dicts"], response_model=str,
+            "/dict/{dict_id}",
+            tags=["docs_module", "dict"],
+            response_model=str,
         )
         def update_dict(dict_id: str, dict: str):
             """
@@ -156,7 +166,9 @@ class BaseDocs(Base, metaclass=ABCMeta):
             return ""
 
         @router.delete(
-            "/dict/{dict_id}", tags=["docs", "dicts"], response_model=str,
+            "/dict/{dict_id}",
+            tags=["docs_module", "dict"],
+            response_model=str,
         )
         def delete_dict(dict_id: str):
             """
@@ -167,7 +179,7 @@ class BaseDocs(Base, metaclass=ABCMeta):
         # analyzer usage
         @router.post(
             "/analyze/lexics",
-            tags=["docs", "analyzer"],
+            tags=["docs_module", "analyzer"],
             response_model=str,
         )
         def analyze_lexics(entity_ids: List[str] = Body(...)):
@@ -178,7 +190,7 @@ class BaseDocs(Base, metaclass=ABCMeta):
 
         @router.post(
             "/analyze/markers",
-            tags=["docs", "analyzer"],
+            tags=["docs_module", "analyzer"],
             response_model=str,
         )
         def analyze_markers(entity_ids: List[str] = Body(...)):
@@ -189,7 +201,7 @@ class BaseDocs(Base, metaclass=ABCMeta):
 
         @router.post(
             "/analyze/predicates",
-            tags=["docs", "analyzer"],
+            tags=["docs_module", "analyzer"],
             response_model=str,
         )
         def analyze_predicates(entity_ids: List[str] = Body(...)):
@@ -200,7 +212,7 @@ class BaseDocs(Base, metaclass=ABCMeta):
 
         @router.post(
             "/analyze/stats",
-            tags=["docs", "analyzer"],
+            tags=["docs_module", "analyzer"],
             response_model=str,
         )
         def analyze_stats(entity_ids: List[str] = Body(...)):
