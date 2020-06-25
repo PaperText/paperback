@@ -29,4 +29,4 @@ for module in $modules; do
     pip install "$module"
 done
 
-paperback run --debug
+paperback run --debug --create-config
