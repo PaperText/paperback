@@ -13,6 +13,16 @@ api = FastAPI(
     title="PaperText backend [Paperback]",
     description="BackEnd API for PaperText",
     version=__version__,
+    openapi_tags=[
+        {"name": "auth", "description": "authorization"},
+        {"name": "token", "description": "token manipulation"},
+        {"name": "user", "description": "users manipulation"},
+        {"name": "organisations", "description": "organisation manipulation"},
+        {"name": "docs", "description": "document manipulation",},
+        {"name": "dict", "description": "dictionaries manipulation",},
+        {"name": "corps", "description": "corpus manipulation"},
+        {"name": "analyzer", "description": "analyzer usage"},
+    ],
     docs_url="/documentation",
     redoc_url="/re_documentation",
 )
@@ -89,11 +99,6 @@ def run(config: Path, create_config: bool, debug: bool) -> NoReturn:
         click.echo("done")
         click.echo("adding handlers...", nl=False)
     app.add_handlers(api)
-
-    if debug:
-        click.echo("done")
-        click.echo("modifying openAPI...", nl=False)
-    app.modify_openapi(api)
 
     if debug:
         click.echo("done")
