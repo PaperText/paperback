@@ -507,7 +507,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
             """
             return await self.get_users()
 
-        @router.post("/users", tags=["user"])
+        @router.post("/user", tags=["user"])
         async def create_user(user: FullUser) -> NoReturn:
             """
             creates user with provided
@@ -527,7 +527,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
             )
 
         @router.get(
-            "/users/{username}",
+            "/user/{username}",
             tags=["user"],
             response_model=UserInfo,
             dependencies=[Depends(token_tester(greater_or_equal=0))],
@@ -538,21 +538,32 @@ class BaseAuth(Base, metaclass=ABCMeta):
             """
             return await self.read_user(username)
 
-        @router.put("/users/{user_username}", tags=["user"])
+        @router.put("/user/{username}", tags=["user"])
         async def update_users(username: str):
             """
             updates info about requested user
             """
             return username
 
-        @router.delete("/users/{user_username}", tags=["user"])
-        async def remove_users(user_username: str):
+        @router.delete("/user/{username}", tags=["user"])
+        async def remove_users(username: str):
             """
             removes requested user
             """
-            return user_username
+            return username
 
         # Organisations
+        @router.get(
+            "/orgs",
+            tags=["organisations"],
+            response_model=List[OrganisationInfo],
+        )
+        async def get_organisations() -> List[OrganisationInfo]:
+            """
+            returns list of organisations
+            """
+            return await self.get_orgs()
+
         @router.post("/org", tags=["organisations"])
         async def create_organisation(org_info: OrganisationInfo):
             """
@@ -574,17 +585,6 @@ class BaseAuth(Base, metaclass=ABCMeta):
             removes organisation with given name
             """
             return await self.delete_org(org_name)
-
-        @router.get(
-            "/org",
-            tags=["organisations"],
-            response_model=List[OrganisationInfo],
-        )
-        async def get_organisations() -> List[OrganisationInfo]:
-            """
-            returns list of organisations
-            """
-            return await self.get_orgs()
 
         @router.get(
             "/org/{org_name}",
