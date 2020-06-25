@@ -117,7 +117,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    async def sign_in(self, username: str, password: str, ) -> str:
+    async def sign_in(self, username: str, password: str,) -> str:
         """
         checks username and password and returns new token
 
@@ -136,14 +136,14 @@ class BaseAuth(Base, metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    async def sign_out(self, ) -> NoReturn:
+    async def sign_out(self,) -> NoReturn:
         """
         removes token with which request was sent
         """
         raise NotImplementedError
 
     @abstractmethod
-    async def sign_out_everywhere(self, ) -> NoReturn:
+    async def sign_out_everywhere(self,) -> NoReturn:
         """
         removes all tokens of current user
         """
@@ -413,28 +413,32 @@ class BaseAuth(Base, metaclass=ABCMeta):
         router = APIRouter()
 
         # token and signin
-        @router.post("/signin", tags=["auth"], response_model=str)
+        @router.post(
+            "/signin", tags=["auth_module", "auth"], response_model=str
+        )
         async def signin(user: Credentials) -> str:
             """
             generates new token if provided username and password are correct
             """
             return await self.sign_in(user.username, user.password)
 
-        @router.get("/signout", tags=["auth"])
+        @router.get("/signout", tags=["auth_module", "auth"])
         async def signout():
             """
             removes token from request
             """
             return True
 
-        @router.get("/signout_everywhere", tags=["auth"])
+        @router.get("/signout_everywhere", tags=["auth_module", "auth"])
         async def signout_everywhere():
             """
             removes all tokens, associated with tokens user
             """
             return True
 
-        @router.post("/signup", tags=["auth"], response_model=str)
+        @router.post(
+            "/signup", tags=["auth_module", "auth"], response_model=str
+        )
         async def signup(user: NewUser):
             """
             creates new user with provided
@@ -443,7 +447,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
             """
             return True
 
-        @router.delete("/token", tags=["token"])
+        @router.delete("/token", tags=["auth_module", "token"])
         async def delete_token(token_identifier: str):
             """
             removes token by provided identifier:
@@ -451,7 +455,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
             """
             return token_identifier
 
-        @router.delete("/tokens", tags=["token"])
+        @router.delete("/tokens", tags=["auth_module", "token"])
         async def delete_tokens(token_identifiers: List[str]):
             """
             removes token by provided identifier:
@@ -459,7 +463,9 @@ class BaseAuth(Base, metaclass=ABCMeta):
             """
             return token_identifiers
 
-        @router.get("/tokens", tags=["token"], response_model=List[str])
+        @router.get(
+            "/tokens", tags=["auth_module", "token"], response_model=List[str]
+        )
         async def get_tokens() -> List[str]:
             """
             returns all tokens, associated with user from token in request
@@ -469,7 +475,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
         # current user
         @router.get(
             "/users/me",
-            tags=["user"],
+            tags=["auth_module", "user"],
             response_model=str,
             dependencies=[Depends(token_tester(greater_or_equal=0))],
         )
@@ -479,14 +485,14 @@ class BaseAuth(Base, metaclass=ABCMeta):
             """
             return authorization
 
-        @router.put("/users/me", tags=["user"])
+        @router.put("/users/me", tags=["auth_module", "user"])
         async def update_current_user(user: FullUser):
             """
             updates info of user, associated with user from token in request
             """
             return True
 
-        @router.delete("/users/me", tags=["user"])
+        @router.delete("/users/me", tags=["auth_module", "user"])
         async def delete_current_user(user: FullUser):
             """
             removes user, associated with user from token in request
@@ -494,7 +500,11 @@ class BaseAuth(Base, metaclass=ABCMeta):
             return True
 
         # all users
-        @router.get("/users", tags=["user"], response_model=List[UserInfo])
+        @router.get(
+            "/users",
+            tags=["auth_module", "user"],
+            response_model=List[UserInfo],
+        )
         async def get_users(user: FullUser) -> List[UserInfo]:
             """
             creates user with provided
@@ -507,7 +517,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
             """
             return await self.get_users()
 
-        @router.post("/user", tags=["user"])
+        @router.post("/user", tags=["auth_module", "user"])
         async def create_user(user: FullUser) -> NoReturn:
             """
             creates user with provided
@@ -528,7 +538,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
 
         @router.get(
             "/user/{username}",
-            tags=["user"],
+            tags=["auth_module", "user"],
             response_model=UserInfo,
             dependencies=[Depends(token_tester(greater_or_equal=0))],
         )
@@ -538,14 +548,14 @@ class BaseAuth(Base, metaclass=ABCMeta):
             """
             return await self.read_user(username)
 
-        @router.put("/user/{username}", tags=["user"])
+        @router.put("/user/{username}", tags=["auth_module", "user"])
         async def update_users(username: str):
             """
             updates info about requested user
             """
             return username
 
-        @router.delete("/user/{username}", tags=["user"])
+        @router.delete("/user/{username}", tags=["auth_module", "user"])
         async def remove_users(username: str):
             """
             removes requested user
@@ -555,7 +565,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
         # Organisations
         @router.get(
             "/orgs",
-            tags=["organisations"],
+            tags=["auth_module", "organisations"],
             response_model=List[OrganisationInfo],
         )
         async def get_organisations() -> List[OrganisationInfo]:
@@ -564,14 +574,14 @@ class BaseAuth(Base, metaclass=ABCMeta):
             """
             return await self.get_orgs()
 
-        @router.post("/org", tags=["organisations"])
+        @router.post("/org", tags=["auth_module", "organisations"])
         async def create_organisation(org_info: OrganisationInfo):
             """
             creates organisation with given parameters
             """
             return await self.create_org(org_info.name, org_info.title)
 
-        @router.put("/org/{org_name}", tags=["organisations"])
+        @router.put("/org/{org_name}", tags=["auth_module", "organisations"])
         async def update_organisation(org_name: str, org_title: str):
             """
             updates title of organisation with given name to given
@@ -579,7 +589,9 @@ class BaseAuth(Base, metaclass=ABCMeta):
             """
             return await self.update_org(org_name, org_title)
 
-        @router.delete("/org/{org_name}", tags=["organisations"])
+        @router.delete(
+            "/org/{org_name}", tags=["auth_module", "organisations"]
+        )
         async def delete_organisation(org_name: str):
             """
             removes organisation with given name
@@ -588,7 +600,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
 
         @router.get(
             "/org/{org_name}",
-            tags=["organisations"],
+            tags=["auth_module", "organisations"],
             response_model=FullOrganisationInfo,
         )
         async def get_info(org_name: str) -> FullOrganisationInfo:
