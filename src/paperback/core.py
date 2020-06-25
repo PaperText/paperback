@@ -193,7 +193,7 @@ class App:
 
     @staticmethod
     def modify_openapi(api: FastAPI) -> NoReturn:
-        def custom_openapi():
+        def custom_openapi(openapi_prefix: str):
             # stop from remaking schema
             if api.openapi_schema:
                 return api.openapi_schema
@@ -203,6 +203,7 @@ class App:
                 version=api.version,
                 description=api.description,
                 routes=api.routes,
+                openapi_prefix=openapi_prefix,
             )
             # add tags
             openapi_schema["tags"]: List[Dict[str, str]] = [
@@ -211,6 +212,8 @@ class App:
                 {"name": "user", "description": "users manipulation"},
                 {"name": "organisations", "description": "organisation manipulation"},
                 {"name": "docs", "description": "corpus, document and dictionary manipulation"},
+                {"name": "corps", "description": "corpus manipulation"},
+                {"name": "analyzer", "description": "analyzer usage"},
             ]
             # redefine schema
             api.openapi_schema = openapi_schema
