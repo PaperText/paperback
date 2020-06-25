@@ -13,6 +13,8 @@ api = FastAPI(
     title="PaperText backend [Paperback]",
     description="BackEnd API for PaperText",
     version=__version__,
+    docs_url="/documentation",
+    redoc_url="/re_documentation",
 )
 
 
