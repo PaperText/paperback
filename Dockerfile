@@ -29,4 +29,4 @@ WORKDIR /root/paperback
 RUN pip install .
 
 COPY src/docker/entrypoint.sh /root/entrypoint.sh
-CMD ~/entrypoint.sh
+CMD sh ~/entrypoint.sh
