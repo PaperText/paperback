@@ -10,6 +10,7 @@ poetry.toml
 
 poetry.lock
 .env
+tmpdir/
 
 **/__pycache__
 **/*.egg-info
