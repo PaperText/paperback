@@ -1,7 +1,7 @@
 from abc import ABCMeta, abstractmethod
 from typing import List, Callable, ClassVar, NoReturn, Optional
 
-from fastapi import Header, Depends, FastAPI, APIRouter
+from fastapi import Header, Depends, FastAPI, APIRouter, Body
 from fastapi.middleware.cors import CORSMiddleware
 
 from .base import Base
@@ -13,6 +13,7 @@ from .models import (
     TokenTester,
     OrganisationInfo,
     FullOrganisationInfo,
+    InviteCode
 )
 from ..exceptions import TokenException
 
@@ -314,6 +315,30 @@ class BaseAuth(Base, metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
+    async def create_invite_code(self, docs: List[str]):
+        """
+        creates invite code
+
+        Parameters
+        ----------
+        dcos: List[str]
+            list of docs to provide to guest
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    async def read_invite_codes(self) -> List[InviteCode]:
+        """
+        returns created invite codes
+
+        Returns
+        ----------
+        List[InviteCode]
+            list of invite codes
+        """
+        raise NotImplementedError
+
+    @abstractmethod
     async def create_org(self, name: str, title: str):
         """
         creates organisation with given name and title
@@ -422,6 +447,17 @@ class BaseAuth(Base, metaclass=ABCMeta):
             """
             return await self.sign_in(user.username, user.password)
 
+        @router.post(
+            "/signup", tags=["auth_module", "auth"], response_model=str
+        )
+        async def signup(user: NewUser):
+            """
+            creates new user with provided
+                username, password, organization,
+                access_level and invitation code
+            """
+            return True
+
         @router.get("/signout", tags=["auth_module", "auth"])
         async def signout():
             """
@@ -436,17 +472,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
             """
             return True
 
-        @router.post(
-            "/signup", tags=["auth_module", "auth"], response_model=str
-        )
-        async def signup(user: NewUser):
-            """
-            creates new user with provided
-                username, password, organization,
-                access_level and invitation code
-            """
-            return True
-
+        # tokens
         @router.delete("/token", tags=["auth_module", "token"])
         async def delete_token(token_identifier: str):
             """
@@ -476,7 +502,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
         @router.get(
             "/users/me",
             tags=["auth_module", "user"],
-            response_model=str,
+            response_model=UserInfo,
             dependencies=[Depends(token_tester(greater_or_equal=0))],
         )
         async def read_current_user(authorization=Header(...)):
@@ -562,6 +588,29 @@ class BaseAuth(Base, metaclass=ABCMeta):
             """
             return username
 
+        @router.get(
+            "/invites",
+            tags=["auth_module", "user"],
+            response_model=List[InviteCode],
+        )
+        async def invite_codes() -> List[InviteCode]:
+            """
+            acquires invite codes
+            """
+            return await self.read_invite_codes()
+
+        @router.post(
+            "/invite",
+            tags=["auth_module", "user"],
+        )
+        async def invite_users(docs: List[str] = Body(...)):
+            """
+            creates invite code
+            accepts list of docs to provide to guest
+            """
+            return await self.create_invite_code(docs)
+
+
         # Organisations
         @router.get(
             "/orgs",
@@ -581,33 +630,33 @@ class BaseAuth(Base, metaclass=ABCMeta):
             """
             return await self.create_org(org_info.name, org_info.title)
 
-        @router.put("/org/{org_name}", tags=["auth_module", "organisations"])
-        async def update_organisation(org_name: str, org_title: str):
+        @router.put("/org/{org_id}", tags=["auth_module", "organisations"])
+        async def update_organisation(org_id: str, org_title: str = Body(...)):
             """
             updates title of organisation with given name to given
                 organisation title
             """
-            return await self.update_org(org_name, org_title)
+            return await self.update_org(org_id, org_title)
 
         @router.delete(
-            "/org/{org_name}", tags=["auth_module", "organisations"]
+            "/org/{org_id}", tags=["auth_module", "organisations"]
         )
-        async def delete_organisation(org_name: str):
+        async def delete_organisation(org_id: str):
             """
             removes organisation with given name
             """
-            return await self.delete_org(org_name)
+            return await self.delete_org(org_id)
 
         @router.get(
-            "/org/{org_name}",
+            "/org/{org_id}",
             tags=["auth_module", "organisations"],
             response_model=FullOrganisationInfo,
         )
-        async def get_info(org_name: str) -> FullOrganisationInfo:
+        async def get_info(org_id: str) -> FullOrganisationInfo:
             """
             return information about organisation with list of users in it
             """
-            return await self.get_org_with_users(org_name)
+            return await self.get_org_with_users(org_id)
 
         self.add_routes(router)
         return router

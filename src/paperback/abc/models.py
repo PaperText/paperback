@@ -18,7 +18,6 @@ class UserInfo(BaseModel):
 
 class UserInfoWithoutOrg(BaseModel):
     username: str
-    organization: str = "Public"
     access_level: int = 0
 
 
@@ -26,9 +25,14 @@ class FullUser(Credentials, UserInfo):
     pass
 
 
-class NewUser(FullUser):
+class NewUser(Credentials):
+    full_name: str
     invitation_code: str
 
+class InviteCode(BaseModel):
+    issuer_id: str
+    code: str
+    docs: List[str] = []
 
 class TokenTester(Protocol):
     def __call__(
@@ -40,8 +44,8 @@ class TokenTester(Protocol):
 
 
 class OrganisationInfo(BaseModel):
-    title: str
-    name: str
+    title: Optional[str] = None
+    org_id: str
 
 
 class FullOrganisationInfo(OrganisationInfo):
