@@ -315,14 +315,14 @@ class BaseAuth(Base, metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    async def create_invite_code(self, docs: List[str]):
+    async def create_invite_code(self, gives_access: List[str]):
         """
         creates invite code
 
         Parameters
         ----------
-        dcos: List[str]
-            list of docs to provide to guest
+        gives_access: List[str]
+            list of docs and corpuses to provide to guest
         """
         raise NotImplementedError
 
@@ -603,12 +603,12 @@ class BaseAuth(Base, metaclass=ABCMeta):
             "/invite",
             tags=["auth_module", "user"],
         )
-        async def invite_users(docs: List[str] = Body(...)):
+        async def invite_users(gives_access: List[str] = Body(...)):
             """
             creates invite code
-            accepts list of docs to provide to guest
+            accepts list of docs and corpuses to provide to guest
             """
-            return await self.create_invite_code(docs)
+            return await self.create_invite_code(gives_access)
 
 
         # Organisations
