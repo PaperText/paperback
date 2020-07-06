@@ -11,8 +11,11 @@ from .models import (
     Dictionary,
     TokenTester,
     MinimalCorpus,
+    FullCorpus,
     MinimalDocument,
+    FullDocument,
     MinimalDictionary,
+    FullDictionary,
 )
 
 
@@ -57,9 +60,9 @@ class BaseDocs(Base, metaclass=ABCMeta):
         @router.get(
             "/doc/{doc_id}",
             tags=["docs_module", "docs"],
-            response_model=Document,
+            response_model=FullDocument,
         )
-        def read_doc(doc_id: str) -> Document:
+        def read_doc(doc_id: str) -> FullDocument:
             """
             returns document with given id if it exists
             """
@@ -103,9 +106,9 @@ class BaseDocs(Base, metaclass=ABCMeta):
         @router.get(
             "/corp/{corp_id}",
             tags=["docs_module", "corps"],
-            response_model=Corpus,
+            response_model=FullCorpus,
         )
-        def read_corp(corp_id: str) -> Corpus:
+        def read_corp(corp_id: str) -> FullCorpus:
             """
             returns corpus with given id if it exists
             """
@@ -151,9 +154,9 @@ class BaseDocs(Base, metaclass=ABCMeta):
         @router.get(
             "/dict/{dict_id}",
             tags=["docs_module", "dict"],
-            response_model=Dictionary,
+            response_model=FullDictionary,
         )
-        def read_dict(dict_id: str) -> Dictionary:
+        def read_dict(dict_id: str) -> FullDictionary:
             """
             returns dictionaries with given id if it exists
             """

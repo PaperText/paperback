@@ -1,13 +1,9 @@
 from __future__ import annotations
 
-from typing import List, Union, Callable, Optional, Protocol
+from datetime import datetime
+from typing import List, Union, Callable, Optional, Protocol, Dict, Any
 
 from pydantic import BaseModel
-
-# allows to edclare self reference
-# might be not needed rn or included in the future
-
-
 
 
 class Credentials(BaseModel):
@@ -47,8 +43,8 @@ class TokenTester(Protocol):
 
 
 class MinimalOrganisation(BaseModel):
-    name: Optional[str] = None
     org_id: str
+    name: Optional[str] = None
 
 
 class Organisation(MinimalOrganisation):
@@ -61,8 +57,14 @@ class MinimalDocument(BaseModel):
 
 
 class Document(MinimalDocument):
-    creator_id: str
     text: str
+    author: Optional[str] = None
+    created: Optional[datetime] = None
+    metadata: Optional[Dict[Any, Any]] = None
+
+
+class FullDocument(Document):
+    creator_id: str
 
 
 class MinimalCorpus(BaseModel):
@@ -71,8 +73,12 @@ class MinimalCorpus(BaseModel):
 
 
 class Corpus(MinimalCorpus):
-    creator_id: str
+    create_with: List[str]
+
+
+class FullCorpus(MinimalCorpus):
     includes: List[Union[MinimalDocument, MinimalCorpus]]
+    creator_id: str
 
 
 class MinimalDictionary(BaseModel):
@@ -81,5 +87,8 @@ class MinimalDictionary(BaseModel):
 
 
 class Dictionary(MinimalDictionary):
-    creator_id: str
     words: List[str]
+
+
+class FullDictionary(Dictionary):
+    creator_id: str
