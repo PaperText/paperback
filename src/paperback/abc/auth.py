@@ -7,12 +7,12 @@ from fastapi.middleware.cors import CORSMiddleware
 from .base import Base
 from .models import (
     NewUser,
-    FullUser,
+    FullUserInfo,
     UserInfo,
     Credentials,
     TokenTester,
-    OrganisationInfo,
-    FullOrganisationInfo,
+    MinimalOrganisation,
+    Organisation,
     InviteCode
 )
 from ..exceptions import TokenException
@@ -394,25 +394,25 @@ class BaseAuth(Base, metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    async def get_orgs(self) -> List[OrganisationInfo]:
+    async def get_orgs(self) -> List[MinimalOrganisation]:
         """
         returns list with all organisations
 
         Returns
         -------
-        List[OrganisationInfo]
+        List[MinimalOrganisation]
             list of organisations
         """
         raise NotImplementedError
 
     @abstractmethod
-    async def get_org_with_users(self, org_name: str) -> FullOrganisationInfo:
+    async def get_org_with_users(self, org_name: str) -> Organisation:
         """
         returns info about organisations with given name including list of users
 
         Returns
         -------
-        FullOrganisationInfo
+        Organisation
             organisations info with users
         """
         raise NotImplementedError
@@ -512,14 +512,14 @@ class BaseAuth(Base, metaclass=ABCMeta):
             return authorization
 
         @router.put("/users/me", tags=["auth_module", "user"])
-        async def update_current_user(user: FullUser):
+        async def update_current_user(user: FullUserInfo):
             """
             updates info of user, associated with user from token in request
             """
             return True
 
         @router.delete("/users/me", tags=["auth_module", "user"])
-        async def delete_current_user(user: FullUser):
+        async def delete_current_user(user: FullUserInfo):
             """
             removes user, associated with user from token in request
             """
@@ -531,7 +531,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
             tags=["auth_module", "user"],
             response_model=List[UserInfo],
         )
-        async def get_users(user: FullUser) -> List[UserInfo]:
+        async def get_users(user: FullUserInfo) -> List[UserInfo]:
             """
             creates user with provided
                 username, password, organization and access_level
@@ -544,7 +544,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
             return await self.get_users()
 
         @router.post("/user", tags=["auth_module", "user"])
-        async def create_user(user: FullUser) -> NoReturn:
+        async def create_user(user: FullUserInfo) -> NoReturn:
             """
             creates user with provided
                 username, password, organization and access_level
@@ -610,21 +610,20 @@ class BaseAuth(Base, metaclass=ABCMeta):
             """
             return await self.create_invite_code(gives_access)
 
-
         # Organisations
         @router.get(
             "/orgs",
             tags=["auth_module", "organisations"],
-            response_model=List[OrganisationInfo],
+            response_model=List[MinimalOrganisation],
         )
-        async def get_organisations() -> List[OrganisationInfo]:
+        async def get_organisations() -> List[MinimalOrganisation]:
             """
             returns list of organisations
             """
             return await self.get_orgs()
 
         @router.post("/org", tags=["auth_module", "organisations"])
-        async def create_organisation(org_info: OrganisationInfo):
+        async def create_organisation(org_info: MinimalOrganisation):
             """
             creates organisation with given parameters
             """
@@ -650,9 +649,9 @@ class BaseAuth(Base, metaclass=ABCMeta):
         @router.get(
             "/org/{org_id}",
             tags=["auth_module", "organisations"],
-            response_model=FullOrganisationInfo,
+            response_model=Organisation,
         )
-        async def get_info(org_id: str) -> FullOrganisationInfo:
+        async def get_info(org_id: str) -> Organisation:
             """
             return information about organisation with list of users in it
             """
