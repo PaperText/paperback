@@ -1,19 +1,19 @@
 from abc import ABCMeta, abstractmethod
 from typing import List, Callable, ClassVar, NoReturn, Optional
 
-from fastapi import Header, Depends, FastAPI, APIRouter, Body
+from fastapi import Body, Header, Depends, FastAPI, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 
 from .base import Base
 from .models import (
     NewUser,
-    FullUserInfo,
     UserInfo,
+    InviteCode,
     Credentials,
     TokenTester,
-    MinimalOrganisation,
+    FullUserInfo,
     Organisation,
-    InviteCode
+    MinimalOrganisation,
 )
 from ..exceptions import TokenException
 
@@ -600,8 +600,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
             return await self.read_invite_codes()
 
         @router.post(
-            "/invite",
-            tags=["auth_module", "user"],
+            "/invite", tags=["auth_module", "user"],
         )
         async def invite_users(gives_access: List[str] = Body(...)):
             """
@@ -637,9 +636,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
             """
             return await self.update_org(org_id, org_title)
 
-        @router.delete(
-            "/org/{org_id}", tags=["auth_module", "organisations"]
-        )
+        @router.delete("/org/{org_id}", tags=["auth_module", "organisations"])
         async def delete_organisation(org_id: str):
             """
             removes organisation with given name

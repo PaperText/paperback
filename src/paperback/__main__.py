@@ -18,7 +18,9 @@ class Scripts:
 
     @staticmethod
     def fix_black():
-        call(f"python -m black {src_path} --config {pyproject_path}".split(" "))
+        call(
+            f"python -m black {src_path} --config {pyproject_path}".split(" ")
+        )
 
     @staticmethod
     def fix_isort():
@@ -39,11 +41,7 @@ class Scripts:
 
     @staticmethod
     def docs_clean():
-        call(
-            f"rm -rf {source_path / 'docs'}".split(
-                " "
-            )
-        )
+        call(f"rm -rf {source_path / 'docs'}".split(" "))
 
 
 if __name__ == "__main__":

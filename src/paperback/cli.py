@@ -74,7 +74,6 @@ def run(config: Path, create_config: bool, debug: bool) -> NoReturn:
         else:
             click.echo(click.style(f"[ {type(e).__name__} ]", fg="red"))
             click.echo(f"\t{e}")
-            return
     if debug:
         click.echo("done")
         click.echo(f"config: {app.cfg}")

@@ -1,11 +1,13 @@
 from __future__ import annotations
+
+from typing import List, Union, Callable, Optional, Protocol
+
+from pydantic import BaseModel
+
 # allows to edclare self reference
 # might be not needed rn or included in the future
 
-from typing import List, Callable, Optional, Union
 
-from pydantic import BaseModel
-from typing import Protocol
 
 
 class Credentials(BaseModel):

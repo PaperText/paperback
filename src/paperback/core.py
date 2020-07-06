@@ -1,5 +1,5 @@
 from copy import deepcopy
-from typing import Any, Dict, NoReturn, MutableMapping, List
+from typing import Any, Dict, List, NoReturn, MutableMapping
 from pathlib import Path
 
 from config import (
@@ -9,9 +9,9 @@ from config import (
     config_from_toml,
 )
 from fastapi import FastAPI, Request, status
-from fastapi.openapi.utils import get_openapi
 from pkg_resources import iter_entry_points
 from fastapi.responses import JSONResponse
+from fastapi.openapi.utils import get_openapi
 
 from .abc import BaseAuth, BaseDocs, BaseMisc
 from .exceptions import (

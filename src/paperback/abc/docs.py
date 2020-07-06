@@ -8,11 +8,11 @@ from .models import (
     Corpus,
     Document,
     UserInfo,
+    Dictionary,
     TokenTester,
-    MinimalDocument,
     MinimalCorpus,
+    MinimalDocument,
     MinimalDictionary,
-    Dictionary
 )
 
 
@@ -47,9 +47,7 @@ class BaseDocs(Base, metaclass=ABCMeta):
             """
             return []
 
-        @router.post(
-            "/doc", tags=["docs_module", "docs"]
-        )
+        @router.post("/doc", tags=["docs_module", "docs"])
         def create_doc(doc: Document):
             """
             creates document with given id if it's not occupied
@@ -76,9 +74,7 @@ class BaseDocs(Base, metaclass=ABCMeta):
             """
             return None
 
-        @router.delete(
-            "/doc/{doc_id}", tags=["docs_module", "docs"]
-        )
+        @router.delete("/doc/{doc_id}", tags=["docs_module", "docs"])
         def delete_doc(doc_id: str):
             """
             deletes document with given id if it exists
@@ -97,9 +93,7 @@ class BaseDocs(Base, metaclass=ABCMeta):
             """
             return []
 
-        @router.post(
-            "/corp", tags=["docs_module", "corps"]
-        )
+        @router.post("/corp", tags=["docs_module", "corps"])
         def create_corp(corp: Corpus):
             """
             creates corpus with given id if it's not occupied
@@ -118,8 +112,7 @@ class BaseDocs(Base, metaclass=ABCMeta):
             return None
 
         @router.put(
-            "/corp/{corp_id}",
-            tags=["docs_module", "corps"],
+            "/corp/{corp_id}", tags=["docs_module", "corps"],
         )
         def update_corp(corp_id: str, corp: Corpus):
             """
@@ -128,8 +121,7 @@ class BaseDocs(Base, metaclass=ABCMeta):
             return None
 
         @router.delete(
-            "/corp/{corp_id}",
-            tags=["docs_module", "corps"],
+            "/corp/{corp_id}", tags=["docs_module", "corps"],
         )
         def delete_corp(corp_id: str):
             """
@@ -139,7 +131,9 @@ class BaseDocs(Base, metaclass=ABCMeta):
 
         # dictionary management
         @router.get(
-            "/dicts", tags=["docs_module", "dict"], response_model=List[MinimalDictionary],
+            "/dicts",
+            tags=["docs_module", "dict"],
+            response_model=List[MinimalDictionary],
         )
         def read_dicts() -> List[MinimalDictionary]:
             """
@@ -147,9 +141,7 @@ class BaseDocs(Base, metaclass=ABCMeta):
             """
             return []
 
-        @router.post(
-            "/dict", tags=["docs_module", "dict"]
-        )
+        @router.post("/dict", tags=["docs_module", "dict"])
         def create_dict(dict: Dictionary):
             """
             creates dictionaries with given id if it's not occupied
@@ -168,8 +160,7 @@ class BaseDocs(Base, metaclass=ABCMeta):
             return None
 
         @router.put(
-            "/dict/{dict_id}",
-            tags=["docs_module", "dict"],
+            "/dict/{dict_id}", tags=["docs_module", "dict"],
         )
         def update_dict(dict_id: str, dict: Dictionary):
             """
@@ -178,8 +169,7 @@ class BaseDocs(Base, metaclass=ABCMeta):
             return None
 
         @router.delete(
-            "/dict/{dict_id}",
-            tags=["docs_module", "dict"],
+            "/dict/{dict_id}", tags=["docs_module", "dict"],
         )
         def delete_dict(dict_id: str):
             """
