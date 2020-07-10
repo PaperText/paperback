@@ -159,3 +159,13 @@ class StatsAnalyzeRes(BaseModel):
     `doc:***` for stats about document
     """
     response: Dict[str, StatsAnalyzePreRes]
+
+
+class StatType(str, Enum):
+    LOCAL = "local"
+    Global = "global"
+
+
+stats: Dict[str, StatType] = {
+    "NumWords": StatType.Global,
+}
