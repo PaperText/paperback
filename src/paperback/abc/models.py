@@ -2,8 +2,9 @@ from __future__ import annotations
 
 from datetime import datetime
 from typing import List, Union, Callable, Optional, Protocol, Dict, Any
+from enum import Enum
 
-from pydantic import BaseModel
+from pydantic import BaseModel, Field
 
 
 class Credentials(BaseModel):
@@ -92,3 +93,62 @@ class Dictionary(MinimalDictionary):
 
 class FullDictionary(Dictionary):
     creator_id: str
+
+
+class AnalyzeReq(BaseModel):
+    entity_ids: List[str] = Field(
+        ...,
+        title="list of documents and corpuses to analyze",
+        description="#### Note: will be converted to list of documents on backend",
+    )
+
+
+class AnalyzeRes(BaseModel):
+    entity_id: str
+
+
+class LexicsAnalyzeReq(AnalyzeReq):
+    dicts: List[str]
+
+
+class Spans(BaseModel):
+    start_char: int
+    end_char: int
+    dictionary: str = Field(..., alias="dict")
+
+
+# will be returned in a List
+class LexicsAnalyzeRes(AnalyzeRes):
+    doc_id: str
+    spans: List[Spans]
+
+
+class PredicatesAnalyzeReq(AnalyzeReq):
+    argument: Optional[str] = None
+    predicate: Optional[str] = None
+    role: Optional[str] = None
+
+
+# will be returned in a List
+class PredicatesAnalyzeRes(AnalyzeRes):
+    role: str
+    predicate: str
+    context: Optional[str] = None
+
+
+class StatsAnalyzeReq(AnalyzeReq):
+    statistics: List[str]
+
+
+class StatType(str, Enum):
+    GLOBAL = 'global'
+    LOCAL = 'local'
+
+
+# will be returned in a List
+class StatsAnalyzeRes(AnalyzeRes):
+    type: StatType
+    entity_id: Optional[str] = None
+    name: str
+    unit: str
+    value: Union[str, List[str], Dict[str, str]]

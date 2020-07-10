@@ -16,6 +16,12 @@ from .models import (
     FullDocument,
     MinimalDictionary,
     FullDictionary,
+    LexicsAnalyzeReq,
+    LexicsAnalyzeRes,
+    PredicatesAnalyzeReq,
+    PredicatesAnalyzeRes,
+    StatsAnalyzeReq,
+    StatsAnalyzeRes,
 )
 
 
@@ -184,31 +190,33 @@ class BaseDocs(Base, metaclass=ABCMeta):
         @router.post(
             "/analyze/lexics",
             tags=["docs_module", "analyzer"],
-            response_model=str,
+            response_model=List[LexicsAnalyzeRes],
         )
-        def analyze_lexics(entity_ids: List[str] = Body(...)):
+        def analyze_lexics(req: LexicsAnalyzeReq) -> List[LexicsAnalyzeRes]:
             """
             analyzes lexics on list of given ids
             """
             return ""
 
-        @router.post(
-            "/analyze/markers",
-            tags=["docs_module", "analyzer"],
-            response_model=str,
-        )
-        def analyze_markers(entity_ids: List[str] = Body(...)):
-            """
-            analyzes markers on list of given ids
-            """
-            return ""
+        # @router.post(
+        #     "/analyze/markers",
+        #     tags=["docs_module", "analyzer"],
+        #     response_model=str,
+        # )
+        # def analyze_markers(entity_ids: List[str] = Body(...)):
+        #     """
+        #     analyzes markers on list of given ids
+        #     """
+        #     return ""
 
         @router.post(
             "/analyze/predicates",
             tags=["docs_module", "analyzer"],
-            response_model=str,
+            response_model=List[PredicatesAnalyzeRes],
         )
-        def analyze_predicates(entity_ids: List[str] = Body(...)):
+        def analyze_predicates(
+            request: PredicatesAnalyzeReq, return_context: bool = False
+        ) -> List[PredicatesAnalyzeRes]:
             """
             analyzes predicates on list of given ids
             """
@@ -217,9 +225,9 @@ class BaseDocs(Base, metaclass=ABCMeta):
         @router.post(
             "/analyze/stats",
             tags=["docs_module", "analyzer"],
-            response_model=str,
+            response_model=List[StatsAnalyzeRes],
         )
-        def analyze_stats(entity_ids: List[str] = Body(...)):
+        def analyze_stats(req: StatsAnalyzeReq) -> List[StatsAnalyzeRes]:
             """
             analyzes stats on list of given ids
             """
