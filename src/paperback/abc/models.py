@@ -69,6 +69,10 @@ class FullDocument(Document):
 
 
 class MinimalCorpus(BaseModel):
+    """
+    minimal information about corpus,
+    used as child corpus when reading parent corpus
+    """
     name: Optional[str] = None
     corpus_id: str
 
@@ -99,7 +103,6 @@ class AnalyzeReq(BaseModel):
     entity_ids: List[str] = Field(
         ...,
         title="list of documents and corpuses to analyze",
-        description="#### Note: will be converted to list of documents on backend",
     )
 
 
@@ -118,7 +121,7 @@ class Spans(BaseModel):
 
 
 # will be returned in a List
-class LexicsAnalyzeRes(AnalyzeRes):
+class LexicsAnalyzeRes(BaseModel):
     doc_id: str
     spans: List[Spans]
 
@@ -140,15 +143,19 @@ class StatsAnalyzeReq(AnalyzeReq):
     statistics: List[str]
 
 
-class StatType(str, Enum):
-    GLOBAL = 'global'
-    LOCAL = 'local'
-
-
-# will be returned in a List
-class StatsAnalyzeRes(AnalyzeRes):
-    type: StatType
-    entity_id: Optional[str] = None
+# will be returned as values in a dict
+class StatsAnalyzePreRes(AnalyzeRes):
     name: str
     unit: str
     value: Union[str, List[str], Dict[str, str]]
+
+
+class StatsAnalyzeRes(BaseModel):
+    """
+    mapping from string key to stats about key object\n
+    key can be either\n
+    `all` for stats on whole set\n
+    `corp:***` for stats about corpus (also a set of documents)\n
+    `doc:***` for stats about document
+    """
+    response: Dict[str, StatsAnalyzePreRes]

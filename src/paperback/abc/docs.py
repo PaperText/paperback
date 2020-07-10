@@ -1,5 +1,5 @@
 from abc import ABCMeta
-from typing import List, Callable, ClassVar, NoReturn, Optional
+from typing import List, Callable, ClassVar, NoReturn, Optional, Dict
 
 from fastapi import Body, APIRouter
 
@@ -225,9 +225,11 @@ class BaseDocs(Base, metaclass=ABCMeta):
         @router.post(
             "/analyze/stats",
             tags=["docs_module", "analyzer"],
-            response_model=List[StatsAnalyzeRes],
+            response_model=StatsAnalyzeRes,
         )
-        def analyze_stats(req: StatsAnalyzeReq) -> List[StatsAnalyzeRes]:
+        def analyze_stats(
+            req: StatsAnalyzeReq, analyze_subcorps: bool = False
+        ) -> StatsAnalyzeRes:
             """
             analyzes stats on list of given ids
             """
