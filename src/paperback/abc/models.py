@@ -78,7 +78,7 @@ class MinimalCorpus(BaseModel):
 
 
 class Corpus(MinimalCorpus):
-    create_with: List[str]
+    include: List[str]
 
 
 class FullCorpus(MinimalCorpus):
