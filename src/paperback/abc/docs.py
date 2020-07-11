@@ -1,7 +1,8 @@
 from abc import ABCMeta
-from typing import List, Callable, ClassVar, NoReturn, Optional, Dict
+from datetime import datetime
+from typing import List, Callable, ClassVar, NoReturn, Optional, Dict, Any
 
-from fastapi import Body, APIRouter
+from fastapi import Body, APIRouter, Query
 
 from .base import Base
 from .models import (
@@ -12,6 +13,7 @@ from .models import (
     TokenTester,
     MinimalCorpus,
     FullCorpus,
+    MetaData,
     MinimalDocument,
     FullDocument,
     MinimalDictionary,
@@ -50,7 +52,12 @@ class BaseDocs(Base, metaclass=ABCMeta):
             tags=["docs_module", "docs"],
             response_model=List[MinimalDocument],
         )
-        def read_docs() -> List[MinimalDocument]:
+        def read_docs(
+            author: Optional[str] = None,
+            created_before: Optional[datetime] = None,
+            created_after: Optional[datetime] = None,
+            metadata: Optional[str] = Query(None),
+        ) -> List[MinimalDocument]:
             """
             returns list of all documents, accessible to user
             """
