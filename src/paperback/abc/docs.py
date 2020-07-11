@@ -22,8 +22,6 @@ from .models import (
     PredicatesAnalyzeRes,
     StatsAnalyzeReq,
     StatsAnalyzeRes,
-    StatType,
-    stats
 )
 
 
@@ -42,10 +40,6 @@ class BaseDocs(Base, metaclass=ABCMeta):
     """
 
     TYPE: ClassVar[str] = "DOCS"
-
-    @staticmethod
-    def get_stats() -> Dict[str, StatType]:
-        return stats
 
     def create_router(self, token: TokenTester) -> APIRouter:
         router = APIRouter()
@@ -240,17 +234,6 @@ class BaseDocs(Base, metaclass=ABCMeta):
             analyzes stats on list of given ids
             """
             return ""
-
-        @router.get(
-            "/analyze/stats",
-            tags=["docs_module", "analyzer"],
-            response_model=Dict[str, StatType],
-        )
-        def get_stats() -> Dict[str, StatType]:
-            """
-            returns list of possible statistics
-            """
-            return self.get_stats()
 
         self.add_routes(router)
         return router
