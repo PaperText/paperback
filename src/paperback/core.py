@@ -11,7 +11,6 @@ from config import (
 from fastapi import FastAPI, Request, status
 from pkg_resources import iter_entry_points
 from fastapi.responses import JSONResponse
-from fastapi.openapi.utils import get_openapi
 
 from .abc import BaseAuth, BaseDocs, BaseMisc
 from .exceptions import (
