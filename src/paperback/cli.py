@@ -11,18 +11,20 @@ from .core import App
 default_config_path = Path.home() / ".papertext"
 api = FastAPI(
     title="PaperText backend [Paperback]",
-    description="BackEnd API for PaperText",
+    description="Backend API for PaperText",
     version=__version__,
     openapi_tags=[
         {"name": "auth", "description": "authorization"},
         {"name": "token", "description": "token manipulation"},
         {"name": "user", "description": "users manipulation"},
         {"name": "organisations", "description": "organisation manipulation"},
-        {"name": "docs", "description": "document manipulation",},
-        {"name": "dict", "description": "dictionaries manipulation",},
+        {"name": "docs", "description": "document manipulation"},
+        {"name": "dict", "description": "dictionaries manipulation"},
         {"name": "corps", "description": "corpus manipulation"},
         {"name": "analyzer", "description": "analyzer usage"},
-    ],
+    ]
+    # + [{"name": f"access_level_{i}", "description": f"paths that require level {i} access"} for i in range(4)]
+    ,
     docs_url="/documentation",
     redoc_url="/re_documentation",
 )
