@@ -31,6 +31,11 @@ class InviteCode(BaseModel):
     docs: List[str] = []
 
 
+class UpdatePassword(BaseModel):
+    old_password: str
+    new_password: str
+
+
 class TokenTester(Protocol):
     def __call__(
         self,

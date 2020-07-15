@@ -14,6 +14,7 @@ from .models import (
     FullUserInfo,
     Organisation,
     MinimalOrganisation,
+    UpdatePassword,
 )
 from ..exceptions import TokenException
 
@@ -526,11 +527,18 @@ class BaseAuth(Base, metaclass=ABCMeta):
             return True
 
         @router.post("/user/me/update_username", tags=["auth_module", "user"])
-        async def update_username_current(username: str, new_username: str = Body(...)):
+        async def update_username_current(new_username: str = Body(...)):
             """
-            changes users username
+            changes current users username
             """
-            return username
+            return True
+
+        @router.post("/user/me/update_password", tags=["auth_module", "user"])
+        async def update_password_current(passwords: UpdatePassword):
+            """
+            changes current users password
+            """
+            return True
 
         # all users
         @router.get(
@@ -599,6 +607,13 @@ class BaseAuth(Base, metaclass=ABCMeta):
         async def update_username(username: str, new_username: str = Body(...)):
             """
             changes users username
+            """
+            return username
+
+        @router.post("/user/{username}/update_password", tags=["auth_module", "user"])
+        async def update_password(username: str, passwords: UpdatePassword):
+            """
+            changes users password
             """
             return username
 
