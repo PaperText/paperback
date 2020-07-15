@@ -511,7 +511,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
             """
             return authorization
 
-        @router.put("/users/me", tags=["auth_module", "user"])
+        @router.put("/users/me", tags=["auth_module", "user"], deprecated=True)
         async def update_current_user(user: FullUserInfo):
             """
             updates info of user, associated with user from token in request
@@ -519,11 +519,18 @@ class BaseAuth(Base, metaclass=ABCMeta):
             return True
 
         @router.delete("/users/me", tags=["auth_module", "user"])
-        async def delete_current_user(user: FullUserInfo):
+        async def delete_current_user():
             """
             removes user, associated with user from token in request
             """
             return True
+
+        @router.post("/user/me/update_username", tags=["auth_module", "user"])
+        async def update_username_current(username: str, new_username: str = Body(...)):
+            """
+            changes users username
+            """
+            return username
 
         # all users
         @router.get(
@@ -574,17 +581,24 @@ class BaseAuth(Base, metaclass=ABCMeta):
             """
             return await self.read_user(username)
 
-        @router.put("/user/{username}", tags=["auth_module", "user"])
-        async def update_users(username: str):
+        @router.put("/user/{username}", tags=["auth_module", "user"], deprecated=True)
+        async def update_users(username: str, user: UserInfo):
             """
             updates info about requested user
             """
             return username
 
         @router.delete("/user/{username}", tags=["auth_module", "user"])
-        async def remove_users(username: str):
+        async def delete_users(username: str):
             """
             removes requested user
+            """
+            return username
+
+        @router.post("/user/{username}/update_username", tags=["auth_module", "user"])
+        async def update_username(username: str, new_username: str = Body(...)):
+            """
+            changes users username
             """
             return username
 
