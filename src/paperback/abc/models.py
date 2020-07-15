@@ -1,8 +1,5 @@
-from __future__ import annotations
-
 from datetime import datetime
 from typing import List, Union, Callable, Optional, Protocol, Dict, Any
-from enum import Enum
 
 from pydantic import BaseModel, Field
 
@@ -57,11 +54,14 @@ class MinimalDocument(BaseModel):
     doc_id: str
 
 
+MetaData = Dict[str, Union[str, List[str], Dict[str, str]]]
+
+
 class Document(MinimalDocument):
     text: str
     author: Optional[str] = None
     created: Optional[datetime] = None
-    metadata: Optional[Dict[Any, Any]] = None
+    metadata: Optional[MetaData] = None
 
 
 class FullDocument(Document):
