@@ -1,6 +1,5 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="paperback_fix" type="PythonConfigurationType" factoryName="Python">
-    <module name=".papertext" />
     <option name="INTERPRETER_OPTIONS" value="" />
     <option name="PARENT_ENVS" value="true" />
     <envs>
@@ -12,8 +11,8 @@
     <option name="ADD_CONTENT_ROOTS" value="true" />
     <option name="ADD_SOURCE_ROOTS" value="true" />
     <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
-    <option name="SCRIPT_NAME" value="" />
-    <option name="PARAMETERS" value="-c &quot;from paperback.__main__ import fix; fix()&quot;" />
+    <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/paperback/__version__.py" />
+    <option name="PARAMETERS" value="-c &quot;from paperback.__main__ import Scripts; Scripts.fix()&quot;" />
     <option name="SHOW_COMMAND_LINE" value="false" />
     <option name="EMULATE_TERMINAL" value="false" />
     <option name="MODULE_MODE" value="false" />
