@@ -197,9 +197,9 @@ class BaseDocs(Base, metaclass=ABCMeta):
         @router.post(
             "/analyze/lexics",
             tags=["docs_module", "analyzer"],
-            response_model=List[LexicsAnalyzeRes],
+            response_model=LexicsAnalyzeRes,
         )
-        def analyze_lexics(req: LexicsAnalyzeReq) -> List[LexicsAnalyzeRes]:
+        def analyze_lexics(req: LexicsAnalyzeReq) -> LexicsAnalyzeRes:
             """
             analyzes lexics on list of given ids
             """
@@ -219,11 +219,11 @@ class BaseDocs(Base, metaclass=ABCMeta):
         @router.post(
             "/analyze/predicates",
             tags=["docs_module", "analyzer"],
-            response_model=List[PredicatesAnalyzeRes],
+            response_model=PredicatesAnalyzeRes,
         )
         def analyze_predicates(
             request: PredicatesAnalyzeReq, return_context: bool = False
-        ) -> List[PredicatesAnalyzeRes]:
+        ) -> PredicatesAnalyzeRes:
             """
             analyzes predicates on list of given ids
             """

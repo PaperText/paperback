@@ -23,7 +23,7 @@ class MinimalUserInfo(BaseModel):
 
 
 class UserInfo(MinimalUserInfo):
-    organisation: str = "public"
+    organisation: Optional[str]
     access_level: int = 0
 
 
@@ -33,7 +33,7 @@ class FullUserInfo(Credentials, UserInfo):
 
 class MinimalInviteCode(BaseModel):
     docs: List[str] = []
-    organisation: Optional[str] = "public"
+    organisation: Optional[str]
 
 
 class InviteCode(BaseModel):
@@ -91,6 +91,7 @@ class Organisation(MinimalOrganisation):
 class MinimalDocument(BaseModel):
     name: Optional[str] = None
     doc_id: str
+    private: bool = False
 
 
 MetaData = Dict[str, Union[str, List[str], Dict[str, str]]]
@@ -101,6 +102,7 @@ class Document(MinimalDocument):
     author: Optional[str] = None
     created: Optional[datetime] = None
     metadata: Optional[MetaData] = None
+    private: bool = False
 
 
 class FullDocument(Document):
@@ -159,10 +161,13 @@ class Spans(BaseModel):
     dictionary: str = Field(..., alias="dict")
 
 
-# will be returned in a List
-class LexicsAnalyzeRes(BaseModel):
+class LexicsAnalyzePreRes(BaseModel):
     doc_id: str
     spans: List[Spans]
+
+
+class LexicsAnalyzeRes(BaseModel):
+    response: List[LexicsAnalyzePreRes]
 
 
 class PredicatesAnalyzeReq(AnalyzeReq):
@@ -171,11 +176,14 @@ class PredicatesAnalyzeReq(AnalyzeReq):
     role: Optional[str] = None
 
 
-# will be returned in a List
-class PredicatesAnalyzeRes(AnalyzeRes):
+class PredicatesAnalyzePreRes(AnalyzeRes):
     role: str
     predicate: str
     context: Optional[str] = None
+
+
+class PredicatesAnalyzeRes(BaseModel):
+    response: List[PredicatesAnalyzePreRes]
 
 
 class StatsAnalyzeReq(AnalyzeReq):
