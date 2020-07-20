@@ -13,8 +13,16 @@ from .models import (
     TokenTester,
     FullUserInfo,
     Organisation,
+    OrgUpdateName,
+    FullInviteCode,
+    OrgUpdateOrgId,
+    MinimalUserInfo,
+    MinimalInviteCode,
+    UserChangePassword,
+    UserUpdateFullName,
+    UserUpdatePassword,
+    UserUpdateUsername,
     MinimalOrganisation,
-    UpdatePassword,
 )
 from ..exceptions import TokenException
 
@@ -425,7 +433,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
         Note
         ----
         If programmer of a module wishes to add functionality the preferred way
-            is to implement method `add_routes`
+        is to implement method `add_routes`
 
         Parameters
         ----------
@@ -434,11 +442,12 @@ class BaseAuth(Base, metaclass=ABCMeta):
 
         Returns
         -------
-
+        fastapi.APIRouter,
+            router with all paths
         """
         router = APIRouter()
 
-        # token and signin
+        # signin and signout
         @router.post(
             "/signin", tags=["auth_module", "auth"], response_model=str
         )
@@ -451,7 +460,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
         @router.post(
             "/signup", tags=["auth_module", "auth"], response_model=str
         )
-        async def signup(user: NewUser):
+        async def signup(user: NewUser) -> str:
             """
             creates new user with provided
                 username, password, organization,
@@ -474,8 +483,17 @@ class BaseAuth(Base, metaclass=ABCMeta):
             return True
 
         # tokens
+        @router.get(
+            "/tokens", tags=["auth_module", "token"], response_model=List[str]
+        )
+        async def get_tokens() -> List[str]:
+            """
+            returns all tokens, associated with user from token in request
+            """
+            return ["tokens"]
+
         @router.delete("/token", tags=["auth_module", "token"])
-        async def delete_token(token_identifier: str):
+        async def delete_token(token_identifier: str = Body(...)):
             """
             removes token by provided identifier:
                 either token itself or token uuid
@@ -490,198 +508,316 @@ class BaseAuth(Base, metaclass=ABCMeta):
             """
             return token_identifiers
 
+        # +-------+
+        # | users |
+        # +-------+
         @router.get(
-            "/tokens", tags=["auth_module", "token"], response_model=List[str]
+            "/me",
+            tags=["auth_module", "user", "access_level_0"],
+            response_model=UserInfo,
         )
-        async def get_tokens() -> List[str]:
+        async def get_me(
+            requester: UserInfo = Depends(token_tester(greater_or_equal=0)),
+        ) -> UserInfo:
             """
             returns all tokens, associated with user from token in request
             """
-            return ["tokens"]
+            return True
 
-        # current user
-        @router.get(
-            "/users/me",
-            tags=["auth_module", "user"],
-            response_model=UserInfo,
-            dependencies=[Depends(token_tester(greater_or_equal=0))],
-        )
-        async def read_current_user(authorization=Header(...)):
+        @router.get("/usrs", tags=["auth_module", "user", "access_level_3"])
+        async def read_all_users(user: NewUser):
             """
-            return info about user, associated with user from token in request
-            """
-            return authorization
+            reads all existing users
 
-        @router.put("/users/me", tags=["auth_module", "user"], deprecated=True)
-        async def update_current_user(user: FullUserInfo):
-            """
-            updates info of user, associated with user from token in request
+            created users are assigned to public organisation
             """
             return True
 
-        @router.delete("/users/me", tags=["auth_module", "user"])
-        async def delete_current_user():
+        @router.post("/usr", tags=["auth_module", "user", "access_level_2"])
+        async def create_user(user: NewUser):
+            """
+            creates user with provided username, password and fullname
+
+            Note
+            ----
+            * created users are assigned to public organisation
+            * created users loa is 1
+            """
+            return await self.create_user(
+                user.username, user.password, user.fullname, 1, "public",
+            )
+
+        @router.get(
+            "/usr/{username}",
+            tags=["auth_module", "user", "access_level_2"],
+            response_model=UserInfo,
+        )
+        async def read_user(username: str) -> UserInfo:
+            """
+            return info about user with given username
+            """
+            return True
+
+        @router.put(
+            "/usr/{username}:username",
+            tags=["auth_module", "user", "access_level_2"],
+        )
+        async def update_users_username(
+            username: str, new_username: UserUpdateUsername
+        ):
+            """
+            changes username of user with given username
+            """
+            return True
+
+        @router.put(
+            "/usr/{username}:password",
+            tags=["auth_module", "user", "access_level_2"],
+        )
+        async def update_users_password(
+            username: str, new_password: UserUpdatePassword
+        ):
+            """
+            changes password of user with given username
+            """
+            return True
+
+        @router.put(
+            "/usr/{username}:fullname",
+            tags=["auth_module", "user", "access_level_2"],
+        )
+        async def update_users_fullname(
+            username: str, new_fullname: UserUpdateFullName
+        ):
+            """
+            changes fullname of user with given username
+            """
+            return True
+
+        @router.get(
+            "/usr/{username}:promote",
+            tags=["auth_module", "user", "access_level_2"],
+        )
+        async def promote_user(username: str):
+            """
+            increases loa of user with given username
+
+            Note
+            ----
+            Maximum loa is equal to requesters loa
+            """
+            return True
+
+        @router.get(
+            "/usr/{username}:demote",
+            tags=["auth_module", "user", "access_level_2"],
+        )
+        async def demote_user(username: str):
+            """
+            decreases loa of user with given username
+
+            Note
+            ----
+            Minimum loa is 0
+            """
+            return True
+
+        @router.delete(
+            "/usr/{username}", tags=["auth_module", "user", "access_level_2"]
+        )
+        async def delete_user(username: str):
             """
             removes user, associated with user from token in request
             """
             return True
 
-        @router.post("/user/me/update_username", tags=["auth_module", "user"])
-        async def update_username_current(new_username: str = Body(...)):
-            """
-            changes current users username
-            """
-            return True
-
-        @router.post("/user/me/update_password", tags=["auth_module", "user"])
-        async def update_password_current(passwords: UpdatePassword):
-            """
-            changes current users password
-            """
-            return True
-
-        # all users
-        @router.get(
-            "/users",
-            tags=["auth_module", "user"],
-            response_model=List[UserInfo],
-        )
-        async def get_users(user: FullUserInfo) -> List[UserInfo]:
-            """
-            creates user with provided
-                username, password, organization and access_level
-
-            Note
-            ----
-            * only users with access level of 2 and more can use this function
-            * users are created in the same organization as the requester
-            """
-            return await self.get_users()
-
-        @router.post("/user", tags=["auth_module", "user"])
-        async def create_user(user: FullUserInfo) -> NoReturn:
-            """
-            creates user with provided
-                username, password, organization and access_level
-
-            Note
-            ----
-            * only users with access level of 2 and more can use this function
-            * users are created in the same organization as the requester
-            """
-            return await self.create_user(
-                user.username,
-                user.password,
-                user.full_name,
-                user.access_level,
-                user.organization,
-            )
-
-        @router.get(
-            "/user/{username}",
-            tags=["auth_module", "user"],
-            response_model=UserInfo,
-            dependencies=[Depends(token_tester(greater_or_equal=0))],
-        )
-        async def read_user(username: str) -> UserInfo:
-            """
-            reads info about requested user
-            """
-            return await self.read_user(username)
-
-        @router.put("/user/{username}", tags=["auth_module", "user"], deprecated=True)
-        async def update_users(username: str, user: UserInfo):
-            """
-            updates info about requested user
-            """
-            return username
-
-        @router.delete("/user/{username}", tags=["auth_module", "user"])
-        async def delete_users(username: str):
-            """
-            removes requested user
-            """
-            return username
-
-        @router.post("/user/{username}/update_username", tags=["auth_module", "user"])
-        async def update_username(username: str, new_username: str = Body(...)):
-            """
-            changes users username
-            """
-            return username
-
-        @router.post("/user/{username}/update_password", tags=["auth_module", "user"])
-        async def update_password(username: str, passwords: UpdatePassword):
-            """
-            changes users password
-            """
-            return username
-
-        @router.get(
-            "/invites",
-            tags=["auth_module", "user"],
-            response_model=List[InviteCode],
-        )
-        async def invite_codes() -> List[InviteCode]:
-            """
-            acquires invite codes
-            """
-            return await self.read_invite_codes()
-
-        @router.post(
-            "/invite", tags=["auth_module", "user"],
-        )
-        async def invite_users(gives_access: List[str] = Body(...)):
-            """
-            creates invite code
-            accepts list of docs and corpuses to provide to guest
-            """
-            return await self.create_invite_code(gives_access)
-
-        # Organisations
+        # +--------------+
+        # | organisation |
+        # +--------------+
         @router.get(
             "/orgs",
-            tags=["auth_module", "organisations"],
+            tags=["auth_module", "organisation", "access_level_3"],
             response_model=List[MinimalOrganisation],
+            dependencies=[Depends(token_tester(greater_or_equal=3))],
         )
-        async def get_organisations() -> List[MinimalOrganisation]:
+        async def read_organisations() -> List[MinimalOrganisation]:
             """
             returns list of organisations
             """
             return await self.get_orgs()
 
-        @router.post("/org", tags=["auth_module", "organisations"])
-        async def create_organisation(org_info: MinimalOrganisation):
+        @router.post(
+            "/org",
+            tags=["auth_module", "organisation", "access_level_3"],
+            dependencies=[Depends(token_tester(greater_or_equal=3))],
+        )
+        async def create_organisation(org: MinimalOrganisation):
             """
-            creates organisation with given parameters
+            creates new organisation with given org_id and name
             """
-            return await self.create_org(org_info.name, org_info.title)
+            await self.create_org(org.org_id, org.name)
 
-        @router.put("/org/{org_id}", tags=["auth_module", "organisations"])
-        async def update_organisation(org_id: str, org_title: str = Body(...)):
+        @router.get(
+            "/org/{org_id}",
+            tags=["auth_module", "organisation", "access_level_3"],
+            response_model=Organisation,
+            dependencies=[Depends(token_tester(greater_or_equal=3))],
+        )
+        async def read_organisation(org_id: str) -> Organisation:
             """
-            updates title of organisation with given name to given
-                organisation title
+            returns info about organisation with given `org_id`
             """
-            return await self.update_org(org_id, org_title)
+            return await self.get_org(org_id)
 
-        @router.delete("/org/{org_id}", tags=["auth_module", "organisations"])
+        @router.put(
+            "/org/{org_id}:org_id",
+            tags=["auth_module", "organisation", "access_level_2"],
+            dependencies=[Depends(token_tester(greater_or_equal=2))],
+        )
+        async def update_orgid_of_org(
+            org_id: str, new_org_id: OrgUpdateOrgId,
+        ):
+            """
+            changes org_id of organisation to new_org_id
+            """
+            await self.update_org(org_id, org_id=new_org_id)
+
+        @router.put(
+            "/org/{org_id}:name",
+            tags=["auth_module", "organisation", "access_level_2"],
+            dependencies=[Depends(token_tester(greater_or_equal=2))],
+        )
+        async def update_name_of_org(
+            org_id: str, new_name: str = Body(...),
+        ):
+            """
+            changes name of organisation with given org_id to new_name
+            """
+            await self.update_org(org_id, name=new_name)
+
+        @router.post(
+            "/org/{org_id}/usr",
+            tags=["auth_module", "organisation", "access_level_3"],
+            dependencies=[Depends(token_tester(greater_or_equal=3))],
+        )
+        async def create_user_in_org(
+            org_id: str, user: NewUser,
+        ):
+            """
+            creates user with provided username, password and fullname
+            in organisation with given id
+
+            Note
+            ----
+            * created users are assigned to requesters organisation
+            * created users loa is 1
+            """
+            return await self.create_user(
+                user.username, user.password, user.fullname, 1, org_id
+            )
+
+        @router.put(
+            "/org/{org_id}/usr/{username}",
+            tags=["auth_module", "organisation", "access_level_3"],
+            dependencies=[Depends(token_tester(greater_or_equal=3))],
+        )
+        async def add_user_to_org(org_id: str, username: str):
+            """
+            adds user with provided username to organisation with given org_id
+            if he is in public organisation
+            """
+
+        @router.delete(
+            "/org/{org_id}/usr/{username}",
+            tags=["auth_module", "organisation"],
+        )
+        async def delete_user_from_org(org_id: str, username: str):
+            """
+            removes requested user
+            """
+            return username
+
+        @router.delete(
+            "/org/{org_id}",
+            tags=["auth_module", "organisation", "access_level_2"],
+            dependencies=[Depends(token_tester(greater_or_equal=2))],
+        )
         async def delete_organisation(org_id: str):
             """
             removes organisation with given name
             """
             return await self.delete_org(org_id)
 
-        @router.get(
-            "/org/{org_id}",
-            tags=["auth_module", "organisations"],
-            response_model=Organisation,
+        # +---------+
+        # | Invites |
+        # +---------+
+
+        @router.post(
+            "/invite", tags=["auth_module", "invite", "access_level_1"],
         )
-        async def get_info(org_id: str) -> Organisation:
+        async def create_invite_code(
+            invite_code: MinimalInviteCode,
+            requester: UserInfo = Depends(token_tester(greater_or_equal=1)),
+        ):
             """
-            return information about organisation with list of users in it
+            creates invite code
+            accepts list of docs and corpuses to provide to guest
             """
-            return await self.get_org_with_users(org_id)
+            return await self.create_invite_code(invite_code)
+
+        @router.get(
+            "/invites",
+            tags=["auth_module", "invite", "access_level_1"],
+            response_model=List[InviteCode],
+        )
+        async def read_invite_codes(
+            requester: UserInfo = Depends(token_tester(greater_or_equal=1)),
+        ) -> List[InviteCode]:
+            """
+            acquires invite codes
+            """
+            return await self.read_invite_codes()
+
+        @router.get(
+            "/invite/{invite_code}",
+            tags=["auth_module", "invite", "access_level_1"],
+            response_model=List[InviteCode],
+        )
+        async def read_invite_code(
+            invite_code: str,
+            requester: UserInfo = Depends(token_tester(greater_or_equal=1)),
+        ) -> FullInviteCode:
+            """
+            acquires info about invite code with given code
+            """
+            return await self.read_invite_code(invite_code)
+
+        # @router.put(
+        #     "/invite/{invite_code}",
+        #     tags=["auth_module", "invite", "access_level_1"],
+        #     response_model=List[InviteCode],
+        # )
+        # async def update_invite_code(
+        #     invite_code: str,
+        #     requester: UserInfo = Depends(token_tester(greater_or_equal=1)),
+        # ) -> List[InviteCode]:
+        #     """
+        #     acquires invite codes
+        #     """
+        #     return await self.read_invite_codes()
+
+        @router.delete(
+            "/invite/{invite_code}",
+            tags=["auth_module", "invite", "access_level_1"],
+        )
+        async def delete_invite_code(
+            invite_code: str,
+            requester: UserInfo = Depends(token_tester(greater_or_equal=1)),
+        ):
+            """
+            delete invite code by code itself
+            """
+            return await self.read_invite_codes()
 
         self.add_routes(router)
         return router

@@ -17,14 +17,20 @@ api = FastAPI(
         {"name": "auth", "description": "authorization"},
         {"name": "token", "description": "token manipulation"},
         {"name": "user", "description": "users manipulation"},
-        {"name": "organisations", "description": "organisation manipulation"},
+        {"name": "invite", "description": "invite codes manipulation"},
+        {"name": "organisation", "description": "organisation manipulation"},
         {"name": "docs", "description": "document manipulation"},
         {"name": "dict", "description": "dictionaries manipulation"},
         {"name": "corps", "description": "corpus manipulation"},
         {"name": "analyzer", "description": "analyzer usage"},
     ]
-    # + [{"name": f"access_level_{i}", "description": f"paths that require level {i} access"} for i in range(4)]
-    ,
+    + [
+        {
+            "name": f"access_level_{i}",
+            "description": f"paths that require level {i} access",
+        }
+        for i in range(4)
+    ],
     docs_url="/documentation",
     redoc_url="/re_documentation",
 )

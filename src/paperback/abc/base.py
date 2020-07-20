@@ -62,7 +62,7 @@ class Base(metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    def create_router(self, token: TokenTester,) -> APIRouter:
+    def create_router(self, token_tester: TokenTester,) -> APIRouter:
         """
         creates Router to mount to the main app
 

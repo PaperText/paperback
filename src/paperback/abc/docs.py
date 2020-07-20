@@ -1,29 +1,29 @@
 from abc import ABCMeta
+from typing import Any, Dict, List, Callable, ClassVar, NoReturn, Optional
 from datetime import datetime
-from typing import List, Callable, ClassVar, NoReturn, Optional, Dict, Any
 
-from fastapi import Body, APIRouter, Query
+from fastapi import Body, Query, APIRouter
 
 from .base import Base
 from .models import (
     Corpus,
     Document,
+    MetaData,
     UserInfo,
     Dictionary,
-    TokenTester,
-    MinimalCorpus,
     FullCorpus,
-    MetaData,
-    MinimalDocument,
+    TokenTester,
     FullDocument,
-    MinimalDictionary,
+    MinimalCorpus,
     FullDictionary,
-    LexicsAnalyzeReq,
-    LexicsAnalyzeRes,
-    PredicatesAnalyzeReq,
-    PredicatesAnalyzeRes,
+    MinimalDocument,
     StatsAnalyzeReq,
     StatsAnalyzeRes,
+    LexicsAnalyzeReq,
+    LexicsAnalyzeRes,
+    MinimalDictionary,
+    PredicatesAnalyzeReq,
+    PredicatesAnalyzeRes,
 )
 
 

@@ -1,7 +1,7 @@
+from typing import Any, Dict, List, Union, Callable, Optional, Protocol
 from datetime import datetime
-from typing import List, Union, Callable, Optional, Protocol, Dict, Any
 
-from pydantic import BaseModel, Field
+from pydantic import Field, BaseModel
 
 
 class Credentials(BaseModel):
@@ -10,14 +10,20 @@ class Credentials(BaseModel):
 
 
 class NewUser(Credentials):
-    full_name: Optional[str] = None
+    fullname: Optional[str] = None
+
+
+class NewInvitedUser(NewUser):
     invitation_code: str
 
 
-class UserInfo(BaseModel):
+class MinimalUserInfo(BaseModel):
     username: str
-    full_name: Optional[str] = None
-    organization: str = "Public"
+    fullname: Optional[str] = None
+
+
+class UserInfo(MinimalUserInfo):
+    organisation: str = "public"
     access_level: int = 0
 
 
@@ -25,15 +31,35 @@ class FullUserInfo(Credentials, UserInfo):
     pass
 
 
+class MinimalInviteCode(BaseModel):
+    docs: List[str] = []
+    organisation: Optional[str] = "public"
+
+
 class InviteCode(BaseModel):
-    issuer_id: str
     code: str
+    issuer_id: str
+    organisation: str
+
+
+class FullInviteCode(InviteCode):
     docs: List[str] = []
 
 
-class UpdatePassword(BaseModel):
-    old_password: str
+class UserUpdateUsername(BaseModel):
+    new_username: str
+
+
+class UserUpdateFullName(BaseModel):
+    new_fullname: str
+
+
+class UserUpdatePassword(BaseModel):
     new_password: str
+
+
+class UserChangePassword(UserUpdatePassword):
+    old_password: str
 
 
 class TokenTester(Protocol):
@@ -45,13 +71,21 @@ class TokenTester(Protocol):
         ...
 
 
+class OrgUpdateOrgId(BaseModel):
+    new_org_id: str
+
+
+class OrgUpdateName(BaseModel):
+    new_name: str
+
+
 class MinimalOrganisation(BaseModel):
     org_id: str
     name: Optional[str] = None
 
 
 class Organisation(MinimalOrganisation):
-    users: List[UserInfo]
+    users: List[str]
 
 
 class MinimalDocument(BaseModel):
@@ -78,6 +112,7 @@ class MinimalCorpus(BaseModel):
     minimal information about corpus,
     used as child corpus when reading parent corpus
     """
+
     name: Optional[str] = None
     corpus_id: str
 
@@ -106,8 +141,7 @@ class FullDictionary(Dictionary):
 
 class AnalyzeReq(BaseModel):
     entity_ids: List[str] = Field(
-        ...,
-        title="list of documents and corpuses to analyze",
+        ..., title="list of documents and corpuses to analyze",
     )
 
 
@@ -163,4 +197,5 @@ class StatsAnalyzeRes(BaseModel):
     `corp:***` for stats about corpus (also a set of documents)\n
     `doc:***` for stats about document
     """
+
     response: Dict[str, StatsAnalyzePreRes]
