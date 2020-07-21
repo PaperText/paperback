@@ -1,6 +1,7 @@
 PaperBack
 =========
 [![Documentation Status](https://readthedocs.org/projects/paperback/badge/?version=latest&style=flat-square)](https://paperback.readthedocs.io/en/latest/?badge=latest)
+[![Docker Repository on Quay](https://quay.io/repository/randomunrandom/paperback/status?style=flat-square)](https://quay.io/repository/randomunrandom/paperback)
 \
 [![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg?style=flat-square)](https://github.com/psf/black)
 [![GitHub license](https://img.shields.io/github/license/PaperText/paperback?style=flat-square)](https://github.com/PaperText/paperback/blob/master/LICENSE)
