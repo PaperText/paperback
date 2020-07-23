@@ -6,23 +6,25 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from .base import Base
 from .models import (
-    NewUser,
+    InviteCodeListRes, NewUser,
+    OrgListRes, TokenRes,
     UserInfo,
     InviteCode,
     Credentials,
     TokenTester,
-    FullUserInfo,
     Organisation,
+    TokenListRes,
     OrgUpdateName,
     FullInviteCode,
+    NewInvitedUser,
     OrgUpdateOrgId,
-    MinimalUserInfo,
     MinimalInviteCode,
     UserChangePassword,
     UserUpdateFullName,
     UserUpdatePassword,
     UserUpdateUsername,
     MinimalOrganisation,
+    UserListResponse,
 )
 from ..exceptions import TokenException
 
@@ -90,13 +92,13 @@ class BaseAuth(Base, metaclass=ABCMeta):
         if greater_or_equal is None and one_of is None:
             raise ValueError("either greater_or_equal or one_of should be set")
 
-        def fn(authorization: str = Header(...)) -> UserInfo:
-            user: UserInfo = self.token2user(authorization)
+        def fn(Authentication: str = Header(...)) -> UserInfo:
+            user: UserInfo = self.token2user(Authentication)
             if (
                 user.access_level < greater_or_equal
                 or user.access_level not in one_of
             ):
-                raise TokenException(token=authorization)
+                raise TokenException(token=Authentication)
             return user
 
         return fn
@@ -449,48 +451,56 @@ class BaseAuth(Base, metaclass=ABCMeta):
 
         # signin and signout
         @router.post(
-            "/signin", tags=["auth_module", "auth"], response_model=str
+            "/signin", tags=["auth_module", "auth"], response_model=TokenRes
         )
-        async def signin(user: Credentials) -> str:
+        async def signin(user: Credentials) -> TokenRes:
             """
             generates new token if provided username and password are correct
             """
             return await self.sign_in(user.username, user.password)
 
         @router.post(
-            "/signup", tags=["auth_module", "auth"], response_model=str
+            "/signup",
+            tags=["auth_module", "auth"],
+            response_model=TokenRes,
         )
-        async def signup(user: NewUser) -> str:
+        async def signup(user: NewInvitedUser) -> TokenRes:
             """
             creates new user with provided
                 username, password, organization,
                 access_level and invitation code
             """
-            return True
+            return await self.sign_up(user)
 
         @router.get("/signout", tags=["auth_module", "auth"])
-        async def signout():
+        async def signout(
+            requester: UserInfo = Depends(token_tester(greater_or_equal=0)),
+        ) -> NoReturn:
             """
-            removes token from request
+            removes token from db of tokens
             """
-            return True
+            await self.get_tokens(user_id=requester.username)
 
         @router.get("/signout_everywhere", tags=["auth_module", "auth"])
-        async def signout_everywhere():
+        async def signout_everywhere() -> NoReturn:
             """
             removes all tokens, associated with tokens user
             """
-            return True
 
         # tokens
         @router.get(
-            "/tokens", tags=["auth_module", "token"], response_model=List[str]
+            "/tokens",
+            tags=["auth_module", "token"],
+            response_model=TokenListRes,
         )
-        async def get_tokens() -> List[str]:
+        async def get_tokens(
+            requester: UserInfo = Depends(token_tester(greater_or_equal=0)),
+            # authorization: str = Header(...),
+        ) -> TokenListRes:
             """
             returns all tokens, associated with user from token in request
             """
-            return ["tokens"]
+            return await self.get_tokens(user_id=requester.username)
 
         @router.delete("/token", tags=["auth_module", "token"])
         async def delete_token(token_identifier: str = Body(...)):
@@ -522,10 +532,10 @@ class BaseAuth(Base, metaclass=ABCMeta):
             """
             returns all tokens, associated with user from token in request
             """
-            return True
+            return requester
 
-        @router.get("/usrs", tags=["auth_module", "user", "access_level_3"])
-        async def read_all_users(user: NewUser):
+        @router.get("/usrs", tags=["auth_module", "user", "access_level_3"], response_model=UserListResponse)
+        async def read_all_users() -> UserListResponse:
             """
             reads all existing users
 
@@ -543,7 +553,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
             * created users are assigned to public organisation
             * created users loa is 1
             """
-            return await self.create_user(
+            await self.create_user(
                 user.username, user.password, user.fullname, 1, "public",
             )
 
@@ -637,10 +647,10 @@ class BaseAuth(Base, metaclass=ABCMeta):
         @router.get(
             "/orgs",
             tags=["auth_module", "organisation", "access_level_3"],
-            response_model=List[MinimalOrganisation],
+            response_model=OrgListRes,
             dependencies=[Depends(token_tester(greater_or_equal=3))],
         )
-        async def read_organisations() -> List[MinimalOrganisation]:
+        async def read_organisations() -> OrgListRes:
             """
             returns list of organisations
             """
@@ -688,7 +698,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
             dependencies=[Depends(token_tester(greater_or_equal=2))],
         )
         async def update_name_of_org(
-            org_id: str, new_name: str = Body(...),
+            org_id: str, new_name: OrgUpdateName,
         ):
             """
             changes name of organisation with given org_id to new_name
@@ -768,11 +778,11 @@ class BaseAuth(Base, metaclass=ABCMeta):
         @router.get(
             "/invites",
             tags=["auth_module", "invite", "access_level_1"],
-            response_model=List[InviteCode],
+            response_model=InviteCodeListRes,
         )
         async def read_invite_codes(
             requester: UserInfo = Depends(token_tester(greater_or_equal=1)),
-        ) -> List[InviteCode]:
+        ) -> InviteCodeListRes:
             """
             acquires invite codes
             """
@@ -781,7 +791,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
         @router.get(
             "/invite/{invite_code}",
             tags=["auth_module", "invite", "access_level_1"],
-            response_model=List[InviteCode],
+            response_model=FullInviteCode,
         )
         async def read_invite_code(
             invite_code: str,

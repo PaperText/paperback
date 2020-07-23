@@ -1,7 +1,28 @@
-from typing import Any, Dict, List, Union, Callable, Optional, Protocol
+from typing import (
+    Any,
+    Dict,
+    List,
+    Union,
+    TypeVar,
+    Callable,
+    Optional,
+    Protocol,
+)
 from datetime import datetime
 
 from pydantic import Field, BaseModel
+
+
+class BaseRes(BaseModel):
+    response: Any
+
+
+class TokenRes(BaseRes):
+    response: str
+
+
+class TokenListRes(BaseRes):
+    response: List[str]
 
 
 class Credentials(BaseModel):
@@ -17,18 +38,19 @@ class NewInvitedUser(NewUser):
     invitation_code: str
 
 
-class MinimalUserInfo(BaseModel):
+class UserInfo(BaseModel):
     username: str
     fullname: Optional[str] = None
-
-
-class UserInfo(MinimalUserInfo):
     organisation: Optional[str]
     access_level: int = 0
 
 
-class FullUserInfo(Credentials, UserInfo):
-    pass
+# class FullUserInfo(Credentials, UserInfo):
+#     pass
+
+
+class UserListResponse(BaseModel):
+    response: List[UserInfo]
 
 
 class MinimalInviteCode(BaseModel):
@@ -44,6 +66,10 @@ class InviteCode(BaseModel):
 
 class FullInviteCode(InviteCode):
     docs: List[str] = []
+
+
+class InviteCodeListRes(BaseModel):
+    response: List[InviteCode]
 
 
 class UserUpdateUsername(BaseModel):
@@ -71,21 +97,24 @@ class TokenTester(Protocol):
         ...
 
 
+class MinimalOrganisation(BaseModel):
+    org_id: str
+    name: Optional[str] = None
+
+
+class OrgListRes(BaseModel):
+    response: List[MinimalOrganisation]
+
+class Organisation(MinimalOrganisation):
+    users: List[str]
+
+
 class OrgUpdateOrgId(BaseModel):
     new_org_id: str
 
 
 class OrgUpdateName(BaseModel):
     new_name: str
-
-
-class MinimalOrganisation(BaseModel):
-    org_id: str
-    name: Optional[str] = None
-
-
-class Organisation(MinimalOrganisation):
-    users: List[str]
 
 
 class MinimalDocument(BaseModel):
@@ -166,8 +195,11 @@ class LexicsAnalyzePreRes(BaseModel):
     spans: List[Spans]
 
 
-class LexicsAnalyzeRes(BaseModel):
-    response: List[LexicsAnalyzePreRes]
+# class LexicsAnalyzeRes(BaseModel):
+#     response: List[LexicsAnalyzePreRes]
+
+
+LexicsAnalyzeRes = List[LexicsAnalyzePreRes]
 
 
 class PredicatesAnalyzeReq(AnalyzeReq):
