@@ -20,8 +20,8 @@ api = FastAPI(
         {"name": "organisation", "description": "organisation manipulation"},
         {"name": "invite", "description": "invite codes manipulation"},
         {"name": "docs", "description": "document manipulation"},
-        {"name": "dict", "description": "dictionaries manipulation"},
         {"name": "corps", "description": "corpus manipulation"},
+        {"name": "dict", "description": "dictionaries manipulation"},
         {"name": "analyzer", "description": "analyzer usage"},
     ]
     + [
