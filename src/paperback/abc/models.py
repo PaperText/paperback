@@ -54,18 +54,14 @@ class UserListResponse(BaseModel):
 
 
 class MinimalInviteCode(BaseModel):
-    docs: List[str] = []
-    organisation: Optional[str]
+    organisation: str
 
 
 class InviteCode(BaseModel):
     code: str
     issuer_id: str
     organisation: str
-
-
-class FullInviteCode(InviteCode):
-    docs: List[str] = []
+    num_registered: int
 
 
 class InviteCodeListRes(BaseModel):

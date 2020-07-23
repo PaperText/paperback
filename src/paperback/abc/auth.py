@@ -773,12 +773,12 @@ class BaseAuth(Base, metaclass=ABCMeta):
         @router.get(
             "/invite/{invite_code}",
             tags=["auth_module", "invite", "access_level_1"],
-            response_model=FullInviteCode,
+            response_model=InviteCode,
         )
         async def read_invite_code(
             invite_code: str,
             requester: UserInfo = Depends(token_tester(greater_or_equal=1)),
-        ) -> FullInviteCode:
+        ) -> InviteCode:
             """
             acquires info about invite code with given code
             """
