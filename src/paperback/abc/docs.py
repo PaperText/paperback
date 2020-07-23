@@ -5,26 +5,7 @@ from datetime import datetime
 from fastapi import Body, Query, APIRouter
 
 from .base import Base
-from .models import (
-    Corpus,
-    Document,
-    MetaData,
-    UserInfo,
-    Dictionary,
-    FullCorpus,
-    TokenTester,
-    FullDocument,
-    MinimalCorpus,
-    FullDictionary,
-    MinimalDocument,
-    StatsAnalyzeReq,
-    StatsAnalyzeRes,
-    LexicsAnalyzeReq,
-    LexicsAnalyzeRes,
-    MinimalDictionary,
-    PredicatesAnalyzeReq,
-    PredicatesAnalyzeRes,
-)
+from .models import *
 
 
 class BaseDocs(Base, metaclass=ABCMeta):
@@ -48,23 +29,22 @@ class BaseDocs(Base, metaclass=ABCMeta):
 
         # document access
         @router.get(
-            "/docs",
-            tags=["docs_module", "docs"],
-            response_model=List[MinimalDocument],
+            "/docs", tags=["docs_module", "docs"], response_model=ReadDocs,
         )
         def read_docs(
+            contains: Optional[str] = None,
             author: Optional[str] = None,
             created_before: Optional[datetime] = None,
             created_after: Optional[datetime] = None,
-            metadata: Optional[str] = Query(None),
-        ) -> List[MinimalDocument]:
+            tags: Optional[List[str]] = Query(None),
+        ) -> ReadDocs:
             """
             returns list of all documents, accessible to user
             """
             return []
 
         @router.post("/doc", tags=["docs_module", "docs"])
-        def create_doc(doc: Document):
+        def create_doc(doc: CreateDoc):
             """
             creates document with given id if it's not occupied
             """
@@ -73,9 +53,9 @@ class BaseDocs(Base, metaclass=ABCMeta):
         @router.get(
             "/doc/{doc_id}",
             tags=["docs_module", "docs"],
-            response_model=FullDocument,
+            response_model=ReadDoc,
         )
-        def read_doc(doc_id: str) -> FullDocument:
+        def read_doc(doc_id: str) -> ReadDoc:
             """
             returns document with given id if it exists
             """
@@ -84,7 +64,7 @@ class BaseDocs(Base, metaclass=ABCMeta):
         @router.put(
             "/doc/{doc_id}", tags=["docs_module", "docs"],
         )
-        def update_doc(doc_id: str, doc: Document):
+        def update_doc(doc_id: str, doc: CreateDoc):
             """
             updates document with given id if it exists
             """
@@ -101,16 +81,16 @@ class BaseDocs(Base, metaclass=ABCMeta):
         @router.get(
             "/corps",
             tags=["docs_module", "corps"],
-            response_model=List[MinimalCorpus],
+            response_model=ReadCorps,
         )
-        def read_corps() -> List[MinimalCorpus]:
+        def read_corps() -> ReadCorps:
             """
             returns list of all corpuses, accessible to user
             """
             return []
 
         @router.post("/corp", tags=["docs_module", "corps"])
-        def create_corp(corp: Corpus):
+        def create_corp(corp: CreateCorp):
             """
             creates corpus with given id if it's not occupied
             """
@@ -119,9 +99,9 @@ class BaseDocs(Base, metaclass=ABCMeta):
         @router.get(
             "/corp/{corp_id}",
             tags=["docs_module", "corps"],
-            response_model=FullCorpus,
+            response_model=ReadCorp,
         )
-        def read_corp(corp_id: str) -> FullCorpus:
+        def read_corp(corp_id: str) -> ReadCorp:
             """
             returns corpus with given id if it exists
             """
@@ -130,7 +110,7 @@ class BaseDocs(Base, metaclass=ABCMeta):
         @router.put(
             "/corp/{corp_id}", tags=["docs_module", "corps"],
         )
-        def update_corp(corp_id: str, corp: Corpus):
+        def update_corp(corp_id: str, corp: CreateCorp):
             """
             updates corpus with given id if it exists
             """
@@ -149,16 +129,16 @@ class BaseDocs(Base, metaclass=ABCMeta):
         @router.get(
             "/dicts",
             tags=["docs_module", "dict"],
-            response_model=List[MinimalDictionary],
+            response_model=ReadDicts,
         )
-        def read_dicts() -> List[MinimalDictionary]:
+        def read_dicts() -> ReadDicts:
             """
             returns list of all dictionaries, accessible to user
             """
             return []
 
         @router.post("/dict", tags=["docs_module", "dict"])
-        def create_dict(dict: Dictionary):
+        def create_dict(dict: CreateDict):
             """
             creates dictionaries with given id if it's not occupied
             """
@@ -167,9 +147,9 @@ class BaseDocs(Base, metaclass=ABCMeta):
         @router.get(
             "/dict/{dict_id}",
             tags=["docs_module", "dict"],
-            response_model=FullDictionary,
+            response_model=ReadDict,
         )
-        def read_dict(dict_id: str) -> FullDictionary:
+        def read_dict(dict_id: str) -> ReadDict:
             """
             returns dictionaries with given id if it exists
             """
@@ -178,7 +158,7 @@ class BaseDocs(Base, metaclass=ABCMeta):
         @router.put(
             "/dict/{dict_id}", tags=["docs_module", "dict"],
         )
-        def update_dict(dict_id: str, dict: Dictionary):
+        def update_dict(dict_id: str, dict: CreateDict):
             """
             updates dictionaries with given id if it exists
             """

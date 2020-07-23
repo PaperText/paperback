@@ -5,27 +5,7 @@ from fastapi import Body, Header, Depends, FastAPI, APIRouter
 from fastapi.middleware.cors import CORSMiddleware
 
 from .base import Base
-from .models import (
-    InviteCodeListRes, NewUser,
-    OrgListRes, TokenRes,
-    UserInfo,
-    InviteCode,
-    Credentials,
-    TokenTester,
-    Organisation,
-    TokenListRes,
-    OrgUpdateName,
-    FullInviteCode,
-    NewInvitedUser,
-    OrgUpdateOrgId,
-    MinimalInviteCode,
-    UserChangePassword,
-    UserUpdateFullName,
-    UserUpdatePassword,
-    UserUpdateUsername,
-    MinimalOrganisation,
-    UserListResponse,
-)
+from .models import *
 from ..exceptions import TokenException
 
 
@@ -460,9 +440,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
             return await self.sign_in(user.username, user.password)
 
         @router.post(
-            "/signup",
-            tags=["auth_module", "auth"],
-            response_model=TokenRes,
+            "/signup", tags=["auth_module", "auth"], response_model=TokenRes,
         )
         async def signup(user: NewInvitedUser) -> TokenRes:
             """
@@ -534,7 +512,11 @@ class BaseAuth(Base, metaclass=ABCMeta):
             """
             return requester
 
-        @router.get("/usrs", tags=["auth_module", "user", "access_level_3"], response_model=UserListResponse)
+        @router.get(
+            "/usrs",
+            tags=["auth_module", "user", "access_level_3"],
+            response_model=UserListResponse,
+        )
         async def read_all_users() -> UserListResponse:
             """
             reads all existing users

@@ -105,6 +105,7 @@ class MinimalOrganisation(BaseModel):
 class OrgListRes(BaseModel):
     response: List[MinimalOrganisation]
 
+
 class Organisation(MinimalOrganisation):
     users: List[str]
 
@@ -117,57 +118,70 @@ class OrgUpdateName(BaseModel):
     new_name: str
 
 
-class MinimalDocument(BaseModel):
-    name: Optional[str] = None
-    doc_id: str
+# +------+
+# | Docs |
+# +------+
+
+
+class DMEntityCreateBase(BaseModel):
+    owner: str
     private: bool = False
+    name: Optional[str] = None
 
 
-MetaData = Dict[str, Union[str, List[str], Dict[str, str]]]
+class DMEntityReadBase(DMEntityCreateBase):
+    creator: str
 
 
-class Document(MinimalDocument):
+class CreateDoc(DMEntityCreateBase):
     text: str
     author: Optional[str] = None
     created: Optional[datetime] = None
-    metadata: Optional[MetaData] = None
-    private: bool = False
+    tags: Optional[List[str]] = None
 
 
-class FullDocument(Document):
-    creator_id: str
+class ReadMinimalDoc(DMEntityReadBase):
+    doc_id: str
 
 
-class MinimalCorpus(BaseModel):
-    """
-    minimal information about corpus,
-    used as child corpus when reading parent corpus
-    """
-
-    name: Optional[str] = None
-    corpus_id: str
+class ReadDoc(ReadMinimalDoc):
+    text: str
+    author: Optional[str] = None
+    created: Optional[datetime] = None
+    tags: Optional[List[str]] = None
 
 
-class Corpus(MinimalCorpus):
+class ReadDocs(BaseModel):
+    response: List[ReadMinimalDoc]
+
+
+class CreateCorp(DMEntityCreateBase):
     include: List[str]
 
 
-class FullCorpus(MinimalCorpus):
-    includes: List[Union[MinimalDocument, MinimalCorpus]]
-    creator_id: str
+class ReadMinimalCorp(DMEntityReadBase):
+    corpus_id: str
 
 
-class MinimalDictionary(BaseModel):
-    name: Optional[str] = None
-    dic_id: str
+class ReadCorp(ReadMinimalCorp):
+    includes: List[Union[ReadMinimalDoc, ReadMinimalCorp]]
 
 
-class Dictionary(MinimalDictionary):
+class ReadCorps(BaseModel):
+    response: List[ReadMinimalCorp]
+
+
+class CreateDict(DMEntityCreateBase):
     words: List[str]
 
 
-class FullDictionary(Dictionary):
-    creator_id: str
+class ReadDict(DMEntityReadBase):
+    dic_id: str
+    words: List[str]
+
+
+class ReadDicts(BaseModel):
+    response: List[ReadDict]
 
 
 class AnalyzeReq(BaseModel):
@@ -195,11 +209,8 @@ class LexicsAnalyzePreRes(BaseModel):
     spans: List[Spans]
 
 
-# class LexicsAnalyzeRes(BaseModel):
-#     response: List[LexicsAnalyzePreRes]
-
-
-LexicsAnalyzeRes = List[LexicsAnalyzePreRes]
+class LexicsAnalyzeRes(BaseModel):
+    response: List[LexicsAnalyzePreRes]
 
 
 class PredicatesAnalyzeReq(AnalyzeReq):
