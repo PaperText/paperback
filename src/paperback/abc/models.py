@@ -123,6 +123,7 @@ class DMEntityCreateBase(BaseModel):
     owner: str
     private: bool = False
     name: Optional[str] = None
+    has_access: Optional[List[str]] = None
 
 
 class DMEntityReadBase(DMEntityCreateBase):
@@ -246,3 +247,15 @@ class StatsAnalyzeRes(BaseModel):
     """
 
     response: Dict[str, StatsAnalyzePreRes]
+
+
+class CompareAnalyzeReq(BaseModel):
+    first_set: List[str]
+    second_set: List[str]
+    statistics: List[str]
+
+
+class CompareAnalyzeRes(BaseModel):
+    first_set: Dict[str, StatsAnalyzePreRes]
+    second_set: Dict[str, StatsAnalyzePreRes]
+    correlation: int

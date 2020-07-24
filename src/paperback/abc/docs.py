@@ -222,5 +222,18 @@ class BaseDocs(Base, metaclass=ABCMeta):
             """
             return ""
 
+        @router.post(
+            "/analyze/compare",
+            tags=["docs_module", "analyzer"],
+            response_model=CompareAnalyzeRes,
+        )
+        def analyze_compare(
+            req: CompareAnalyzeReq, analyze_subcorps: bool = False
+        ) -> CompareAnalyzeRes:
+            """
+            analyzes stats on lists of given documents
+            """
+            return ""
+
         self.add_routes(router)
         return router
