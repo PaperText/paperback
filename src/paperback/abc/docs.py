@@ -79,9 +79,7 @@ class BaseDocs(Base, metaclass=ABCMeta):
 
         # corpus management
         @router.get(
-            "/corps",
-            tags=["docs_module", "corps"],
-            response_model=ReadCorps,
+            "/corps", tags=["docs_module", "corps"], response_model=ReadCorps,
         )
         def read_corps() -> ReadCorps:
             """
@@ -127,9 +125,7 @@ class BaseDocs(Base, metaclass=ABCMeta):
 
         # dictionary management
         @router.get(
-            "/dicts",
-            tags=["docs_module", "dict"],
-            response_model=ReadDicts,
+            "/dicts", tags=["docs_module", "dict"], response_model=ReadDicts,
         )
         def read_dicts() -> ReadDicts:
             """

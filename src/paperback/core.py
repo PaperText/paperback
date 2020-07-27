@@ -1,7 +1,10 @@
+import logging
 from copy import deepcopy
 from typing import Any, Dict, List, NoReturn, MutableMapping
 from pathlib import Path
 
+import uvicorn
+from uvicorn.logging import ColourizedFormatter
 from config import (
     ConfigurationSet,
     config_from_env,
@@ -12,6 +15,7 @@ from fastapi import FastAPI, Request, status
 from pkg_resources import iter_entry_points
 from fastapi.responses import JSONResponse
 
+from .__version__ import __version__
 from .abc import BaseAuth, BaseDocs, BaseMisc
 from .exceptions import (
     TokenException,
@@ -20,72 +24,130 @@ from .exceptions import (
     DuplicateModuleError,
 )
 
+api = FastAPI(
+    title="PaperText backend [Paperback]",
+    description="Backend API for PaperText",
+    version=__version__,
+    openapi_tags=[
+        {"name": "auth", "description": "authorization"},
+        {"name": "token", "description": "token manipulation"},
+        {"name": "user", "description": "users manipulation"},
+        {"name": "organisation", "description": "organisation manipulation"},
+        {"name": "invite", "description": "invite codes manipulation"},
+        {"name": "docs", "description": "document manipulation"},
+        {"name": "corps", "description": "corpus manipulation"},
+        {"name": "dict", "description": "dictionaries manipulation"},
+        {"name": "analyzer", "description": "analyzer usage"},
+    ]
+    + [
+        {
+            "name": f"access_level_{i}",
+            "description": f"paths that require level {i} access",
+        }
+        for i in range(4)
+    ],
+    docs_url="/documentation",
+    redoc_url="/re_documentation",
+)
+
 
 class App:
-    def __init__(self, config_path: Path, create_config: bool, verbose: bool):
+    def __init__(self, config_path, log_level):
         """
+        main class for creating PaperBack instance
         """
-        self.verbose = verbose
-        self.config_dir_path = config_path.resolve()
+        self.config_dir = config_path.resolve()
+        self.log_level = log_level
 
-        if self.config_dir_path.exists() and not self.config_dir_path.is_dir():
-            raise ValueError(
-                f"given config path ({self.config_dir_path}) isn't a dir"
-            )
-        if create_config:
-            self.config_dir_path.mkdir(parents=True, exist_ok=True)
-        elif not self.config_dir_path.exists():
-            raise ValueError(
-                f"given config folder ({self.config_dir_path}) doesn't exist"
-            )
+        self.logger = logging.getLogger("paperback")
+        self.logger.setLevel(self.log_level)
+        self.tmp_stream_handler = logging.StreamHandler()
+        self.tmp_stream_handler.setLevel("DEBUG")
+        self.logger.addHandler(self.tmp_stream_handler)
 
-        self.config_file_path = self.config_dir_path / "config.toml"
-        if create_config:
-            self.config_file_path.touch()
-        if not self.config_file_path.exists():
-            raise ValueError(
-                f"given config path ({self.config_dir_path})"
-                " doesn't contain 'config.toml'"
-            )
+        self.logger.debug("setting temporary console-only logger")
 
-        self.modules_dir_path = self.config_dir_path / "modules"
-        if (
-            self.modules_dir_path.exists()
-            and not self.modules_dir_path.is_dir()
-        ):
-            raise ValueError(
-                f"file {self.modules_dir_path} exists and isn't a directory"
-            )
-        if create_config:
-            self.modules_dir_path.mkdir(parents=True, exist_ok=True)
-        elif not self.modules_dir_path.exists():
-            raise ValueError(
-                f"given config path ({self.config_dir_path})"
-                " doesn't contain 'modules' directory"
-            )
+        self.logger.debug("checking for logging folder")
+        self.logs_dir = self.config_dir / "logs"
+        if self.logs_dir.exists() and self.logs_dir.is_dir():
+            self.logger.debug("found logging folder")
+        else:
+            self.logger.debug("can't find logging folder, creating it")
+            self.logs_dir.mkdir(parents=True)
+            self.logger.debug("created logging folder")
 
-        self.storage_dir: Path = (self.config_dir_path / "storage").resolve()
-        if not self.storage_dir.exists():
-            self.storage_dir.mkdir(exist_ok=True)
+        self.logger.debug("configuring logger")
+        self.setup_logging()
+        self.logger.handlers = []
 
+        self.logger.info("initializing PaperBack app")
+
+        self.logger.debug("searching for config.toml file")
+        self.config_file = self.config_dir/"config.toml"
+        if self.config_file.exists() and self.config_file.is_file():
+            self.logger.info("found config.toml file")
+        else:
+            self.logger.debug("can't find config.toml file, creating it")
+            self.config_file.touch()
+            self.logger.info("created config.toml file")
+
+        self.logger.debug("searching for modules folder")
+        self.modules_dir = self.config_dir / "modules"
+        if self.modules_dir.exists() and self.modules_dir.is_dir():
+            self.logger.info("found modules folder")
+        else:
+            self.logger.debug("can't find modules folder")
+            self.config_file.touch()
+            self.logger.info("created modules folder")
+
+        self.logger.debug("searching for storage folder")
+        self.storage_dir: Path = self.config_dir / "storage"
+        if self.storage_dir.exists() and self.storage_dir.is_dir():
+            self.logger.info("found storage folder")
+        else:
+            self.logger.debug("can't find storage folder")
+            self.config_file.touch()
+            self.logger.info("created storage folder")
+
+
+        self.default_config: Dict[str, Any] = {
+            "core": {"host": "127.0.0.1", "port": "7878", },
+        }
         self.classes: MutableMapping[str, Any] = {}
         self.modules: MutableMapping[str, Any] = {}
 
-        self.default_dict: Dict[str, Any] = {
-            "core": {"host": "127.0.0.1", "port": "7878"}
-        }
-        self.cfg: ConfigurationSet = ConfigurationSet(
+    @property
+    def cfg(self) -> ConfigurationSet:
+        cfg = ConfigurationSet(
             config_from_env(prefix="PT", separator="__"),
-            config_from_toml(str(self.config_file_path), read_from_file=True),
-            config_from_dict(self.default_dict),
+            config_from_toml(self.config_file, read_from_file=True),
+            config_from_dict(self.default_config),
+        )
+        return cfg
+
+    def setup_logging(self):
+        root_logger = logging.getLogger()
+
+        text_formatter = logging.Formatter(
+            "{levelname:<8} in {name:<16} at {asctime:<16}: {message}", "%Y-%m-%d %H:%M:%S", style="{"
         )
 
-    def update_cfg(self):
-        self.cfg = ConfigurationSet(
-            config_from_env(prefix="PT", separator="__"),
-            config_from_toml(str(self.config_file_path), read_from_file=True),
-            config_from_dict(self.default_dict),
+        console_formatter = ColourizedFormatter(
+            "{levelprefix:<8} @ {name:<10} : {message}", "%Y-%m-%d %H:%M:%S", style="{", use_colors=True
         )
+
+        fileHandler = logging.handlers.RotatingFileHandler(
+            self.logs_dir / "root.log", maxBytes=1024**3, backupCount=20,
+        )
+        fileHandler.setFormatter(text_formatter)
+        fileHandler.setLevel("DEBUG")
+        root_logger.addHandler(fileHandler)
+
+        consoleHandler = logging.StreamHandler()
+        consoleHandler.setFormatter(console_formatter)
+        consoleHandler.setLevel(self.log_level)
+        root_logger.addHandler(consoleHandler)
+
 
     def find_local_modules(self) -> NoReturn:
         pass
@@ -117,6 +179,7 @@ class App:
     #             print(f"loaded {module}")
 
     def find_pip_modules(self) -> NoReturn:
+        self.logger.info("searching for pip modules")
         for entry_point in iter_entry_points("paperback.modules"):
             name = entry_point.name
             cls = entry_point.load()
@@ -125,29 +188,33 @@ class App:
                 name = "auth"
             elif cls.TYPE == "DOCS":
                 name = "docs"
+            self.logger.debug("found %s module", name)
 
             if not any(
                 issubclass(cls, class_i)
                 for class_i in [BaseMisc, BaseAuth, BaseDocs]
             ):
+                self.logger.error("module %s doesn't inherit from BaseMisc, BaseAuth or BaseDocs", name)
                 raise InheritanceError(
-                    "anu module should ne subclass of Base or BaseAuth of BaseDocs"
+                    "any module should ne subclass of Base or BaseAuth of BaseDocs"
                 )
 
             if name in self.classes:
+                self.logger.error("module %s already exists", name)
                 raise DuplicateModuleError(
-                    f'module with name "{name}" already registered'
+                    f"module with name \"{name}\" already registered"
                 )
 
             self.classes[name] = cls
-            self.default_dict[name] = deepcopy(cls.DEFAULTS)
-        self.update_cfg()
+            self.default_config[name] = deepcopy(cls.DEFAULTS)
 
     def load_modules(self) -> NoReturn:
+        self.logger.info("loading modules")
         for name, cls in sorted(
             self.classes.items(),
             key=lambda el: 1 if el[0] in {"auth", "docs"} else 0,
         ):
+            self.logger.debug("loading %s module", name)
             if cls.requires_dir:
                 module_dir = self.storage_dir / name
                 if not module_dir.exists():
@@ -169,6 +236,9 @@ class App:
             self.modules[name] = module
 
     def add_handlers(self, api: FastAPI) -> NoReturn:
+        self.logger.info("setting up API handlers")
+
+        self.logger.debug("adding TokenException handler")
         @api.exception_handler(TokenException)
         async def token_exception_handler(
             request: Request, exc: TokenException
@@ -178,6 +248,7 @@ class App:
                 content={"message": f"Error: invalid token ({exc.token})"},
             )
 
+        self.logger.debug("adding GeneralException handler")
         @api.exception_handler(GeneralException)
         async def exception_handler(request: Request, exc: GeneralException):
             return JSONResponse(
@@ -188,9 +259,12 @@ class App:
                 },
             )
 
+        self.logger.debug("adding CORP policy from auth module")
         self.modules["auth"].add_CORS(api)
 
     def add_routers(self, api: FastAPI) -> NoReturn:
+        self.logger.info("adding routes from modules")
+
         token_tester = self.modules["auth"].token_tester
 
         for name, module in self.modules.items():
@@ -202,3 +276,19 @@ class App:
                 api.include_router(
                     router, prefix=f"/{name}",
                 )
+
+    def run(self):
+        self.find_pip_modules()
+        self.load_modules()
+        self.add_handlers(api)
+        self.add_routers(api)
+
+        uvicorn_log_config = uvicorn.config.LOGGING_CONFIG
+        del uvicorn_log_config["loggers"]
+        uvicorn.run(
+            "paperback.core:api",
+            host=self.cfg.core.host,
+            port=int(self.cfg.core.port),
+            log_config=uvicorn_log_config,
+            log_level=self.log_level.lower(),
+        )
