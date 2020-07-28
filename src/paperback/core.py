@@ -23,6 +23,7 @@ from .exceptions import (
     InheritanceError,
     DuplicateModuleError,
 )
+from .util import async_lib_name
 
 api = FastAPI(
     title="PaperText backend [Paperback]",
@@ -285,10 +286,13 @@ class App:
 
         uvicorn_log_config = uvicorn.config.LOGGING_CONFIG
         del uvicorn_log_config["loggers"]
+
+        self.logger.info("starting uvicorn with %s loop", async_lib_name)
         uvicorn.run(
             "paperback.core:api",
             host=self.cfg.core.host,
             port=int(self.cfg.core.port),
             log_config=uvicorn_log_config,
             log_level=self.log_level.lower(),
+            loop=async_lib_name,
         )
