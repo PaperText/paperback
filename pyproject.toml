@@ -34,6 +34,7 @@ email-validator = "^1.0"
 pydantic = "^1.4"
 python-multipart = "^0.0.5"
 fastapi = "^0.60.1"
+toml = "^0.10.1"
 
 [tool.poetry.dev-dependencies]
 pytest = "^5.2"
@@ -56,7 +57,7 @@ show_source = true
 max_line_length = 79
 
 [tool.flakehell.plugins]
-"flake8-*" = ["+*"]
+"flake8-fixme" = ["+*"]
 "pep8-naming" = ["+*"]
 "mccabe" = ["+*"]
 "pycodestyle" = ["+*"]
