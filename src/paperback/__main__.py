@@ -21,8 +21,17 @@ pyproject_path = pyproject_path.resolve()
 
 class Scripts:
     @staticmethod
-    def lint():
+    def lint_flakehell():
         call(f"python -m flakehell lint {src_path}".split(" "))
+
+    @staticmethod
+    def lint_mypy():
+        call(f"python -m mypy {src_path}".split(" "))
+
+    @staticmethod
+    def lint():
+        Scripts.lint_flakehell()
+        Scripts.lint_mypy()
 
     @staticmethod
     def fix_black():
