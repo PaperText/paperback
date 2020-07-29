@@ -1,12 +1,11 @@
 from abc import ABCMeta, abstractmethod
 from typing import List, Callable, ClassVar, NoReturn, Optional
 
-from fastapi import Body, Header, Depends, FastAPI, APIRouter
+from fastapi import Body, Header, Depends, FastAPI, APIRouter, status, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 
 from .base import Base
 from .models import *
-from ..exceptions import TokenException
 
 
 class BaseAuth(Base, metaclass=ABCMeta):
@@ -75,10 +74,13 @@ class BaseAuth(Base, metaclass=ABCMeta):
         def fn(Authentication: str = Header(...)) -> UserInfo:
             user: UserInfo = self.token2user(Authentication)
             if (
-                user.access_level < greater_or_equal
-                or user.access_level not in one_of
+                user.level_of_access < greater_or_equal
+                or user.level_of_access not in one_of
             ):
-                raise TokenException(token=Authentication)
+                raise HTTPException(
+                    status_code=status.HTTP_401_UNAUTHORIZED,
+                    detail="Could not validate credentials",
+                )
             return user
 
         return fn
@@ -200,7 +202,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
         username: str,
         password: str,
         full_name: str = None,
-        access_level: int = 0,
+        level_of_access: int = 0,
         organization: str = "Public",
     ) -> NoReturn:
         """

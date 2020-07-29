@@ -1,9 +1,10 @@
+from __future__ import annotations
+
 from typing import (
     Any,
     Dict,
     List,
     Union,
-    TypeVar,
     Callable,
     Optional,
     Protocol,
@@ -42,7 +43,7 @@ class UserInfo(BaseModel):
     username: str
     fullname: Optional[str] = None
     organisation: Optional[str]
-    access_level: int = 0
+    level_of_access: int = 0
 
 
 # class FullUserInfo(Credentials, UserInfo):

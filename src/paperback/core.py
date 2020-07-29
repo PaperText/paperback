@@ -18,8 +18,6 @@ from fastapi.responses import JSONResponse
 from .__version__ import __version__
 from .abc import BaseAuth, BaseDocs, BaseMisc
 from .exceptions import (
-    TokenException,
-    GeneralException,
     InheritanceError,
     DuplicateModuleError,
 )
@@ -238,27 +236,6 @@ class App:
 
     def add_handlers(self, api: FastAPI) -> NoReturn:
         self.logger.info("setting up API handlers")
-
-        self.logger.debug("adding TokenException handler")
-        @api.exception_handler(TokenException)
-        async def token_exception_handler(
-            request: Request, exc: TokenException
-        ):
-            return JSONResponse(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                content={"message": f"Error: invalid token ({exc.token})"},
-            )
-
-        self.logger.debug("adding GeneralException handler")
-        @api.exception_handler(GeneralException)
-        async def exception_handler(request: Request, exc: GeneralException):
-            return JSONResponse(
-                status_code=exc.code,
-                content={
-                    "message": "An error occurred",
-                    "reason": exc.message,
-                },
-            )
 
         self.logger.debug("adding CORP policy from auth module")
         self.modules["auth"].add_CORS(api)
