@@ -2,7 +2,10 @@ from pathlib import Path
 
 from toml import load
 
-src_path = Path(__file__) / ".."
+path = Path(__file__).resolve()
+while path.name != "src":
+    path = path.parent
+src_path = path
 source_path = src_path / ".."
 pyproject_path = source_path / "pyproject.toml"
 pyproject_path = pyproject_path.resolve()
