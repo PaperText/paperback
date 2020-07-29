@@ -3,10 +3,9 @@ from pathlib import Path
 from toml import load
 
 path = Path(__file__).resolve()
-while path.name != "src":
+while path.name != "paperback":
     path = path.parent
-src_path = path
-source_path = src_path / ".."
+source_path = path
 pyproject_path = source_path / "pyproject.toml"
 pyproject_path = pyproject_path.resolve()
 
