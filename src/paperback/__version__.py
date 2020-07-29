@@ -1,13 +1,16 @@
 from pathlib import Path
+from typing import Optional, Dict
 
 from toml import load
 
-path = Path(__file__).resolve()
-while path.name != "paperback":
-    path = path.parent
-source_path = path
-pyproject_path = source_path / "pyproject.toml"
-pyproject_path = pyproject_path.resolve()
+path: Path = (Path(__file__)/"..").resolve()
+pyproject_path: Optional[Path] = None
 
-pyproject_toml = load(pyproject_path)
+while not pyproject_path:
+    for child in path.iterdir():
+        if child.name == "pyproject.toml":
+            pyproject_path = child
+    path = path.parent
+
+pyproject_toml: Dict = load(pyproject_path)
 __version__ = pyproject_toml["tool"]["poetry"]["version"]
