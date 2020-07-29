@@ -12,6 +12,7 @@ classifiers=[
     "Topic :: Software Development :: Build Tools",
     "Topic :: Software Development :: Libraries :: Python Modules"
 ]
+include = ["LICENSE", "pyproject.toml"]
 
 [tool.poetry.urls]
 "Source Code" = "https://github.com/PaperText/paperback#container"
