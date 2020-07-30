@@ -318,6 +318,18 @@ class BaseAuth(Base, metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
+    async def read_invite_code(self, code: str) -> InviteCode:
+        """
+        returns info about invite code
+
+        Returns
+        ----------
+        InviteCode
+            invite code
+        """
+        raise NotImplementedError
+
+    @abstractmethod
     async def read_invite_codes(self) -> List[InviteCode]:
         """
         returns created invite codes
@@ -345,6 +357,30 @@ class BaseAuth(Base, metaclass=ABCMeta):
         Returns
         -------
 
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    async def read_org(self, org_id: str) -> Organisation:
+        """
+        returns info about organisation with given `org_id`
+
+        Returns
+        -------
+        Organisation
+            organisation
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    async def read_orgs(self) -> List[MinimalOrganisation]:
+        """
+        returns list with all organisations
+
+        Returns
+        -------
+        List[MinimalOrganisation]
+            list of organisations
         """
         raise NotImplementedError
 
@@ -381,30 +417,6 @@ class BaseAuth(Base, metaclass=ABCMeta):
         Returns
         -------
 
-        """
-        raise NotImplementedError
-
-    @abstractmethod
-    async def get_orgs(self) -> List[MinimalOrganisation]:
-        """
-        returns list with all organisations
-
-        Returns
-        -------
-        List[MinimalOrganisation]
-            list of organisations
-        """
-        raise NotImplementedError
-
-    @abstractmethod
-    async def get_org_with_users(self, org_name: str) -> Organisation:
-        """
-        returns info about organisations with given name including list of users
-
-        Returns
-        -------
-        Organisation
-            organisations info with users
         """
         raise NotImplementedError
 
@@ -660,7 +672,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
             """
             returns list of organisations
             """
-            return await self.get_orgs()
+            return await self.read_orgs()
 
         @router.post(
             "/org",
