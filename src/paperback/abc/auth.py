@@ -1,7 +1,15 @@
 from abc import ABCMeta, abstractmethod
 from typing import List, Callable, ClassVar, NoReturn, Optional
 
-from fastapi import Body, Header, Depends, FastAPI, APIRouter, status, HTTPException
+from fastapi import (
+    Body,
+    Header,
+    Depends,
+    FastAPI,
+    APIRouter,
+    HTTPException,
+    status,
+)
 from fastapi.middleware.cors import CORSMiddleware
 
 from .base import Base
@@ -200,10 +208,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    async def create_user(
-        self,
-        user: NewUser,
-    ) -> UserInfo:
+    async def create_user(self, user: NewUser,) -> UserInfo:
         """
         Creates user from provided info
 
@@ -492,7 +497,11 @@ class BaseAuth(Base, metaclass=ABCMeta):
         # +-------+
         # | users |
         # +-------+
-        @router.post("/usr", tags=["auth_module", "user", "access_level_2"], response_model=UserInfo)
+        @router.post(
+            "/usr",
+            tags=["auth_module", "user", "access_level_2"],
+            response_model=UserInfo,
+        )
         async def create_user(user: NewUser) -> UserInfo:
             """
             creates user with provided username, password and fullname
@@ -599,7 +608,9 @@ class BaseAuth(Base, metaclass=ABCMeta):
             Maximum loa is equal to requesters loa
             """
             user: UserInfo = await self.read_user(username)
-            new_loa: int = min(user.level_of_access+1, requester.level_of_access)
+            new_loa: int = min(
+                user.level_of_access + 1, requester.level_of_access
+            )
             return await self.update_user(
                 username=username, new_level_of_access=user
             )
@@ -620,7 +631,9 @@ class BaseAuth(Base, metaclass=ABCMeta):
             Minimum loa is 0
             """
             user: UserInfo = await self.read_user(username)
-            new_loa: int = min(user.level_of_access + 1, requester.level_of_access)
+            new_loa: int = min(
+                user.level_of_access + 1, requester.level_of_access
+            )
             return await self.update_user(
                 username=username, new_level_of_access=user
             )

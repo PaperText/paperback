@@ -1,13 +1,11 @@
-from pathlib import Path
-from subprocess import call
 from typing import NoReturn
 from pathlib import Path
+from subprocess import call
 
 import click
 
 from . import __version__
 from .core import App
-
 
 src_path = Path(__file__) / ".." / ".."
 src_path = src_path.resolve()
@@ -60,6 +58,7 @@ class Scripts:
     def docs_clean():
         call(f"rm -rf {source_path / 'docs'}".split(" "))
 
+
 default_config_path = Path.home() / ".papertext"
 
 
@@ -83,9 +82,7 @@ default_config_path = Path.home() / ".papertext"
         {"CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG", "NOTSET"}
     ),
 )
-def cli(
-    config_dir: Path, log_level: str
-) -> NoReturn:
+def cli(config_dir: Path, log_level: str) -> NoReturn:
     """
     main command for running API through CLI
     """

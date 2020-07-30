@@ -4,7 +4,6 @@ from typing import Any, Dict, List, NoReturn, MutableMapping
 from pathlib import Path
 
 import uvicorn
-from uvicorn.logging import ColourizedFormatter
 from config import (
     ConfigurationSet,
     config_from_env,
@@ -13,15 +12,13 @@ from config import (
 )
 from fastapi import FastAPI, Request, status
 from pkg_resources import iter_entry_points
+from uvicorn.logging import ColourizedFormatter
 from fastapi.responses import JSONResponse
 
-from .__version__ import __version__
 from .abc import BaseAuth, BaseDocs, BaseMisc
-from .exceptions import (
-    InheritanceError,
-    DuplicateModuleError,
-)
 from .util import async_lib_name
+from .exceptions import InheritanceError, DuplicateModuleError
+from .__version__ import __version__
 
 api = FastAPI(
     title="PaperText backend [Paperback]",
@@ -82,7 +79,7 @@ class App:
         self.logger.info("initializing PaperBack app")
 
         self.logger.debug("searching for config.toml file")
-        self.config_file = self.config_dir/"config.toml"
+        self.config_file = self.config_dir / "config.toml"
         if self.config_file.exists() and self.config_file.is_file():
             self.logger.info("found config.toml file")
         else:
@@ -108,9 +105,8 @@ class App:
             self.config_file.touch()
             self.logger.info("created storage folder")
 
-
         self.default_config: Dict[str, Any] = {
-            "core": {"host": "127.0.0.1", "port": "7878", },
+            "core": {"host": "127.0.0.1", "port": "7878",},
         }
         self.classes: MutableMapping[str, Any] = {}
         self.modules: MutableMapping[str, Any] = {}
@@ -128,15 +124,20 @@ class App:
         root_logger = logging.getLogger()
 
         text_formatter = logging.Formatter(
-            "{levelname:<8} in {name:<16} at {asctime:<16}: {message}", "%Y-%m-%d %H:%M:%S", style="{"
+            "{levelname:<8} in {name:<16} at {asctime:<16}: {message}",
+            "%Y-%m-%d %H:%M:%S",
+            style="{",
         )
 
         console_formatter = ColourizedFormatter(
-            "{levelprefix:<8} @ {name:<10} : {message}", "%Y-%m-%d %H:%M:%S", style="{", use_colors=True
+            "{levelprefix:<8} @ {name:<10} : {message}",
+            "%Y-%m-%d %H:%M:%S",
+            style="{",
+            use_colors=True,
         )
 
         fileHandler = logging.handlers.RotatingFileHandler(
-            self.logs_dir / "root.log", maxBytes=1024**3, backupCount=20,
+            self.logs_dir / "root.log", maxBytes=1024 ** 3, backupCount=20,
         )
         fileHandler.setFormatter(text_formatter)
         fileHandler.setLevel("DEBUG")
@@ -146,7 +147,6 @@ class App:
         consoleHandler.setFormatter(console_formatter)
         consoleHandler.setLevel(self.log_level)
         root_logger.addHandler(consoleHandler)
-
 
     def find_local_modules(self) -> NoReturn:
         pass
@@ -193,7 +193,10 @@ class App:
                 issubclass(cls, class_i)
                 for class_i in [BaseMisc, BaseAuth, BaseDocs]
             ):
-                self.logger.error("module %s doesn't inherit from BaseMisc, BaseAuth or BaseDocs", name)
+                self.logger.error(
+                    "module %s doesn't inherit from BaseMisc, BaseAuth or BaseDocs",
+                    name,
+                )
                 raise InheritanceError(
                     "any module should ne subclass of Base or BaseAuth of BaseDocs"
                 )
@@ -201,7 +204,7 @@ class App:
             if name in self.classes:
                 self.logger.error("module %s already exists", name)
                 raise DuplicateModuleError(
-                    f"module with name \"{name}\" already registered"
+                    f'module with name "{name}" already registered'
                 )
 
             self.classes[name] = cls
