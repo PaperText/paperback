@@ -111,16 +111,14 @@ class BaseAuth(Base, metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    async def sign_in(self, username: str, password: str,) -> str:
+    async def signin(self, credentials: Credentials) -> str:
         """
         checks username and password and returns new token
 
         Parameters
         ----------
-        username: str
-            username of user
-        password: str
-            password of user
+        credentials: Credentials
+            username and password of new user
 
         Returns
         -------
@@ -130,28 +128,50 @@ class BaseAuth(Base, metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    async def sign_out(self,) -> NoReturn:
+    async def signup(self, user: NewInvitedUser) -> str:
         """
-        removes token with which request was sent
+        creates new user with given info if invite code exists
+
+        Parameters
+        ----------
+        user: NewInvitedUser
+            info about new user
         """
         raise NotImplementedError
 
     @abstractmethod
-    async def sign_out_everywhere(self,) -> NoReturn:
+    async def signout(self, user: UserInfo) -> NoReturn:
+        """
+        removes token with which request was sent
+
+        Parameters
+        ----------
+        user: UserInfo
+            info about user to sign out
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    async def signout_everywhere(self,) -> NoReturn:
         """
         removes all tokens of current user
         """
         raise NotImplementedError
 
     @abstractmethod
-    async def sign_up(self, user: NewUser) -> NoReturn:
+    async def get_tokens(self, user: UserInfo) -> List[str]:
         """
-        creates new user with given info if invite code exists
+        returns list of tokens issued to user with given username
 
         Parameters
         ----------
-        user: NewUser
-            info about new user
+        username: str
+            username of user for which to sort tokens
+
+        Returns
+        -------
+        TokenListRes
+            list containing found tokens
         """
         raise NotImplementedError
 
@@ -180,66 +200,19 @@ class BaseAuth(Base, metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    async def get_tokens(self, username: str) -> List[str]:
-        """
-        returns list of tokens issued to user with given username
-
-        Parameters
-        ----------
-        username: str
-            username of user for which to sort tokens
-
-        Returns
-        -------
-        List[str]
-            list containing found tokens
-        """
-        raise NotImplementedError
-
-    @abstractmethod
     async def create_user(
         self,
-        username: str,
-        password: str,
-        full_name: str = None,
-        level_of_access: int = 0,
-        organization: str = "Public",
-    ) -> NoReturn:
+        user: NewUser,
+    ) -> UserInfo:
         """
-        Creates user with declared parameters
-        * Should meet these criteria:
-            1. organization number should be the same
-            2. level of access of tokens user should be grater or equal than 2
-            3. level of access of created user should be
-               equal or less than level of tokens user
+        Creates user from provided info
 
         Parameters
         ----------
-        username: str
-            username of user to delete
-        password: str
-            password of user
-        full_name: str, optional
-            name of user
-            default: value of username
-        organization: int, optional
-            organization of user
-            default: "Public"
-        access_level: int, optional
-            access_level of user
-            default: 0
+        user: NewUser
+            new user description
         """
         raise NotImplementedError
-
-    @abstractmethod
-    async def get_users(self) -> List[UserInfo]:
-        """
-        Administrative function, get list of all users
-
-        Returns
-        -------
-            List[UserInfo]: list of users without password
-        """
 
     @abstractmethod
     async def read_user(self, username: str) -> UserInfo:
@@ -266,15 +239,25 @@ class BaseAuth(Base, metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
+    async def read_users(self) -> List[UserInfo]:
+        """
+        Administrative function, get list of all users
+
+        Returns
+        -------
+            List[UserInfo]: list of users without password
+        """
+
+    @abstractmethod
     async def update_user(
         self,
         username: str,
         new_username: Optional[str] = None,
-        password: Optional[str] = None,
-        name: Optional[str] = None,
-        access_level: Optional[int] = None,
-        organization: Optional[str] = None,
-    ) -> NoReturn:
+        passwords: Optional[UserUpdatePassword] = None,
+        new_fullname: Optional[str] = None,
+        new_level_of_access: Optional[int] = None,
+        new_organization: Optional[str] = None,
+    ) -> UserInfo:
         """
         Updates user with given username
 
@@ -283,15 +266,25 @@ class BaseAuth(Base, metaclass=ABCMeta):
         username: str
             username of user to delete
         new_username: str, optional
+            default: None
             new username to replace previous
-        password: str, optional
-            password of user
-        name: str, optional
-            name of user to update to
-        organization: int, optional
-            organization of user to update to
-        access_level: int, optional
-            access_level of user to update to
+        passwords: UserUpdatePassword, optional
+            default: None
+            password to replace previous, including old password
+        new_fullname: str, optional
+            default: None
+            new fullname to replace previous
+        new_level_of_access: int, optional
+            default: None
+            new level_of_access to replace previous
+        new_organization: str, optional
+            default: None
+            new organization to replace previous
+
+        Returns
+        -------
+        UserInfo
+            user object with new info
         """
         raise NotImplementedError
 
@@ -435,11 +428,11 @@ class BaseAuth(Base, metaclass=ABCMeta):
         @router.post(
             "/signin", tags=["auth_module", "auth"], response_model=TokenRes
         )
-        async def signin(user: Credentials) -> TokenRes:
+        async def signin(сredentials: Credentials) -> TokenRes:
             """
             generates new token if provided username and password are correct
             """
-            return await self.sign_in(user.username, user.password)
+            return TokenRes(response=await self.sign_in(сredentials))
 
         @router.post(
             "/signup", tags=["auth_module", "auth"], response_model=TokenRes,
@@ -447,10 +440,9 @@ class BaseAuth(Base, metaclass=ABCMeta):
         async def signup(user: NewInvitedUser) -> TokenRes:
             """
             creates new user with provided
-                username, password, organization,
-                access_level and invitation code
+                username, password, name and invitation code
             """
-            return await self.sign_up(user)
+            return TokenRes(response=await self.sign_up(user))
 
         @router.get("/signout", tags=["auth_module", "auth"])
         async def signout(
@@ -459,7 +451,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
             """
             removes token from db of tokens
             """
-            await self.get_tokens(user_id=requester.username)
+            await self.sign_out(UserInfo)
 
         @router.get("/signout_everywhere", tags=["auth_module", "auth"])
         async def signout_everywhere() -> NoReturn:
@@ -475,12 +467,11 @@ class BaseAuth(Base, metaclass=ABCMeta):
         )
         async def get_tokens(
             requester: UserInfo = Depends(token_tester(greater_or_equal=0)),
-            # authorization: str = Header(...),
         ) -> TokenListRes:
             """
             returns all tokens, associated with user from token in request
             """
-            return await self.get_tokens(user_id=requester.username)
+            return TokenListRes(response=await self.get_tokens(requester))
 
         @router.delete("/token", tags=["auth_module", "token"])
         async def delete_token(token_identifier: str = Body(...)):
@@ -488,19 +479,31 @@ class BaseAuth(Base, metaclass=ABCMeta):
             removes token by provided identifier:
                 either token itself or token uuid
             """
-            return token_identifier
+            await self.remove_token(token_identifier)
 
         @router.delete("/tokens", tags=["auth_module", "token"])
         async def delete_tokens(token_identifiers: List[str]):
             """
-            removes token by provided identifier:
+            removes token by provided identifiers:
                 either token itself or token uuid
             """
-            return token_identifiers
+            await self.remove_token(token_identifiers)
 
         # +-------+
         # | users |
         # +-------+
+        @router.post("/usr", tags=["auth_module", "user", "access_level_2"], response_model=UserInfo)
+        async def create_user(user: NewUser) -> UserInfo:
+            """
+            creates user with provided username, password and fullname
+
+            Note
+            ----
+            * created users are assigned to public organisation
+            * created users loa is 1
+            """
+            return await self.create_user(user)
+
         @router.get(
             "/me",
             tags=["auth_module", "user", "access_level_0"],
@@ -515,6 +518,17 @@ class BaseAuth(Base, metaclass=ABCMeta):
             return requester
 
         @router.get(
+            "/usr/{username}",
+            tags=["auth_module", "user", "access_level_2"],
+            response_model=UserInfo,
+        )
+        async def read_user(username: str) -> UserInfo:
+            """
+            return info about user with given username
+            """
+            return await self.read_user(username)
+
+        @router.get(
             "/usrs",
             tags=["auth_module", "user", "access_level_3"],
             response_model=UserListResponse,
@@ -525,32 +539,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
 
             created users are assigned to public organisation
             """
-            return True
-
-        @router.post("/usr", tags=["auth_module", "user", "access_level_2"])
-        async def create_user(user: NewUser):
-            """
-            creates user with provided username, password and fullname
-
-            Note
-            ----
-            * created users are assigned to public organisation
-            * created users loa is 1
-            """
-            await self.create_user(
-                user.username, user.password, user.fullname, 1, "public",
-            )
-
-        @router.get(
-            "/usr/{username}",
-            tags=["auth_module", "user", "access_level_2"],
-            response_model=UserInfo,
-        )
-        async def read_user(username: str) -> UserInfo:
-            """
-            return info about user with given username
-            """
-            return True
+            return UserListResponse(response=await self.read_users())
 
         @router.put(
             "/usr/{username}:username",
@@ -562,19 +551,23 @@ class BaseAuth(Base, metaclass=ABCMeta):
             """
             changes username of user with given username
             """
-            return True
+            return await self.update_user(
+                username=username, new_username=new_username.new_username
+            )
 
         @router.put(
             "/usr/{username}:password",
             tags=["auth_module", "user", "access_level_2"],
         )
         async def update_users_password(
-            username: str, new_password: UserUpdatePassword
+            username: str, passwords: UserUpdatePassword
         ):
             """
             changes password of user with given username
             """
-            return True
+            return await self.update_user(
+                username=username, passwords=passwords
+            )
 
         @router.put(
             "/usr/{username}:fullname",
@@ -586,13 +579,18 @@ class BaseAuth(Base, metaclass=ABCMeta):
             """
             changes fullname of user with given username
             """
-            return True
+            return await self.update_user(
+                username=username, new_fullname=new_fullname.new_fullname
+            )
 
         @router.get(
             "/usr/{username}:promote",
             tags=["auth_module", "user", "access_level_2"],
         )
-        async def promote_user(username: str):
+        async def promote_user(
+            username: str,
+            requester: UserInfo = Depends(token_tester(greater_or_equal=1)),
+        ):
             """
             increases loa of user with given username
 
@@ -600,13 +598,20 @@ class BaseAuth(Base, metaclass=ABCMeta):
             ----
             Maximum loa is equal to requesters loa
             """
-            return True
+            user: UserInfo = await self.read_user(username)
+            new_loa: int = min(user.level_of_access+1, requester.level_of_access)
+            return await self.update_user(
+                username=username, new_level_of_access=user
+            )
 
         @router.get(
             "/usr/{username}:demote",
             tags=["auth_module", "user", "access_level_2"],
         )
-        async def demote_user(username: str):
+        async def demote_user(
+            username: str,
+            requester: UserInfo = Depends(token_tester(greater_or_equal=1)),
+        ):
             """
             decreases loa of user with given username
 
@@ -614,7 +619,11 @@ class BaseAuth(Base, metaclass=ABCMeta):
             ----
             Minimum loa is 0
             """
-            return True
+            user: UserInfo = await self.read_user(username)
+            new_loa: int = min(user.level_of_access + 1, requester.level_of_access)
+            return await self.update_user(
+                username=username, new_level_of_access=user
+            )
 
         @router.delete(
             "/usr/{username}", tags=["auth_module", "user", "access_level_2"]
@@ -623,7 +632,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
             """
             removes user, associated with user from token in request
             """
-            return True
+            await self.delete_user(username)
 
         # +--------------+
         # | organisation |
