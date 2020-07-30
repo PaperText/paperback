@@ -10,8 +10,30 @@ from typing import (
     Protocol,
 )
 from datetime import datetime
+import re
 
-from pydantic import Field, BaseModel
+from pydantic import Field, BaseModel, validator
+
+
+def custom_charset(cls: Any, value: str) -> str:
+    res = re.match(r"^[\w\d:_\-]+$", value, re.ASCII | re.MULTILINE)
+    if res:
+        return value
+    else:
+        raise ValueError("id must only include ASCII, `-` and `_` symbols "
+                         "and only include one `:`.")
+
+
+def starts_with(sw: str) -> Callable[[Any, str], str]:
+    def func(cls: Any, value: str) -> str:
+        if value.startswith(sw):
+            return value
+        else:
+            if ":" in value:
+                raise ValueError(f"id must start with {sw} and not include other :")
+            else:
+                return sw+value
+    return func
 
 
 class BaseRes(BaseModel):
@@ -30,6 +52,9 @@ class Credentials(BaseModel):
     username: str
     password: str
 
+    _validate_username_1 = validator('username', allow_reuse=True)(custom_charset)
+    _validate_username_2 = validator('username', allow_reuse=True)(starts_with("usr:"))
+
 
 class NewUser(Credentials):
     fullname: Optional[str] = None
@@ -45,6 +70,9 @@ class UserInfo(BaseModel):
     organisation: Optional[str]
     level_of_access: int = 0
 
+    _validate_username_1 = validator('username', allow_reuse=True)(custom_charset)
+    _validate_username_2 = validator('username', allow_reuse=True)(starts_with("usr:"))
+
 
 # class FullUserInfo(Credentials, UserInfo):
 #     pass
@@ -55,13 +83,15 @@ class UserListResponse(BaseModel):
 
 
 class MinimalInviteCode(BaseModel):
-    organisation: str
+    organisation_id: str
+
+    _validate_organisation_id_1 = validator("organisation_id", allow_reuse=True)(custom_charset)
+    _validate_organisation_id_2 = validator("organisation_id", allow_reuse=True)(starts_with("org:"))
 
 
-class InviteCode(BaseModel):
+class InviteCode(MinimalInviteCode):
     code: str
     issuer_id: str
-    organisation: str
     num_registered: int
 
 
@@ -72,13 +102,23 @@ class InviteCodeListRes(BaseModel):
 class UserUpdateUsername(BaseModel):
     new_username: str
 
+    _validate_new_username_1 = validator("new_username", allow_reuse=True)(custom_charset)
+    _validate_new_username_2 = validator("new_username", allow_reuse=True)(starts_with("usr:"))
+
 
 class UserUpdateFullName(BaseModel):
     new_fullname: str
 
 
 class UserUpdatePassword(BaseModel):
+    old_password: str
     new_password: str
+
+    @validator("new_password")
+    def new_password_cant_be_old_password(cls, new_password, values):
+        if "old_password" in values and new_password == values["old_password"]:
+            raise ValueError("passwords can't match")
+        return new_password
 
 
 class UserChangePassword(UserUpdatePassword):
@@ -95,8 +135,11 @@ class TokenTester(Protocol):
 
 
 class MinimalOrganisation(BaseModel):
-    org_id: str
+    organisation_id: str
     name: Optional[str] = None
+
+    _validate_organisation_id_1 = validator("organisation_id", allow_reuse=True)(custom_charset)
+    _validate_organisation_id_2 = validator("organisation_id", allow_reuse=True)(starts_with("org:"))
 
 
 class OrgListRes(BaseModel):
@@ -108,7 +151,10 @@ class Organisation(MinimalOrganisation):
 
 
 class OrgUpdateOrgId(BaseModel):
-    new_org_id: str
+    new_organisation_id: str
+
+    _validate_new_organisation_id_1 = validator("new_organisation_id", allow_reuse=True)(custom_charset)
+    _validate_new_organisation_id_2 = validator("new_organisation_id", allow_reuse=True)(starts_with("org:"))
 
 
 class OrgUpdateName(BaseModel):
