@@ -4,7 +4,8 @@ import re
 from typing import Any, Dict, List, Union, Callable, Optional, Protocol
 from datetime import datetime
 
-from pydantic import Field, BaseModel, validator
+from pydantic import Field, EmailStr, BaseModel, validator
+from email_validator import EmailNotValidError, validate_email
 
 
 def custom_charset(cls: Any, value: str) -> str:
@@ -46,18 +47,25 @@ class TokenListRes(BaseRes):
 
 
 class Credentials(BaseModel):
-    username: str
+    identifier: Union[str, EmailStr]
     password: str
 
-    _validate_username_1 = validator("username", allow_reuse=True)(
-        custom_charset
-    )
-    _validate_username_2 = validator("username", allow_reuse=True)(
-        starts_with("usr:")
-    )
+    @validator("identifier", pre=True)
+    def validate_identifier(cls, value, values):
+        try:
+            identifier = validate_email(value).email
+            values["email"] = identifier
+        except EmailNotValidError:
+            identifier = custom_charset(cls, value)
+            identifier = starts_with("usr:")(cls, identifier)
+            values["username"] = identifier
+        return value
 
 
-class NewUser(Credentials):
+class NewUser(BaseModel):
+    username: str
+    email: EmailStr
+    password: str
     fullname: Optional[str] = None
 
 
@@ -67,6 +75,7 @@ class NewInvitedUser(NewUser):
 
 class UserInfo(BaseModel):
     username: str
+    email: EmailStr
     fullname: Optional[str] = None
     organisation: Optional[str]
     level_of_access: int = 0
