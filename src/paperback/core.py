@@ -2,6 +2,7 @@ import logging
 from copy import deepcopy
 from typing import Any, Dict, List, NoReturn, MutableMapping
 from pathlib import Path
+import uuid
 
 import uvicorn
 from config import (
@@ -239,6 +240,13 @@ class App:
 
     def add_handlers(self, api: FastAPI) -> NoReturn:
         self.logger.info("setting up API handlers")
+
+        @api.get("/stats", tags=["root"])
+        def stats():
+            return {
+                "version": __version__,
+                "is_uuid_safe": str(uuid.uuid4().is_safe).split(".")[-1],
+            }
 
         self.logger.debug("adding CORP policy from auth module")
         self.modules["auth"].add_CORS(api)
