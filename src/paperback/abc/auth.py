@@ -1,5 +1,14 @@
 from abc import ABCMeta, abstractmethod
-from typing import Dict, List, Union, Callable, ClassVar, NoReturn, Optional
+from typing import (
+    Any,
+    Dict,
+    List,
+    Union,
+    Callable,
+    ClassVar,
+    NoReturn,
+    Optional,
+)
 
 from fastapi import (
     Body,
@@ -27,12 +36,12 @@ from .models import (
     OrgUpdateName,
     NewInvitedUser,
     OrgUpdateOrgId,
+    UserUpdateName,
     UserListResponse,
+    UserUpdateUserId,
     InviteCodeListRes,
     MinimalInviteCode,
-    UserUpdateFullName,
     UserUpdatePassword,
-    UserUpdateUsername,
     MinimalOrganisation,
 )
 
@@ -45,11 +54,11 @@ class BaseAuth(Base, metaclass=ABCMeta):
     ----------
     TYPE: str
         type of module (the default is "AUTH" and shouldn't be changed)
-    DEFAULTS: Dict[str, int]
+    DEFAULTS: Dict[str, Any]
         python dict of default values for configuration (the default is {})
     requires_dir: bool
+        default is False
         describes if directory for storage will be provide to __init__ call
-            (default is False)
     """
 
     TYPE: ClassVar[str] = "AUTH"
@@ -83,46 +92,55 @@ class BaseAuth(Base, metaclass=ABCMeta):
         validates token with given parameters
 
         validates tokens fields and checks that
-            * access_level >= greater_or_equal if greater_or_equal is non None
-            * if access_level exists ib one_of if one_of is not None
+        * if greater_or_equal is non None: level_of_access >= greater_or_equal
+        * if one_of is not None: level_of_access in one_of
 
         Parameters
         ----------
         greater_or_equal: int
-            minimum loa, i.e. tokens loa should be `>=` than greater_or_equal
+            minimum level_of_access, i.e. tokens loa should be `>=` than greater_or_equal
         one_of: List[str]
-            list of ints, tokens loa should be `loa in one_of`
+            list of ints, tokens level_of_access should be `loa in one_of`
 
         Returns
         -------
         Callable[[str], UserInfo]
             function which accept `Authentication` header
-            and returns UserInfo from token
+            and returns info about tokens requester in UserInfos
 
         """
-        if greater_or_equal is None and one_of is None:
-            raise ValueError("either greater_or_equal or one_of should be set")
+        if (greater_or_equal is not None) and (one_of is not None):
+            raise ValueError(
+                "greater_or_equal and one_of are provided, can accept only one"
+            )
 
-        def fn(authentication: str = Header(...)) -> UserInfo:
+        if greater_or_equal is None and one_of is None:
+            raise ValueError(
+                "either greater_or_equal or one_of should be provided"
+            )
+
+        def return_function(authentication: str = Header(...)) -> UserInfo:
             token: str = (
                 authentication[7:]
+                # TODO: change to this in python3.9
                 # authentication.removeprefix("Bearer: ")
                 if authentication.startswith("Bearer: ")
                 else authentication
             )
-            print(authentication, token)
+            print(f"token_tester: {authentication=}, {token=}")
             user: UserInfo = UserInfo(**self.token2user(authentication))
+            # TODO: rewrite code to use only parameters that aren't None
             if (
                 user.level_of_access < greater_or_equal
                 or user.level_of_access not in one_of
             ):
                 raise HTTPException(
                     status_code=status.HTTP_401_UNAUTHORIZED,
-                    detail="Could not validate credentials",
+                    detail="Couldn't validate credentials",
                 )
             return user
 
-        return fn
+        return return_function
 
     @abstractmethod
     def token2user(self, token: str) -> Dict[str, Union[str, int]]:
@@ -137,16 +155,11 @@ class BaseAuth(Base, metaclass=ABCMeta):
         Returns
         -------
         Dict[str, Union[str, int]]
-            username: str
-                username of user
+            user_id: str
             email: str
-                email of user
-            organization: str
-                organization of user
+            organisation_id: str
             level_of_access: int
-                access_level of user
-            fullname: str, optional
-                name of user
+            user_name: str, optional
         """
         raise NotImplementedError
 
@@ -155,23 +168,20 @@ class BaseAuth(Base, metaclass=ABCMeta):
         self,
         password: str,
         email: Optional[str] = None,
-        username: Optional[str] = None,
+        user_id: Optional[str] = None,
     ) -> str:
         """
-        checks username and password and returns new token
+        checks user_id and password and returns new token
+
+        Notes
+        -----
+        either email or user_id must be provided, but not both
 
         Parameters
         ----------
         password: str
-            password of user
         email: str, optional
-            email of user
-        username: str, optional
-            username of user
-
-        Notes
-        -----
-        either email or username must be provided
+        user_id: str, optional
 
         Returns
         -------
@@ -183,32 +193,32 @@ class BaseAuth(Base, metaclass=ABCMeta):
     @abstractmethod
     async def signup(
         self,
-        username: str,
+        user_id: str,
         email: EmailStr,
         password: str,
         invitation_code: str,
-        fullname: Optional[str] = None,
+        user_name: Optional[str] = None,
     ) -> str:
         """
         creates new user with given info if invite code exists
 
         Parameters
         ----------
-        username: str
-            new username of user, must be unique
+        user_id: str
+            new user_id of user, must be unique
         email: str
             email of new user, must be unique
         password: str
             password of new user
         invitation_code: str
             invitation code
-        fullname: str, optional
-            fullname of user
+        user_name: str, optional
+            user_name of user
 
         Returns
         -------
         str
-            token of created user
+            JSON Web Token of created user
         """
         raise NotImplementedError
 
@@ -225,26 +235,26 @@ class BaseAuth(Base, metaclass=ABCMeta):
     #     raise NotImplementedError
 
     @abstractmethod
-    async def signout_everywhere(self, username: str) -> NoReturn:
+    async def signout_everywhere(self, user_id: str) -> NoReturn:
         """
         removes all tokens of current user
 
         Parameters
         ----------
-        username: str
-            username, whose tokens will be removed
+        user_id: str
+            user_id, whose tokens will be removed
         """
         raise NotImplementedError
 
     @abstractmethod
-    async def get_tokens(self, username: str) -> List[str]:
+    async def read_tokens(self, user_id: str) -> List[str]:
         """
-        returns list of tokens issued to user with given username
+        returns list of tokens issued to user with given user_id
 
         Parameters
         ----------
-        username: str
-            username of user for which to return tokens
+        user_id: str
+            user_id of user for which to return tokens
 
         Returns
         -------
@@ -254,7 +264,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    async def remove_token(self, token: str) -> NoReturn:
+    async def delete_token(self, token: str) -> NoReturn:
         """
         removes token
 
@@ -266,7 +276,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    async def remove_tokens(self, token: List[str]) -> NoReturn:
+    async def delete_tokens(self, token: List[str]) -> NoReturn:
         """
         removes tokens
 
@@ -277,74 +287,69 @@ class BaseAuth(Base, metaclass=ABCMeta):
         """
         raise NotImplementedError
 
+    # user
+
     @abstractmethod
     async def create_user(
         self,
-        username: str,
+        user_id: str,
         email: EmailStr,
         password: str,
         level_of_access: int = 0,
-        organisation: Optional[str] = None,
-        fullname: Optional[str] = None,
-    ) -> Dict[str, Union[str, int]]:
+        organisation_id: Optional[str] = None,
+        user_name: Optional[str] = None,
+    ) -> Dict[str, Any]:
         """
         Creates user from provided info
 
         Parameters
         ----------
-        username: str
-            new users username
+        user_id: str
+            new users user_id
         email: str
             new users email
         password: str
             new users password
-        level_of_access: int, default is 0
+        level_of_access: int
+            default: 0
             loa of new user
-        organisation: str, optional
-            organisation of user.
+        organisation_id: str, optional
+            organisation of user
             If none is provided then user will be in public org
-        fullname: str, optional
+        user_name: str, optional
             fullname of new user
 
         Returns
         -------
-        Dict[str, Union[str, int]]
-            username: str
-                username of user
-            email: str
-                email of user
-            organization: str
-                organization of user
-            level_of_access: int
-                access_level of user
-            fullname: str, optional
-                name of user
+        Dict[str, Union[str, int, Any]]
+            Contains:
+                user_id: str
+                email: str
+                organisation: str
+                level_of_access: int
+                fullname: str, optional
         """
         raise NotImplementedError
 
     @abstractmethod
-    async def read_user(self, username: str) -> Dict[str, Union[str, int]]:
+    async def read_user(self, user_id: str) -> Dict[str, Union[str, int]]:
         """
-        Get information about user with given username
+        get information about user with given user_id
 
         Parameters
         ----------
-        username: str
-            username of user to delete
+        user_id: str
+            user_id of user to delete
 
         Returns
         -------
         Dict[str, Union[str, int]]
-            username: str
-                username of user
-            email: str
-                email of user
-            organization: str
-                organization of user
-            level_of_access: int
-                access_level of user
-            fullname: str, optional
-                name of user
+            Contains:
+                user_id: str
+                email: str
+                organisation: str
+                level_of_access: int
+                user_name: str, optional
         """
         raise NotImplementedError
 
@@ -357,79 +362,73 @@ class BaseAuth(Base, metaclass=ABCMeta):
         -------
         List[Dict[str, Union[str, int]]]:
             list of users without password
-            Dict[str, Union[str, int]]
-                username: str
-                    username of user
-                email: str
-                    email of user
-                organization: str
-                    organization of user
-                level_of_access: int
-                    access_level of user
-                fullname: str, optional
-                    name of user
+            Contains:
+                Dict[str, Union[str, int]]
+                Contains:
+                    user_id: str
+                    email: str
+                    organisation: str
+                    level_of_access: int
+                    user_name: str, optional
         """
+        raise NotImplementedError
 
     @abstractmethod
     async def update_user(
         self,
-        username: str,
-        new_username: Optional[str] = None,
-        new_fullname: Optional[str] = None,
+        user_id: str,
+        new_user_id: Optional[str] = None,
+        new_user_name: Optional[str] = None,
         new_level_of_access: Optional[int] = None,
-        new_organisation: Optional[str] = None,
+        new_organisation_id: Optional[str] = None,
     ) -> Dict[str, Union[str, int]]:
         """
-        Updates user with given username
+        Updates user with given user_id
 
         Parameters
         ----------
-        username: str
-            username of user to delete
-        new_username: str, optional
+        user_id: str
+            user_id of user to delete
+        new_user_id: str, optional
             default: None
-            new username to replace previous
-        new_fullname: str, optional
+            new user_id to replace previous
+        new_user_name: str, optional
             default: None
-            new fullname to replace previous
+            new user_name to replace previous
         new_level_of_access: int, optional
             default: None
             new level_of_access to replace previous
-        new_organisation: str, optional
+        new_organisation_id: str, optional
             default: None
-            new organization to replace previous
+            new organisation to replace previous
 
         Returns
         -------
         Dict[str, Union[str, int]]
-        user object with new info
-            username: str
-                username of user
-            email: str
-                email of user
-            organization: str
-                organization of user
-            level_of_access: int
-                access_level of user
-            fullname: str, optional
-                name of user
+            user object with new info
+            Contains:
+                user_id: str
+                email: str
+                organisation: str
+                level_of_access: int
+                user_name: str, optional
         """
         raise NotImplementedError
 
     @abstractmethod
     async def update_user_password(
         self,
-        username: str,
+        user_id: str,
         old_passwords: Optional[str] = None,
         new_password: Optional[str] = None,
     ) -> Dict[str, Union[str, int]]:
         """
-        Updates user with given username
+        Updates user with given user_id
 
         Parameters
         ----------
-        username: str
-            username of user to delete
+        user_id: str
+            user_id of user to delete
         old_passwords: str, optional
             default: None
             old password to check
@@ -440,62 +439,172 @@ class BaseAuth(Base, metaclass=ABCMeta):
         Returns
         -------
         Dict[str, Union[str, int]]
-        user object with new info
-            username: str
-                username of user
-            email: str
-                email of user
-            organization: str
-                organization of user
-            level_of_access: int
-                access_level of user
-            fullname: str, optional
-                name of user
+            user object with new info
+            Contains:
+                user_id: str
+                email: str
+                organisation: str
+                level_of_access: int
+                user_name: str, optional
         """
         raise NotImplementedError
 
     @abstractmethod
     async def update_user_email(
-        self, username: str, new_email: str
+        self, user_id: str, new_email: EmailStr
     ) -> Dict[str, Union[str, int]]:
         """
-        Updates user with given username
+        Updates user with given user_id
 
         Parameters
         ----------
-        username: str
-            username of user to delete
-        new_email: str
+        user_id: str
+            user_id of user to delete
+        new_email: EmailStr
             new email to replace previous
 
         Returns
         -------
         Dict[str, Union[str, int]]
-        user object with new info
-            username: str
-                username of user
-            email: str
-                email of user
-            organization: str
-                organization of user
-            level_of_access: int
-                access_level of user
-            fullname: str, optional
-                name of user
+            user object with new info
+            Contains:
+                user_id: str
+                email: str
+                organisation: str
+                level_of_access: int
+                user_name: str, optional
         """
         raise NotImplementedError
 
     @abstractmethod
-    async def delete_user(self, username: str) -> NoReturn:
+    async def delete_user(self, user_id: str) -> NoReturn:
         """
-        Removes user with given username
+        Removes user with given user_id
 
         Parameters
         ----------
-        username: str
-            username of user to delete
+        user_id: str
+            user_id of user to delete
         """
         raise NotImplementedError
+
+    # organisation
+
+    @abstractmethod
+    async def create_org(
+        self, organisation_id: str, organisation_name: Optional[str] = None,
+    ) -> Dict[str, Union[str, List[str]]]:
+        """
+        creates organisation with given name and title
+
+        Parameters
+        ----------
+        organisation_id: str
+        organisation_name: str, optional
+            default: None
+            name of new organisation
+
+        Returns
+        -------
+        Dict[str, Union[str, List[str]]]
+            new organisation
+            Contains:
+                organisation_id: str,
+                organisation_name: str, optional
+                users: List[str]
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    async def read_org(
+        self, organisation_id: str
+    ) -> Dict[str, Union[str, List[str]]]:
+        """
+        returns info about organisation with given `organisation_id`
+
+        Parameters
+        ----------
+        organisation_id: str
+            id of organisation to return
+
+        Returns
+        -------
+        Dict[str, Union[str, List[str]]]
+            new organisation
+            Contains:
+                organisation_id: str
+                organisation_name: str, optional
+                users: List[str]
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    async def read_orgs(
+        self, columns: Optional[List[str]] = None
+    ) -> List[Dict[str, str]]:
+        """
+        returns list with all organisations
+
+        Parameters
+        ----------
+        columns: List[str], optional
+            list of columns. If `None` then all columns are selected
+
+        Returns
+        -------
+        List[Dict[str, str]]
+            list of organisations
+            Contains:
+                Dict[str, str]
+                    mapping from column to value, depends on `columns`
+                    Contains:
+                        organisation_id: str
+                        organisation_name: str, optional
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    async def update_org(
+        self,
+        old_organisation_id: str,
+        new_organisation_id: Optional[str] = None,
+        new_organisation_name: Optional[str] = None,
+    ) -> Dict[str, str]:
+        """
+        updates title of organisation with given name
+
+        Parameters
+        ----------
+        old_organisation_id: str
+            id of organisation
+        new_organisation_id: str, optional
+            new id of organisation
+        new_organisation_name: str
+            new name of organisation
+
+        Returns
+        -------
+        Dict[str, str]
+        new organisation
+            Contains:
+                organisation_id: str
+                organisation_name: str, optional
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    async def delete_org(self, organisation_id: str):
+        """
+        removes organisation with given name
+
+        Parameters
+        ----------
+        organisation_id: str
+            id of organisation
+        """
+        raise NotImplementedError
+
+    # invite codes
 
     @abstractmethod
     async def create_invite_code(
@@ -560,119 +669,6 @@ class BaseAuth(Base, metaclass=ABCMeta):
         """
         raise NotImplementedError
 
-    @abstractmethod
-    async def create_org(
-        self, organisation_id: str, name: Optional[str] = None,
-    ) -> Dict[str, Union[str, List[str]]]:
-        """
-        creates organisation with given name and title
-
-        Parameters
-        ----------
-        organisation_id: str
-            id of new organisation
-        name: str, optional
-            name of new organisation
-
-        Returns
-        -------
-        Dict[str, Union[str, List[str]]]
-            new organisation
-            organisation_id: str,
-            users: List[str]
-            name: str, optional
-        """
-        raise NotImplementedError
-
-    @abstractmethod
-    async def read_org(
-        self, organisation_id: str
-    ) -> Dict[str, Union[str, List[str]]]:
-        """
-        returns info about organisation with given `organisation_id`
-
-        Parameters
-        ----------
-        organisation_id: str
-            id of organisation to return
-
-        Returns
-        -------
-        Dict[str, Union[str, List[str]]]
-            new organisation
-            organisation_id: str,
-            users: List[str]
-            name: str, optional
-        """
-        raise NotImplementedError
-
-    @abstractmethod
-    async def read_orgs(
-        self, columns: Optional[List[str]] = None
-    ) -> List[Dict[str, str]]:
-        """
-        returns list with all organisations
-
-        Parameters
-        ----------
-        columns: List[str], optional
-            list of columns. If `None` then all columns are selected
-
-        Returns
-        -------
-        List[Dict[str, str]]
-            list of organisations
-            Dict[str, str]
-            mapping from column to value, depends on `columns`
-                organisation_id: str
-                    id of organisation
-                name: str, optional
-                    name of organisation
-        """
-        raise NotImplementedError
-
-    @abstractmethod
-    async def update_org(
-        self,
-        old_organisation_id: str,
-        new_organisation_id: Optional[str] = None,
-        new_name: Optional[str] = None,
-    ) -> Dict[str, str]:
-        """
-        updates title of organisation with given name
-
-        Parameters
-        ----------
-        old_organisation_id: str
-            id of organisation
-        new_organisation_id: str, optional
-            new id of organisation
-        new_name: str
-            new name of organisation
-
-        Returns
-        -------
-        Dict[str, str]
-        new organisation
-            organisation_id: str
-                id of organisation
-            name: str, optional
-                name of organisation
-        """
-        raise NotImplementedError
-
-    @abstractmethod
-    async def delete_org(self, organisation_id: str):
-        """
-        removes organisation with given name
-
-        Parameters
-        ----------
-        organisation_id: str
-            id of organisation
-        """
-        raise NotImplementedError
-
     def create_router(self, token_tester: TokenTester,) -> APIRouter:
         """
         creates router
@@ -700,7 +696,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
         )
         async def signin(credentials: Credentials) -> TokenRes:
             """
-            generates new token if provided username and password are correct
+            generates new token if provided user_id and password are correct
             """
             return TokenRes(response=await self.signin(**dict(credentials)))
 
@@ -710,7 +706,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
         async def signup(user: NewInvitedUser) -> TokenRes:
             """
             creates new user with provided
-                username, password, name and invitation code
+                user_id, password, name and invitation code
             """
             return TokenRes(response=await self.signup(**dict(user)))
 
@@ -728,7 +724,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
                 if authentication.startswith("Bearer: ")
                 else authentication
             )
-            await self.remove_token(token)
+            await self.delete_token(token)
 
         @router.get("/signout_everywhere", tags=["auth_module", "auth"])
         async def signout_everywhere() -> NoReturn:
@@ -748,7 +744,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
             """
             returns all tokens, associated with user from token in request
             """
-            tokens = await self.get_tokens(requester.username)
+            tokens = await self.read_tokens(requester.user_id)
             return TokenListRes(response=tokens)
 
         @router.delete("/token", tags=["auth_module", "token"])
@@ -757,7 +753,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
             removes token by provided identifier:
                 either token itself or token uuid
             """
-            await self.remove_token(token_identifier)
+            await self.delete_token(token_identifier)
 
         @router.delete("/tokens", tags=["auth_module", "token"])
         async def delete_tokens(token_identifiers: List[str]):
@@ -765,7 +761,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
             removes token by provided identifiers:
                 either token itself or token uuid
             """
-            await self.remove_tokens(token_identifiers)
+            await self.delete_tokens(token_identifiers)
 
         # +-------+
         # | users |
@@ -777,18 +773,19 @@ class BaseAuth(Base, metaclass=ABCMeta):
         )
         async def create_user(user: NewUser) -> UserInfo:
             """
-            creates user with provided username, password and fullname
+            creates user with provided user_id, password and user_name
 
             Note
             ----
             * created users are assigned to public organisation
             * created users loa is 1
             """
-            return UserInfo(
-                **(await self.create_user(**dict(user))),
+            new_user = await self.create_user(
+                **dict(user),
                 level_of_access=0,
-                organisation="org:public",
+                organisation_id=self.public_org_id,
             )
+            return UserInfo(**new_user)
 
         @router.get(
             "/me",
@@ -804,15 +801,15 @@ class BaseAuth(Base, metaclass=ABCMeta):
             return requester
 
         @router.get(
-            "/usr/{username}",
+            "/usr/{user_id}",
             tags=["auth_module", "user", "access_level_2"],
             response_model=UserInfo,
         )
-        async def read_user(username: str) -> UserInfo:
+        async def read_user(user_id: str) -> UserInfo:
             """
-            return info about user with given username
+            return info about user with given user_id
             """
-            return UserInfo(**(await self.read_user(username)))
+            return UserInfo(**(await self.read_user(user_id)))
 
         @router.get(
             "/usrs",
@@ -832,18 +829,18 @@ class BaseAuth(Base, metaclass=ABCMeta):
             return UserListResponse(response=users)
 
         @router.put(
-            "/usr/{username}:username",
+            "/usr/{user_id}:user_id",
             tags=["auth_module", "user", "access_level_2"],
         )
-        async def update_users_username(
-            username: str,
-            new_username: UserUpdateUsername,
+        async def update_users_user_id(
+            user_id: str,
+            new_user_id: UserUpdateUserId,
             requester: UserInfo = Depends(token_tester(greater_or_equal=2)),
         ):
             """
-            changes username of user with given username
+            changes user_id of user with given user_id
             """
-            user: UserInfo = UserInfo(**(await self.read_user(username)))
+            user: UserInfo = UserInfo(**(await self.read_user(user_id)))
             if requester.level_of_access == 3:
                 pass
             elif user.level_of_access >= requester.level_of_access:
@@ -852,22 +849,22 @@ class BaseAuth(Base, metaclass=ABCMeta):
                     detail="Can't edit user with higher or same privileges",
                 )
             return await self.update_user(
-                username=username, new_username=new_username.new_username
+                user_id=user_id, new_user_id=new_user_id.new_user_id
             )
 
         @router.put(
-            "/usr/{username}:password",
+            "/usr/{user_id}:password",
             tags=["auth_module", "user", "access_level_2"],
         )
         async def update_users_password(
-            username: str,
+            user_id: str,
             passwords: UserUpdatePassword,
             requester: UserInfo = Depends(token_tester(greater_or_equal=2)),
         ):
             """
-            changes password of user with given username
+            changes password of user with given user_id
             """
-            user: UserInfo = UserInfo(**(await self.read_user(username)))
+            user: UserInfo = UserInfo(**(await self.read_user(user_id)))
             if requester.level_of_access == 3:
                 pass
             elif user.level_of_access >= requester.level_of_access:
@@ -876,24 +873,24 @@ class BaseAuth(Base, metaclass=ABCMeta):
                     detail="Can't edit user with higher or same privileges",
                 )
             await self.update_user_password(
-                username=username,
+                user_id=user_id,
                 old_passwords=passwords.old_password,
                 new_password=passwords.new_password,
             )
 
         @router.put(
-            "/usr/{username}:fullname",
+            "/usr/{user_id}:user_name",
             tags=["auth_module", "user", "access_level_2"],
         )
         async def update_users_fullname(
-            username: str,
-            new_fullname: UserUpdateFullName,
+            user_id: str,
+            new_fullname: UserUpdateName,
             requester: UserInfo = Depends(token_tester(greater_or_equal=2)),
         ):
             """
-            changes fullname of user with given username
+            changes user_name of user with given user_id
             """
-            user: UserInfo = UserInfo(**(await self.read_user(username)))
+            user: UserInfo = UserInfo(**(await self.read_user(user_id)))
             if requester.level_of_access == 3:
                 pass
             elif user.level_of_access >= requester.level_of_access:
@@ -902,25 +899,25 @@ class BaseAuth(Base, metaclass=ABCMeta):
                     detail="Can't edit user with higher or same privileges",
                 )
             return await self.update_user(
-                username=username, new_fullname=new_fullname.new_fullname
+                user_id=user_id, new_user_name=new_fullname.new_user_name
             )
 
         @router.get(
-            "/usr/{username}:promote",
+            "/usr/{user_id}:promote",
             tags=["auth_module", "user", "access_level_2"],
         )
         async def promote_user(
-            username: str,
+            user_id: str,
             requester: UserInfo = Depends(token_tester(greater_or_equal=1)),
         ):
             """
-            increases loa of user with given username
+            increases loa of user with given user_id
 
             Note
             ----
             Maximum loa is equal to requesters loa
             """
-            user: UserInfo = UserInfo(**(await self.read_user(username)))
+            user: UserInfo = UserInfo(**(await self.read_user(user_id)))
             if requester.level_of_access == 3:
                 pass
             elif user.level_of_access >= requester.level_of_access:
@@ -932,25 +929,25 @@ class BaseAuth(Base, metaclass=ABCMeta):
                 user.level_of_access + 1, requester.level_of_access
             )
             return await self.update_user(
-                username=username, new_level_of_access=new_loa
+                user_id=user_id, new_level_of_access=new_loa
             )
 
         @router.get(
-            "/usr/{username}:demote",
+            "/usr/{user_id}:demote",
             tags=["auth_module", "user", "access_level_2"],
         )
         async def demote_user(
-            username: str,
+            user_id: str,
             requester: UserInfo = Depends(token_tester(greater_or_equal=1)),
         ):
             """
-            decreases loa of user with given username
+            decreases loa of user with given user_id
 
             Note
             ----
             Minimum loa is 0
             """
-            user: UserInfo = UserInfo(**(await self.read_user(username)))
+            user: UserInfo = UserInfo(**(await self.read_user(user_id)))
             if requester.level_of_access == 3:
                 pass
             elif user.level_of_access >= requester.level_of_access:
@@ -962,20 +959,20 @@ class BaseAuth(Base, metaclass=ABCMeta):
                 user.level_of_access - 1, requester.level_of_access
             )
             return await self.update_user(
-                username=username, new_level_of_access=new_loa
+                user_id=user_id, new_level_of_access=new_loa
             )
 
         @router.delete(
-            "/usr/{username}", tags=["auth_module", "user", "access_level_2"]
+            "/usr/{user_id}", tags=["auth_module", "user", "access_level_2"]
         )
         async def delete_user(
-            username: str,
+            user_id: str,
             requester: UserInfo = Depends(token_tester(greater_or_equal=1)),
         ):
             """
             removes user, associated with user from token in request
             """
-            user: UserInfo = UserInfo(**(await self.read_user(username)))
+            user: UserInfo = UserInfo(**(await self.read_user(user_id)))
             if requester.level_of_access == 3:
                 pass
             elif user.level_of_access >= requester.level_of_access:
@@ -983,7 +980,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
                     status_code=status.HTTP_401_UNAUTHORIZED,
                     detail="Can't edit user with higher or same privileges",
                 )
-            await self.delete_user(username)
+            await self.delete_user(user_id)
 
         # +--------------+
         # | organisation |
@@ -1013,37 +1010,38 @@ class BaseAuth(Base, metaclass=ABCMeta):
             """
             creates new organisation with given org_id and name
             """
-            await self.create_org(org.organisation_id, org.name)
+            await self.create_org(org.organisation_id, org.organisation_name)
 
         @router.get(
-            "/org/{org_id}",
+            "/org/{organisation_id}",
             tags=["auth_module", "organisation", "access_level_3"],
             response_model=Organisation,
             dependencies=[Depends(token_tester(greater_or_equal=3))],
         )
-        async def read_organisation(org_id: str) -> Organisation:
+        async def read_organisation(organisation_id: str) -> Organisation:
             """
             returns info about organisation with given `org_id`
             """
-            return Organisation(**(await self.read_org(org_id)))
+            return Organisation(**(await self.read_org(organisation_id)))
 
         @router.put(
-            "/org/{org_id}:org_id",
+            "/org/{organisation_id}:org_id",
             tags=["auth_module", "organisation", "access_level_2"],
             dependencies=[Depends(token_tester(greater_or_equal=2))],
         )
         async def update_org_organisation_id(
-            org_id: str, new_org_id: OrgUpdateOrgId,
+            organisation_id: str, new_org_id: OrgUpdateOrgId,
         ):
             """
             changes org_id of organisation to new_org_id
             """
             await self.update_org(
-                org_id, new_organisation_id=new_org_id.new_organisation_id
+                organisation_id,
+                new_organisation_id=new_org_id.new_organisation_id,
             )
 
         @router.put(
-            "/org/{org_id}:name",
+            "/org/{organisation_id}:name",
             tags=["auth_module", "organisation", "access_level_2"],
             dependencies=[Depends(token_tester(greater_or_equal=2))],
         )
@@ -1053,18 +1051,20 @@ class BaseAuth(Base, metaclass=ABCMeta):
             """
             changes name of organisation with given org_id to new_name
             """
-            await self.update_org(org_id, new_name=new_name.new_name)
+            await self.update_org(
+                org_id, new_organisation_name=new_name.new_organisation_name
+            )
 
         @router.post(
-            "/org/{org_id}/usr",
+            "/org/{organisation_id}/usr",
             tags=["auth_module", "organisation", "access_level_3"],
             dependencies=[Depends(token_tester(greater_or_equal=3))],
         )
         async def create_user_in_org(
-            org_id: str, user: NewUser,
+            organisation_id: str, user: NewUser,
         ):
             """
-            creates user with provided username, password and fullname
+            creates user with provided user_id, password and user_name
             in organisation with given id
 
             Note
@@ -1073,23 +1073,25 @@ class BaseAuth(Base, metaclass=ABCMeta):
             * created users loa is 1
             """
             return await self.create_user(
-                **dict(user), level_of_access=1, organisation=org_id
+                **dict(user),
+                level_of_access=1,
+                organisation_id=organisation_id,
             )
 
         @router.put(
-            "/org/{org_id}/usr/{username}",
+            "/org/{organisation_id}/usr/{user_id}",
             tags=["auth_module", "organisation", "access_level_3"],
         )
         async def add_user_to_org(
-            org_id: str,
-            username: str,
+            organisation_id: str,
+            user_id: str,
             requester: UserInfo = Depends(token_tester(greater_or_equal=3)),
         ):
             """
-            adds user with provided username to organisation with given org_id
+            adds user with provided user_id to organisation with given org_id
             if he is in public organisation
             """
-            user: UserInfo = UserInfo(**(await self.read_user(username)))
+            user: UserInfo = UserInfo(**(await self.read_user(user_id)))
             if requester.level_of_access == 3:
                 pass
             elif user.level_of_access >= requester.level_of_access:
@@ -1097,8 +1099,10 @@ class BaseAuth(Base, metaclass=ABCMeta):
                     status_code=status.HTTP_401_UNAUTHORIZED,
                     detail="Can't edit user with higher or same privileges",
                 )
-            if user.organisation == "org:public":
-                await self.update_user(username, new_organisation=org_id)
+            if user.organisation_id == "org:public":
+                await self.update_user(
+                    user_id, new_organisation_id=organisation_id
+                )
             else:
                 raise HTTPException(
                     status_code=status.HTTP_409_CONFLICT,
@@ -1106,18 +1110,18 @@ class BaseAuth(Base, metaclass=ABCMeta):
                 )
 
         @router.delete(
-            "/org/{org_id}/usr/{username}",
+            "/org/{organisation_id}/usr/{user_id}",
             tags=["auth_module", "organisation"],
         )
         async def delete_user_from_org(
-            org_id: str,
-            username: str,
+            organisation_id: str,
+            user_id: str,
             requester: UserInfo = Depends(token_tester(greater_or_equal=3)),
         ):
             """
             removes requested user
             """
-            user: UserInfo = UserInfo(**(await self.read_user(username)))
+            user: UserInfo = UserInfo(**(await self.read_user(user_id)))
             if requester.level_of_access == 3:
                 pass
             elif user.level_of_access >= requester.level_of_access:
@@ -1125,8 +1129,10 @@ class BaseAuth(Base, metaclass=ABCMeta):
                     status_code=status.HTTP_401_UNAUTHORIZED,
                     detail="Can't edit user with higher or same privileges",
                 )
-            if user.organisation != "org:public":
-                await self.update_user(username, new_organisation=org_id)
+            if user.organisation_id != "org:public":
+                await self.update_user(
+                    user_id, new_organisation_id=organisation_id
+                )
             else:
                 raise HTTPException(
                     status_code=status.HTTP_409_CONFLICT,
@@ -1134,15 +1140,15 @@ class BaseAuth(Base, metaclass=ABCMeta):
                 )
 
         @router.delete(
-            "/org/{org_id}",
+            "/org/{organisation_id}",
             tags=["auth_module", "organisation", "access_level_3"],
             dependencies=[Depends(token_tester(greater_or_equal=3))],
         )
-        async def delete_organisation(org_id: str):
+        async def delete_organisation(organisation_id: str):
             """
             removes organisation with given name
             """
-            return await self.delete_org(org_id)
+            return await self.delete_org(organisation_id)
 
         # +---------+
         # | Invites |
@@ -1164,14 +1170,14 @@ class BaseAuth(Base, metaclass=ABCMeta):
             else:
                 if invite_code.organisation_id not in [
                     self.public_org_id,
-                    requester.organisation,
+                    requester.organisation_id,
                 ]:
                     raise HTTPException(
                         status_code=status.HTTP_401_UNAUTHORIZED,
                         detail="can't invite to non-user or non-public organisation",
                     )
             return await self.create_invite_code(
-                requester.username, invite_code.organisation_id
+                requester.user_id, invite_code.organisation_id
             )
 
         @router.get(
@@ -1198,8 +1204,8 @@ class BaseAuth(Base, metaclass=ABCMeta):
                         **(await self.read_user(code.issuer_id))
                     )
                     if (
-                        user.organisation == requester.organisation
-                        or user.username == requester.username
+                        user.organisation_id == requester.organisation_id
+                        or user.user_id == requester.user_id
                         or code.organisation_id == self.public_org_id
                     ):
                         new_codes.append(code)
@@ -1211,7 +1217,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
                         **(await self.read_user(code.issuer_id))
                     )
                     if (
-                        user.username == requester.username
+                        user.user_id == requester.user_id
                         or code.organisation_id == self.public_org_id
                     ):
                         new_codes.append(code)

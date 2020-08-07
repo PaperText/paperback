@@ -58,15 +58,15 @@ class Credentials(BaseModel):
         except EmailNotValidError:
             identifier = custom_charset(cls, value)
             identifier = starts_with("usr:")(cls, identifier)
-            values["username"] = identifier
+            values["user_id"] = identifier
         return value
 
 
 class NewUser(BaseModel):
-    username: str
+    user_id: str
     email: EmailStr
     password: str
-    fullname: Optional[str] = None
+    user_name: Optional[str] = None
 
 
 class NewInvitedUser(NewUser):
@@ -74,16 +74,16 @@ class NewInvitedUser(NewUser):
 
 
 class UserInfo(BaseModel):
-    username: str
+    user_id: str
     email: EmailStr
-    fullname: Optional[str] = None
-    organisation: Optional[str]
+    user_name: Optional[str] = None
+    organisation_id: Optional[str]
     level_of_access: int = 0
 
-    _validate_username_1 = validator("username", allow_reuse=True)(
+    _validate_user_id_1 = validator("user_id", allow_reuse=True)(
         custom_charset
     )
-    _validate_username_2 = validator("username", allow_reuse=True)(
+    _validate_user_id_2 = validator("user_id", allow_reuse=True)(
         starts_with("usr:")
     )
 
@@ -96,40 +96,19 @@ class UserListResponse(BaseModel):
     response: List[UserInfo]
 
 
-class MinimalInviteCode(BaseModel):
-    organisation_id: str
+class UserUpdateUserId(BaseModel):
+    new_user_id: str
 
-    _validate_organisation_id_1 = validator(
-        "organisation_id", allow_reuse=True
-    )(custom_charset)
-    _validate_organisation_id_2 = validator(
-        "organisation_id", allow_reuse=True
-    )(starts_with("org:"))
-
-
-class InviteCode(MinimalInviteCode):
-    code: str
-    issuer_id: str
-    num_registered: int
-
-
-class InviteCodeListRes(BaseModel):
-    response: List[InviteCode]
-
-
-class UserUpdateUsername(BaseModel):
-    new_username: str
-
-    _validate_new_username_1 = validator("new_username", allow_reuse=True)(
+    _validate_new_user_id_1 = validator("new_user_id", allow_reuse=True)(
         custom_charset
     )
-    _validate_new_username_2 = validator("new_username", allow_reuse=True)(
+    _validate_new_user_id_2 = validator("new_user_id", allow_reuse=True)(
         starts_with("usr:")
     )
 
 
-class UserUpdateFullName(BaseModel):
-    new_fullname: str
+class UserUpdateName(BaseModel):
+    new_user_name: str
 
 
 class UserUpdatePassword(BaseModel):
@@ -158,7 +137,7 @@ class TokenTester(Protocol):
 
 class MinimalOrganisation(BaseModel):
     organisation_id: str
-    name: Optional[str] = None
+    organisation_name: Optional[str] = None
 
     _validate_organisation_id_1 = validator(
         "organisation_id", allow_reuse=True
@@ -188,7 +167,28 @@ class OrgUpdateOrgId(BaseModel):
 
 
 class OrgUpdateName(BaseModel):
-    new_name: str
+    new_organisation_name: str
+
+
+class MinimalInviteCode(BaseModel):
+    organisation_id: str
+
+    _validate_organisation_id_1 = validator(
+        "organisation_id", allow_reuse=True
+    )(custom_charset)
+    _validate_organisation_id_2 = validator(
+        "organisation_id", allow_reuse=True
+    )(starts_with("org:"))
+
+
+class InviteCode(MinimalInviteCode):
+    code: str
+    issuer_id: str
+    num_registered: int
+
+
+class InviteCodeListRes(BaseModel):
+    response: List[InviteCode]
 
 
 # +------+
