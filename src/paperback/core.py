@@ -1,8 +1,9 @@
+import time
+import uuid
 import logging
 from copy import deepcopy
-from typing import Any, Dict, List, NoReturn, MutableMapping
+from typing import Any, Dict, Callable, NoReturn, MutableMapping
 from pathlib import Path
-import uuid
 
 import uvicorn
 from config import (
@@ -11,10 +12,9 @@ from config import (
     config_from_dict,
     config_from_toml,
 )
-from fastapi import FastAPI, Request, status
+from fastapi import FastAPI, Request
 from pkg_resources import iter_entry_points
 from uvicorn.logging import ColourizedFormatter
-from fastapi.responses import JSONResponse
 
 from .abc import BaseAuth, BaseDocs, BaseMisc
 from .util import async_lib_name
@@ -58,9 +58,9 @@ class App:
 
         self.logger = logging.getLogger("paperback")
         self.logger.setLevel(self.log_level)
-        self.tmp_stream_handler = logging.StreamHandler()
-        self.tmp_stream_handler.setLevel("DEBUG")
-        self.logger.addHandler(self.tmp_stream_handler)
+        tmp_stream_handler = logging.StreamHandler()
+        tmp_stream_handler.setLevel("DEBUG")
+        self.logger.addHandler(tmp_stream_handler)
 
         self.logger.debug("setting temporary console-only logger")
 
@@ -137,17 +137,17 @@ class App:
             use_colors=True,
         )
 
-        fileHandler = logging.handlers.RotatingFileHandler(
+        file_handler = logging.handlers.RotatingFileHandler(
             self.logs_dir / "root.log", maxBytes=1024 ** 3, backupCount=20,
         )
-        fileHandler.setFormatter(text_formatter)
-        fileHandler.setLevel("DEBUG")
-        root_logger.addHandler(fileHandler)
+        file_handler.setFormatter(text_formatter)
+        file_handler.setLevel("DEBUG")
+        root_logger.addHandler(file_handler)
 
-        consoleHandler = logging.StreamHandler()
-        consoleHandler.setFormatter(console_formatter)
-        consoleHandler.setLevel(self.log_level)
-        root_logger.addHandler(consoleHandler)
+        console_handler = logging.StreamHandler()
+        console_handler.setFormatter(console_formatter)
+        console_handler.setLevel(self.log_level)
+        root_logger.addHandler(console_handler)
 
     def find_local_modules(self) -> NoReturn:
         pass
@@ -238,20 +238,30 @@ class App:
                 )
             self.modules[name] = module
 
-    def add_handlers(self, api: FastAPI) -> NoReturn:
+    def add_handlers(self, root_api: FastAPI) -> NoReturn:
         self.logger.info("setting up API handlers")
 
-        @api.get("/stats", tags=["root"])
+        @root_api.get("/stats", tags=["root"])
         def stats():
             return {
                 "version": __version__,
                 "is_uuid_safe": str(uuid.uuid4().is_safe).split(".")[-1],
             }
 
-        self.logger.debug("adding CORP policy from auth module")
-        self.modules["auth"].add_CORS(api)
+        @root_api.middleware("http")
+        async def add_process_time_header(
+            request: Request, call_next: Callable[..., Any]
+        ):
+            start_time = time.time()
+            response = await call_next(request)
+            process_time = time.time() - start_time
+            response.headers["X-Process-Time"] = str(process_time)
+            return response
 
-    def add_routers(self, api: FastAPI) -> NoReturn:
+        self.logger.debug("adding CORP policy from auth module")
+        self.modules["auth"].add_CORS(root_api)
+
+    def add_routers(self, root_api: FastAPI) -> NoReturn:
         self.logger.info("adding routes from modules")
 
         token_tester = self.modules["auth"].token_tester
@@ -260,9 +270,9 @@ class App:
             router = module.create_router(token_tester)
 
             if module.TYPE in ["AUTH", "DOCS"]:
-                api.include_router(router)
+                root_api.include_router(router)
             else:
-                api.include_router(
+                root_api.include_router(
                     router, prefix=f"/{name}",
                 )
 
