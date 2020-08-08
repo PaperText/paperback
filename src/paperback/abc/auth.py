@@ -6,7 +6,6 @@ from typing import (
     Union,
     Callable,
     ClassVar,
-    NoReturn,
     Optional,
 )
 
@@ -66,7 +65,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
     public_org_id: str = "org:public"
 
     @staticmethod
-    def add_CORS(api: FastAPI) -> NoReturn:  # noqa: N802
+    def add_CORS(api: FastAPI):  # noqa: N802
         """
         adds CORS policy to api
 
@@ -235,7 +234,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
     #     raise NotImplementedError
 
     @abstractmethod
-    async def signout_everywhere(self, user_id: str) -> NoReturn:
+    async def signout_everywhere(self, user_id: str):
         """
         removes all tokens of current user
 
@@ -264,7 +263,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    async def delete_token(self, token: str) -> NoReturn:
+    async def delete_token(self, token: str):
         """
         removes token
 
@@ -276,7 +275,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    async def delete_tokens(self, token: List[str]) -> NoReturn:
+    async def delete_tokens(self, token: List[str]):
         """
         removes tokens
 
@@ -477,7 +476,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    async def delete_user(self, user_id: str) -> NoReturn:
+    async def delete_user(self, user_id: str):
         """
         Removes user with given user_id
 
@@ -727,7 +726,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
             await self.delete_token(token)
 
         @router.get("/signout_everywhere", tags=["auth_module", "auth"])
-        async def signout_everywhere() -> NoReturn:
+        async def signout_everywhere():
             """
             removes all tokens, associated with tokens user
             """

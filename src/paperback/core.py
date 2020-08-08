@@ -2,7 +2,7 @@ import time
 import uuid
 import logging
 from copy import deepcopy
-from typing import Any, Dict, Callable, NoReturn, MutableMapping
+from typing import Any, Dict, Callable, MutableMapping
 from pathlib import Path
 
 import uvicorn
@@ -149,7 +149,7 @@ class App:
         console_handler.setLevel(self.log_level)
         root_logger.addHandler(console_handler)
 
-    def find_local_modules(self) -> NoReturn:
+    def find_local_modules(self):
         pass
 
     #     for obj in self.modules_dir_path.iterdir():
@@ -178,7 +178,7 @@ class App:
     #         if self.verbose:
     #             print(f"loaded {module}")
 
-    def find_pip_modules(self) -> NoReturn:
+    def find_pip_modules(self):
         self.logger.info("searching for pip modules")
         for entry_point in iter_entry_points("paperback.modules"):
             name = entry_point.name
@@ -211,7 +211,7 @@ class App:
             self.classes[name] = cls
             self.default_config[name] = deepcopy(cls.DEFAULTS)
 
-    def load_modules(self) -> NoReturn:
+    def load_modules(self):
         self.logger.info("loading modules")
         for name, cls in sorted(
             self.classes.items(),
@@ -238,7 +238,7 @@ class App:
                 )
             self.modules[name] = module
 
-    def add_handlers(self, root_api: FastAPI) -> NoReturn:
+    def add_handlers(self, root_api: FastAPI):
         self.logger.info("setting up API handlers")
 
         @root_api.get("/stats", tags=["root"])
@@ -261,7 +261,7 @@ class App:
         self.logger.debug("adding CORP policy from auth module")
         self.modules["auth"].add_CORS(root_api)
 
-    def add_routers(self, root_api: FastAPI) -> NoReturn:
+    def add_routers(self, root_api: FastAPI):
         self.logger.info("adding routes from modules")
 
         token_tester = self.modules["auth"].token_tester

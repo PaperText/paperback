@@ -1,12 +1,9 @@
 from abc import ABCMeta, abstractmethod
 from types import SimpleNamespace
-from typing import Dict, Callable, ClassVar, NoReturn, Optional
+from typing import Dict, ClassVar, Optional
 from pathlib import Path
 
-from fastapi import APIRouter
-
 from . import Base, BaseAuth, BaseDocs
-from .models import UserInfo
 
 
 class BaseMisc(Base, metaclass=ABCMeta):

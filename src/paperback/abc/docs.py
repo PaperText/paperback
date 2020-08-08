@@ -1,5 +1,5 @@
 from abc import ABCMeta
-from typing import Any, Dict, List, Callable, ClassVar, NoReturn, Optional
+from typing import Any, Dict, List, Callable, ClassVar, Optional
 from datetime import datetime
 
 from fastapi import Body, Query, APIRouter

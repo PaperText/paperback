@@ -1,6 +1,6 @@
 from abc import ABCMeta, abstractmethod
 from types import SimpleNamespace
-from typing import Any, Dict, Callable, ClassVar, NoReturn, Optional
+from typing import Any, Dict, Callable, ClassVar, Optional
 from pathlib import Path
 
 from fastapi import APIRouter
@@ -78,8 +78,9 @@ class Base(metaclass=ABCMeta):
             "Unsupported class inheritance: cant inherit from `Base`"
         )
 
-    def add_routes(self, router: APIRouter) -> NoReturn:
+    def add_routes(self, router: APIRouter):
         """
+        function to add routes to predefined router instance
 
         Parameters
         ----------
