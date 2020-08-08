@@ -30,7 +30,7 @@ docs-clean = "paperback.__main__:Scripts.docs_clean"
 [tool.poetry.dependencies]
 python = "^3.7"
 python-configuration = {extras = ["toml"], version = "^0.6.0"}
-uvicorn = "^0.10.8"
+uvicorn = "^0.11.8"
 email-validator = "^1.0"
 pydantic = "^1.4"
 python-multipart = "^0.0.5"
