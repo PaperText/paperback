@@ -103,7 +103,7 @@ class App:
             self.logger.info("found storage folder")
         else:
             self.logger.debug("can't find storage folder")
-            self.config_file.touch()
+            self.storage_dir.mkdir(exist_ok=True, parents=True)
             self.logger.info("created storage folder")
 
         self.default_config: Dict[str, Any] = {
