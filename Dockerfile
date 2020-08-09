@@ -25,9 +25,6 @@ RUN apt-get install --no-install-recommends -y \
 RUN apt-get clean
 RUN rm -rf /var/lib/apt/lists/*
 
-RUN pip install uvloop
-RUN pip install argon2-cffi gmpy2
-
 COPY README.md /root/paperback/
 COPY pyproject.toml /root/paperback/
 COPY src/paperback /root/paperback/src/paperback

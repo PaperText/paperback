@@ -29,4 +29,7 @@ for module in $modules; do
     pip install "$module"
 done
 
+pip install uvloop
+pip install argon2-cffi gmpy2
+
 paperback -l DEBUG
