@@ -26,7 +26,7 @@ COPY pyproject.toml /root/paperback/
 COPY src/paperback /root/paperback/src/paperback
 
 WORKDIR /root/paperback
-RUN pip install .
+RUN pip install ".[best]"
 
 COPY src/docker/entrypoint.sh /root/entrypoint.sh
 CMD sh ~/entrypoint.sh
