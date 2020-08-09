@@ -20,7 +20,6 @@ RUN apt-get update
 RUN apt-get install --no-install-recommends -y \
     build-essential \
     git \
-    openssh-server \
     libmpc-dev
 RUN apt-get clean
 RUN rm -rf /var/lib/apt/lists/*
