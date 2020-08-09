@@ -26,7 +26,7 @@ for module in modules:
 ')
 
 for module in $modules; do
-    pip install "$module[best]"
+    pip install "$module"
 done
 
 paperback -l DEBUG
