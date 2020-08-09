@@ -17,6 +17,7 @@ from fastapi import (
     APIRouter,
     HTTPException,
     status,
+Request
 )
 from pydantic import EmailStr
 from fastapi.middleware.cors import CORSMiddleware
@@ -165,22 +166,20 @@ class BaseAuth(Base, metaclass=ABCMeta):
     @abstractmethod
     async def signin(
         self,
+        request: Request,
         password: str,
-        email: Optional[str] = None,
-        user_id: Optional[str] = None,
+        identifier: Union[str, EmailStr],
     ) -> str:
         """
-        checks user_id and password and returns new token
+        checks identifier and password and returns new token
 
-        Notes
-        -----
-        either email or user_id must be provided, but not both
 
         Parameters
         ----------
+        request: Request
         password: str
-        email: str, optional
-        user_id: str, optional
+        identifier: Union[str, EmailStr]
+
 
         Returns
         -------
@@ -192,6 +191,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
     @abstractmethod
     async def signup(
         self,
+        request: Request,
         user_id: str,
         email: EmailStr,
         password: str,
@@ -203,6 +203,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
 
         Parameters
         ----------
+        request: Request
         user_id: str
             new user_id of user, must be unique
         email: str
@@ -691,23 +692,27 @@ class BaseAuth(Base, metaclass=ABCMeta):
 
         # signin and signout
         @router.post(
-            "/signin", tags=["auth_module", "auth"], response_model=TokenRes
+            "/signin", tags=["auth_module", "auth"], response_model=TokenRes,
         )
-        async def signin(credentials: Credentials) -> TokenRes:
+        async def signin(credentials: Credentials, request: Request,) -> TokenRes:
             """
             generates new token if provided user_id and password are correct
             """
-            return TokenRes(response=await self.signin(**dict(credentials)))
+            return TokenRes(response=await self.signin(
+                request=request,
+                password=credentials.password,
+                identifier=credentials.identifier,
+            ))
 
         @router.post(
             "/signup", tags=["auth_module", "auth"], response_model=TokenRes,
         )
-        async def signup(user: NewInvitedUser) -> TokenRes:
+        async def signup(user: NewInvitedUser, request: Request,) -> TokenRes:
             """
             creates new user with provided
                 user_id, password, name and invitation code
             """
-            return TokenRes(response=await self.signup(**dict(user)))
+            return TokenRes(response=await self.signup(request=request, **dict(user)))
 
         @router.get("/signout", tags=["auth_module", "auth"])
         async def signout(
@@ -779,12 +784,21 @@ class BaseAuth(Base, metaclass=ABCMeta):
             * created users are assigned to public organisation
             * created users loa is 1
             """
-            new_user = await self.create_user(
-                **dict(user),
+            await self.create_user(
+                user_id=user.user_id,
+                email=user.email,
+                password=user.password,
+                user_name=user.user_name,
                 level_of_access=0,
                 organisation_id=self.public_org_id,
             )
-            return UserInfo(**new_user)
+            return UserInfo(
+                user_id=user.user_id,
+                email=user.email,
+                user_name=user.user_name,
+                organisation_id=self.public_org_id,
+                level_of_access=0,
+            )
 
         @router.get(
             "/me",
@@ -808,7 +822,14 @@ class BaseAuth(Base, metaclass=ABCMeta):
             """
             return info about user with given user_id
             """
-            return UserInfo(**(await self.read_user(user_id)))
+            user = await self.read_user(user_id)
+            return UserInfo(
+                user_id=user["user_id"],
+                email=user["email"],
+                user_name=user["user_name"],
+                organisation_id=user["organisation_id"],
+                level_of_access=user["level_of_access"],
+            )
 
         @router.get(
             "/usrs",
@@ -822,9 +843,15 @@ class BaseAuth(Base, metaclass=ABCMeta):
             created users are assigned to public organisation
             """
             raw_users: List[
-                Dict[str, Union[str, int]]
+                Dict[str, Any]
             ] = await self.read_users()
-            users: List[UserInfo] = [UserInfo(**user) for user in raw_users]
+            users: List[UserInfo] = [UserInfo(
+                user_id=user["user_id"],
+                email=user["email"],
+                user_name=user["user_name"],
+                organisation_id=user["organisation_id"],
+                level_of_access=user["level_of_access"],
+            ) for user in raw_users]
             return UserListResponse(response=users)
 
         @router.put(

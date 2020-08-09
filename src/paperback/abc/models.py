@@ -50,23 +50,19 @@ class Credentials(BaseModel):
     identifier: Union[str, EmailStr]
     password: str
 
-    @validator("identifier", pre=True)
-    def validate_identifier(cls, value, values):
-        try:
-            identifier = validate_email(value).email
-            values["email"] = identifier
-        except EmailNotValidError:
-            identifier = custom_charset(cls, value)
-            identifier = starts_with("usr:")(cls, identifier)
-            values["user_id"] = identifier
-        return value
-
 
 class NewUser(BaseModel):
     user_id: str
     email: EmailStr
     password: str
     user_name: Optional[str] = None
+
+    _validate_user_id_1 = validator("user_id", allow_reuse=True)(
+        custom_charset
+    )
+    _validate_user_id_2 = validator("user_id", allow_reuse=True)(
+        starts_with("usr:")
+    )
 
 
 class NewInvitedUser(NewUser):
