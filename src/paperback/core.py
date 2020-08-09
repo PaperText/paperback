@@ -293,4 +293,5 @@ class App:
             log_config=uvicorn_log_config,
             log_level=self.log_level.lower(),
             loop=async_lib_name,
+            proxy_headers=True,
         )
