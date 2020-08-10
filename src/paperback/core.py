@@ -252,10 +252,12 @@ class App:
         async def add_process_time_header(
             request: Request, call_next: Callable[..., Any]
         ):
-            start_time = time.time()
+            start_time: float = time.time()
             response = await call_next(request)
-            process_time = time.time() - start_time
-            response.headers["X-Process-Time"] = str(process_time)
+            process_time: float = time.time() - start_time
+            process_time = round(process_time, 2)
+            process_time_str: str = str(process_time) + " seconds"
+            response.headers["X-Process-Time"] = process_time_str
             return response
 
         self.logger.debug("adding CORP policy from auth module")
