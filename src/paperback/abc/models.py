@@ -47,8 +47,16 @@ class TokenListRes(BaseRes):
 
 
 class Credentials(BaseModel):
-    identifier: Union[str, EmailStr]
+    identifier: Union[str, EmailStr] = Field(...)
     password: str
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "identifier": "user_id",
+                "password": "password",
+            }
+        }
 
 
 class NewUser(BaseModel):
