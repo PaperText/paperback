@@ -129,15 +129,20 @@ class BaseAuth(Base, metaclass=ABCMeta):
             )
             print(f"token_tester: {authentication=}, {token=}")
             user: UserInfo = UserInfo(**self.token2user(authentication))
-            # TODO: rewrite code to use only parameters that aren't None
-            if (
-                user.level_of_access < greater_or_equal
-                or user.level_of_access not in one_of
-            ):
-                raise HTTPException(
-                    status_code=status.HTTP_401_UNAUTHORIZED,
-                    detail="Couldn't validate credentials",
-                )
+            if greater_or_equal is not None:
+                if user.level_of_access < greater_or_equal:
+                    raise HTTPException(
+                        status_code=status.HTTP_401_UNAUTHORIZED,
+                        detail="Couldn't validate credentials",
+                    )
+            elif (one_of is not None) and (len(one_of) > 0):
+                if user.level_of_access not in one_of:
+                    raise HTTPException(
+                        status_code=status.HTTP_401_UNAUTHORIZED,
+                        detail="Couldn't validate credentials",
+                    )
+            else:
+                raise ValueError("invalid parameters")
             return user
 
         return return_function
