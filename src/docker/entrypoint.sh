@@ -1,6 +1,6 @@
 #!/usr/bin/env sh
 
-eval $(ssh-agent -s)
+eval "$(ssh-agent -s)"
 echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
 
 mkdir -p ~/.ssh
@@ -9,8 +9,9 @@ ssh-keyscan github.com >> ~/.ssh/known_hosts
 chmod 644 ~/.ssh/known_hosts
 
 mkdir -p ~/.papertext
-echo $CONFIG
-echo $CONFIG > ~/.papertext/config.toml
+echo "$CONFIG"
+echo "$CONFIG" > ~/.papertext/config.toml
+cat ~/.papertext/config.toml
 
 modules=$(python3.8 -c '
 import os
@@ -26,6 +27,7 @@ for module in modules:
 ')
 
 for module in $modules; do
+    echo "$module"
     pip install "$module"
 done
 
