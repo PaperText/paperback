@@ -5,7 +5,6 @@ from typing import Any, Dict, List, Union, Callable, Optional, Protocol
 from datetime import datetime
 
 from pydantic import Field, EmailStr, BaseModel, validator
-from email_validator import EmailNotValidError, validate_email
 
 
 def custom_charset(cls: Any, value: str) -> str:
@@ -17,21 +16,6 @@ def custom_charset(cls: Any, value: str) -> str:
             "id must only include ASCII, `-` and `_` symbols "
             "and only include one `:`."
         )
-
-
-def starts_with(sw: str) -> Callable[[Any, str], str]:
-    def func(cls: Any, value: str) -> str:
-        if value.startswith(sw):
-            return value
-        else:
-            if ":" in value:
-                raise ValueError(
-                    f"id must start with {sw} and not include other :"
-                )
-            else:
-                return sw + value
-
-    return func
 
 
 class BaseRes(BaseModel):
@@ -68,9 +52,6 @@ class NewUser(BaseModel):
     _validate_user_id_1 = validator("user_id", allow_reuse=True)(
         custom_charset
     )
-    _validate_user_id_2 = validator("user_id", allow_reuse=True)(
-        starts_with("usr:")
-    )
 
 
 class NewInvitedUser(NewUser):
@@ -81,14 +62,11 @@ class UserInfo(BaseModel):
     user_id: str
     email: EmailStr
     user_name: Optional[str] = None
-    organisation_id: Optional[str]
+    member_of: Optional[str]
     level_of_access: int = 0
 
     _validate_user_id_1 = validator("user_id", allow_reuse=True)(
         custom_charset
-    )
-    _validate_user_id_2 = validator("user_id", allow_reuse=True)(
-        starts_with("usr:")
     )
 
 
@@ -105,9 +83,6 @@ class UserUpdateUserId(BaseModel):
 
     _validate_new_user_id_1 = validator("new_user_id", allow_reuse=True)(
         custom_charset
-    )
-    _validate_new_user_id_2 = validator("new_user_id", allow_reuse=True)(
-        starts_with("usr:")
     )
 
 
@@ -146,9 +121,6 @@ class MinimalOrganisation(BaseModel):
     _validate_organisation_id_1 = validator(
         "organisation_id", allow_reuse=True
     )(custom_charset)
-    _validate_organisation_id_2 = validator(
-        "organisation_id", allow_reuse=True
-    )(starts_with("org:"))
 
 
 class OrgListRes(BaseModel):
@@ -165,9 +137,6 @@ class OrgUpdateOrgId(BaseModel):
     _validate_new_organisation_id_1 = validator(
         "new_organisation_id", allow_reuse=True
     )(custom_charset)
-    _validate_new_organisation_id_2 = validator(
-        "new_organisation_id", allow_reuse=True
-    )(starts_with("org:"))
 
 
 class OrgUpdateName(BaseModel):
@@ -180,9 +149,6 @@ class MinimalInviteCode(BaseModel):
     _validate_organisation_id_1 = validator(
         "organisation_id", allow_reuse=True
     )(custom_charset)
-    _validate_organisation_id_2 = validator(
-        "organisation_id", allow_reuse=True
-    )(starts_with("org:"))
 
 
 class InviteCode(MinimalInviteCode):

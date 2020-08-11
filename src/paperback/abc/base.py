@@ -1,3 +1,5 @@
+from __future__ import annotations
+
 from abc import ABCMeta, abstractmethod
 from types import SimpleNamespace
 from typing import Any, Dict, Callable, ClassVar, Optional
@@ -46,20 +48,6 @@ class Base(metaclass=ABCMeta):
             )
         instance = super().__new__(cls)
         return instance
-
-    @abstractmethod
-    def __init__(self, cfg: SimpleNamespace, storage_dir: Path):
-        """
-        constructor for all classes
-
-        Parameters
-        ----------
-        cfg: dict
-            python dict for accessing config
-        storage_dir: Path
-            pathlib object pointing to directory for module
-        """
-        raise NotImplementedError
 
     @abstractmethod
     def create_router(self, token_tester: TokenTester,) -> APIRouter:

@@ -63,7 +63,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
 
     TYPE: ClassVar[str] = "AUTH"
 
-    public_org_id: str = "org:public"
+    public_org_id: str = "public"
 
     @staticmethod
     def add_CORS(api: FastAPI):  # noqa: N802
@@ -162,7 +162,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
         Dict[str, Union[str, int]]
             user_id: str
             email: str
-            organisation_id: str
+            member_of: str
             level_of_access: int
             user_name: str, optional
         """
@@ -178,13 +178,11 @@ class BaseAuth(Base, metaclass=ABCMeta):
         """
         checks identifier and password and returns new token
 
-
         Parameters
         ----------
         request: Request
         password: str
         identifier: Union[str, EmailStr]
-
 
         Returns
         -------
@@ -252,23 +250,6 @@ class BaseAuth(Base, metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    async def read_tokens(self, user_id: str) -> List[str]:
-        """
-        returns list of tokens issued to user with given user_id
-
-        Parameters
-        ----------
-        user_id: str
-            user_id of user for which to return tokens
-
-        Returns
-        -------
-        List[str]
-            list containing found tokens
-        """
-        raise NotImplementedError
-
-    @abstractmethod
     async def delete_token(self, token: str):
         """
         removes token
@@ -280,28 +261,16 @@ class BaseAuth(Base, metaclass=ABCMeta):
         """
         raise NotImplementedError
 
-    @abstractmethod
-    async def delete_tokens(self, token: List[str]):
-        """
-        removes tokens
-
-        Parameters
-        ----------
-        token: List[str]
-            list of tokens to remove
-        """
-        raise NotImplementedError
-
     # user
 
     @abstractmethod
     async def create_user(
         self,
         user_id: str,
-        email: EmailStr,
         password: str,
         level_of_access: int = 0,
-        organisation_id: Optional[str] = None,
+        email: Optional[EmailStr] = None,
+        member_of: Optional[str] = None,
         user_name: Optional[str] = None,
     ) -> Dict[str, Any]:
         """
@@ -318,7 +287,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
         level_of_access: int
             default: 0
             loa of new user
-        organisation_id: str, optional
+        member_of: str, optional
             organisation of user
             If none is provided then user will be in public org
         user_name: str, optional
@@ -352,7 +321,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
             Contains:
                 user_id: str
                 email: str
-                organisation: str
+                member_of: str
                 level_of_access: int
                 user_name: str, optional
         """
@@ -372,7 +341,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
                 Contains:
                     user_id: str
                     email: str
-                    organisation: str
+                    member_of: str
                     level_of_access: int
                     user_name: str, optional
         """
@@ -414,7 +383,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
             Contains:
                 user_id: str
                 email: str
-                organisation: str
+                member_of: str
                 level_of_access: int
                 user_name: str, optional
         """
@@ -448,7 +417,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
             Contains:
                 user_id: str
                 email: str
-                organisation: str
+                member_of: str
                 level_of_access: int
                 user_name: str, optional
         """
@@ -475,7 +444,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
             Contains:
                 user_id: str
                 email: str
-                organisation: str
+                member_of: str
                 level_of_access: int
                 user_name: str, optional
         """
@@ -514,7 +483,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
         Dict[str, Union[str, List[str]]]
             new organisation
             Contains:
-                organisation_id: str,
+                member_of: str,
                 organisation_name: str, optional
                 users: List[str]
         """
@@ -525,7 +494,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
         self, organisation_id: str
     ) -> Dict[str, Union[str, List[str]]]:
         """
-        returns info about organisation with given `organisation_id`
+        returns info about organisation with given `member_of`
 
         Parameters
         ----------
@@ -537,7 +506,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
         Dict[str, Union[str, List[str]]]
             new organisation
             Contains:
-                organisation_id: str
+                member_of: str
                 organisation_name: str, optional
                 users: List[str]
         """
@@ -563,7 +532,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
                 Dict[str, str]
                     mapping from column to value, depends on `columns`
                     Contains:
-                        organisation_id: str
+                        member_of: str
                         organisation_name: str, optional
         """
         raise NotImplementedError
@@ -592,7 +561,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
         Dict[str, str]
         new organisation
             Contains:
-                organisation_id: str
+                member_of: str
                 organisation_name: str, optional
         """
         raise NotImplementedError
@@ -742,20 +711,6 @@ class BaseAuth(Base, metaclass=ABCMeta):
             """
 
         # tokens
-        @router.get(
-            "/tokens",
-            tags=["auth_module", "token"],
-            response_model=TokenListRes,
-        )
-        async def get_tokens(
-            requester: UserInfo = Depends(token_tester(greater_or_equal=0)),
-        ) -> TokenListRes:
-            """
-            returns all tokens, associated with user from token in request
-            """
-            tokens = await self.read_tokens(requester.user_id)
-            return TokenListRes(response=tokens)
-
         @router.delete("/token", tags=["auth_module", "token"])
         async def delete_token(token_identifier: str = Body(...)):
             """
@@ -763,14 +718,6 @@ class BaseAuth(Base, metaclass=ABCMeta):
                 either token itself or token uuid
             """
             await self.delete_token(token_identifier)
-
-        @router.delete("/tokens", tags=["auth_module", "token"])
-        async def delete_tokens(token_identifiers: List[str]):
-            """
-            removes token by provided identifiers:
-                either token itself or token uuid
-            """
-            await self.delete_tokens(token_identifiers)
 
         # +-------+
         # | users |
@@ -789,20 +736,18 @@ class BaseAuth(Base, metaclass=ABCMeta):
             * created users are assigned to public organisation
             * created users loa is 1
             """
-            await self.create_user(
+            created_user = await self.create_user(
                 user_id=user.user_id,
                 email=user.email,
                 password=user.password,
                 user_name=user.user_name,
-                level_of_access=0,
-                organisation_id=self.public_org_id,
             )
             return UserInfo(
-                user_id=user.user_id,
-                email=user.email,
-                user_name=user.user_name,
-                organisation_id=self.public_org_id,
-                level_of_access=0,
+                user_id=created_user["user_id"],
+                email=created_user["email"],
+                user_name=created_user["user_name"],
+                member_of=created_user["member_of"],
+                level_of_access=created_user["level_of_access"],
             )
 
         @router.get(
@@ -832,7 +777,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
                 user_id=user["user_id"],
                 email=user["email"],
                 user_name=user["user_name"],
-                organisation_id=user["organisation_id"],
+                member_of=user["member_of"],
                 level_of_access=user["level_of_access"],
             )
 
@@ -854,7 +799,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
                 user_id=user["user_id"],
                 email=user["email"],
                 user_name=user["user_name"],
-                organisation_id=user["organisation_id"],
+                member_of=user["member_of"],
                 level_of_access=user["level_of_access"],
             ) for user in raw_users]
             return UserListResponse(response=users)
@@ -1044,7 +989,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
             await self.create_org(org.organisation_id, org.organisation_name)
 
         @router.get(
-            "/org/{organisation_id}",
+            "/org/{member_of}",
             tags=["auth_module", "organisation", "access_level_3"],
             response_model=Organisation,
             dependencies=[Depends(token_tester(greater_or_equal=3))],
@@ -1056,7 +1001,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
             return Organisation(**(await self.read_org(organisation_id)))
 
         @router.put(
-            "/org/{organisation_id}:org_id",
+            "/org/{member_of}:org_id",
             tags=["auth_module", "organisation", "access_level_2"],
             dependencies=[Depends(token_tester(greater_or_equal=2))],
         )
@@ -1072,7 +1017,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
             )
 
         @router.put(
-            "/org/{organisation_id}:name",
+            "/org/{member_of}:name",
             tags=["auth_module", "organisation", "access_level_2"],
             dependencies=[Depends(token_tester(greater_or_equal=2))],
         )
@@ -1087,7 +1032,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
             )
 
         @router.post(
-            "/org/{organisation_id}/usr",
+            "/org/{member_of}/usr",
             tags=["auth_module", "organisation", "access_level_3"],
             dependencies=[Depends(token_tester(greater_or_equal=3))],
         )
@@ -1110,7 +1055,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
             )
 
         @router.put(
-            "/org/{organisation_id}/usr/{user_id}",
+            "/org/{member_of}/usr/{user_id}",
             tags=["auth_module", "organisation", "access_level_3"],
         )
         async def add_user_to_org(
@@ -1141,7 +1086,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
                 )
 
         @router.delete(
-            "/org/{organisation_id}/usr/{user_id}",
+            "/org/{member_of}/usr/{user_id}",
             tags=["auth_module", "organisation"],
         )
         async def delete_user_from_org(
@@ -1171,7 +1116,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
                 )
 
         @router.delete(
-            "/org/{organisation_id}",
+            "/org/{member_of}",
             tags=["auth_module", "organisation", "access_level_3"],
             dependencies=[Depends(token_tester(greater_or_equal=3))],
         )
