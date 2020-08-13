@@ -17,7 +17,7 @@ from fastapi import (
     APIRouter,
     HTTPException,
     status,
-Request
+    Request,
 )
 from pydantic import EmailStr
 from fastapi.middleware.cors import CORSMiddleware
@@ -120,26 +120,36 @@ class BaseAuth(Base, metaclass=ABCMeta):
             )
 
         def return_function(authentication: str = Header(...)) -> UserInfo:
-            token: str = (
-                authentication[7:]
-                # TODO: change to this in python3.9
-                # authentication.removeprefix("Bearer: ")
-                if authentication.startswith("Bearer: ")
-                else authentication
-            )
-            print(f"token_tester: {authentication=}, {token=}")
-            user: UserInfo = UserInfo(**self.token2user(authentication))
+            # TODO: change to this in python3.9
+            # token: str = authentication.removeprefix("Bearer: ")
+            token: str = authentication[8:] if authentication.startswith("Bearer: ") else authentication
+
+            user: UserInfo = UserInfo(**self.token2user(token))
             if greater_or_equal is not None:
                 if user.level_of_access < greater_or_equal:
                     raise HTTPException(
                         status_code=status.HTTP_401_UNAUTHORIZED,
-                        detail="Couldn't validate credentials",
+                        detail={
+                            "eng": "Users level_of_access "
+                                   f"({user.level_of_access}) is lower then "
+                                   f"required ({greater_or_equal})",
+                            "rus": "Уровень доступа пользователся "
+                                   f"({user.level_of_access}) меньше чем "
+                                   f"необходимый ({greater_or_equal})",
+                        },
                     )
             elif (one_of is not None) and (len(one_of) > 0):
                 if user.level_of_access not in one_of:
                     raise HTTPException(
                         status_code=status.HTTP_401_UNAUTHORIZED,
-                        detail="Couldn't validate credentials",
+                        detail={
+                            "eng": "Users level_of_access "
+                                   f"({user.level_of_access}) is not in "
+                                   f"required list ({one_of})",
+                            "rus": "Уровень доступа пользователся "
+                                   f"({user.level_of_access}) не нахолится в "
+                                   f"списке необхрлимых ({one_of})",
+                        },
                     )
             else:
                 raise ValueError("invalid parameters")
@@ -226,7 +236,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
         raise NotImplementedError
 
     # @abstractmethod
-    # async def signout(self, token: str) -> NoReturn:
+    # async def signout(self, token: str):
     #     """
     #     removes token with which request was sent
     #
@@ -306,7 +316,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    async def read_user(self, user_id: str) -> Dict[str, Union[str, int]]:
+    async def read_user(self, user_id: str) -> Dict[str, Any]:
         """
         get information about user with given user_id
 
