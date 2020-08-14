@@ -1,24 +1,16 @@
 from abc import ABCMeta, abstractmethod
-from typing import (
-    Any,
-    Dict,
-    List,
-    Union,
-    Callable,
-    ClassVar,
-    Optional,
-)
+from typing import Any, Dict, List, Union, Callable, ClassVar, Optional
 
 from fastapi import (
     Body,
     Header,
     Depends,
     FastAPI,
+    Request,
     APIRouter,
     HTTPException,
+    BackgroundTasks,
     status,
-    Request,
-    BackgroundTasks
 )
 from pydantic import EmailStr
 from fastapi.middleware.cors import CORSMiddleware
@@ -123,7 +115,9 @@ class BaseAuth(Base, metaclass=ABCMeta):
         def return_function(authentication: str = Header(...)) -> UserInfo:
             # TODO: change to this in python3.9
             # token: str = authentication.removeprefix("Bearer: ")
-            token: str = authentication[8:] if authentication.startswith("Bearer: ") else authentication
+            token: str = authentication[8:] if authentication.startswith(
+                "Bearer: "
+            ) else authentication
 
             user: UserInfo = UserInfo(**self.token2user(token))
             if greater_or_equal is not None:
@@ -132,11 +126,11 @@ class BaseAuth(Base, metaclass=ABCMeta):
                         status_code=status.HTTP_401_UNAUTHORIZED,
                         detail={
                             "eng": "Users level_of_access "
-                                   f"({user.level_of_access}) is lower then "
-                                   f"required ({greater_or_equal})",
+                            f"({user.level_of_access}) is lower then "
+                            f"required ({greater_or_equal})",
                             "rus": "Уровень доступа пользователся "
-                                   f"({user.level_of_access}) меньше чем "
-                                   f"необходимый ({greater_or_equal})",
+                            f"({user.level_of_access}) меньше чем "
+                            f"необходимый ({greater_or_equal})",
                         },
                     )
             elif (one_of is not None) and (len(one_of) > 0):
@@ -145,11 +139,11 @@ class BaseAuth(Base, metaclass=ABCMeta):
                         status_code=status.HTTP_401_UNAUTHORIZED,
                         detail={
                             "eng": "Users level_of_access "
-                                   f"({user.level_of_access}) is not in "
-                                   f"required list ({one_of})",
+                            f"({user.level_of_access}) is not in "
+                            f"required list ({one_of})",
                             "rus": "Уровень доступа пользователся "
-                                   f"({user.level_of_access}) не нахолится в "
-                                   f"списке необхрлимых ({one_of})",
+                            f"({user.level_of_access}) не нахолится в "
+                            f"списке необхрлимых ({one_of})",
                         },
                     )
             else:
@@ -690,17 +684,19 @@ class BaseAuth(Base, metaclass=ABCMeta):
         async def signin(
             credentials: Credentials,
             request: Request,
-            background_tasks: BackgroundTasks
+            background_tasks: BackgroundTasks,
         ) -> TokenRes:
             """
             generates new token if provided user_id and password are correct
             """
             background_tasks.add_task(self.cleanup_tokens)
-            return TokenRes(response=await self.signin(
-                request=request,
-                password=credentials.password,
-                identifier=credentials.identifier,
-            ))
+            return TokenRes(
+                response=await self.signin(
+                    request=request,
+                    password=credentials.password,
+                    identifier=credentials.identifier,
+                )
+            )
 
         @router.post(
             "/signup", tags=["auth_module", "auth"], response_model=TokenRes,
@@ -710,7 +706,9 @@ class BaseAuth(Base, metaclass=ABCMeta):
             creates new user with provided
                 user_id, password, name and invitation code
             """
-            return TokenRes(response=await self.signup(request=request, **dict(user)))
+            return TokenRes(
+                response=await self.signup(request=request, **dict(user))
+            )
 
         @router.get("/signout", tags=["auth_module", "auth"])
         async def signout(
@@ -816,16 +814,17 @@ class BaseAuth(Base, metaclass=ABCMeta):
 
             created users are assigned to public organisation
             """
-            raw_users: List[
-                Dict[str, Any]
-            ] = await self.read_users()
-            users: List[UserInfo] = [UserInfo(
-                user_id=user["user_id"],
-                email=user["email"],
-                user_name=user["user_name"],
-                member_of=user["member_of"],
-                level_of_access=user["level_of_access"],
-            ) for user in raw_users]
+            raw_users: List[Dict[str, Any]] = await self.read_users()
+            users: List[UserInfo] = [
+                UserInfo(
+                    user_id=user["user_id"],
+                    email=user["email"],
+                    user_name=user["user_name"],
+                    member_of=user["member_of"],
+                    level_of_access=user["level_of_access"],
+                )
+                for user in raw_users
+            ]
             return UserListResponse(response=users)
 
         @router.put(

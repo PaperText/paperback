@@ -36,10 +36,7 @@ class Credentials(BaseModel):
 
     class Config:
         schema_extra = {
-            "example": {
-                "identifier": "user_id",
-                "password": "password",
-            }
+            "example": {"identifier": "user_id", "password": "password",}
         }
 
 

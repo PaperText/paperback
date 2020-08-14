@@ -250,7 +250,7 @@ class App:
 
         @root_api.middleware("http")
         async def add_process_time_header(
-            request: Request, call_next: Callable[..., Any]
+            request: Request, call_next: Callable
         ):
             start_time: float = time.time()
             response = await call_next(request)
