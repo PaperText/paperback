@@ -18,6 +18,7 @@ from fastapi import (
     HTTPException,
     status,
     Request,
+    BackgroundTasks
 )
 from pydantic import EmailStr
 from fastapi.middleware.cors import CORSMiddleware
@@ -175,6 +176,14 @@ class BaseAuth(Base, metaclass=ABCMeta):
             member_of: str
             level_of_access: int
             user_name: str, optional
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    def cleanup_tokens(self):
+        """
+        will be added as job to BackgroudTasks on every signin
+        shoul remove all expired tokens
         """
         raise NotImplementedError
 
@@ -678,10 +687,15 @@ class BaseAuth(Base, metaclass=ABCMeta):
         @router.post(
             "/signin", tags=["auth_module", "auth"], response_model=TokenRes,
         )
-        async def signin(credentials: Credentials, request: Request,) -> TokenRes:
+        async def signin(
+            credentials: Credentials,
+            request: Request,
+            background_tasks: BackgroundTasks
+        ) -> TokenRes:
             """
             generates new token if provided user_id and password are correct
             """
+            background_tasks.add_task(self.cleanup_tokens)
             return TokenRes(response=await self.signin(
                 request=request,
                 password=credentials.password,
