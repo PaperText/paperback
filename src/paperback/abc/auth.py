@@ -406,8 +406,8 @@ class BaseAuth(Base, metaclass=ABCMeta):
     async def update_user_password(
         self,
         user_id: str,
-        old_passwords: Optional[str] = None,
-        new_password: Optional[str] = None,
+        old_password: str,
+        new_password: str,
     ) -> Dict[str, Union[str, int]]:
         """
         Updates user with given user_id
@@ -416,11 +416,9 @@ class BaseAuth(Base, metaclass=ABCMeta):
         ----------
         user_id: str
             user_id of user to delete
-        old_passwords: str, optional
-            default: None
+        old_password: str
             old password to check
-        new_password: str, optional
-            default: None
+        new_password: str
             new password to replace previous
 
         Returns
@@ -873,7 +871,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
                 )
             await self.update_user_password(
                 user_id=user_id,
-                old_passwords=passwords.old_password,
+                old_password=passwords.old_password,
                 new_password=passwords.new_password,
             )
 
