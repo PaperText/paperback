@@ -8,13 +8,12 @@ from pydantic import Field, EmailStr, BaseModel, validator
 
 
 def custom_charset(cls: Any, value: str) -> str:
-    res = re.match(r"^[\w\d:_\-]+$", value, re.ASCII | re.MULTILINE)
+    res = re.match(r"^[\w\d_\-]+$", value, re.ASCII | re.MULTILINE)
     if res:
         return value
     else:
         raise ValueError(
             "id must only include ASCII, `-` and `_` symbols "
-            "and only include one `:`."
         )
 
 
@@ -141,6 +140,7 @@ class OrgUpdateName(BaseModel):
 
 
 class MinimalInviteCode(BaseModel):
+    code: str = Field(..., min_length=8, max_length=32, regex=r"[\w\d_\-]+")
     organisation_id: str
 
     _validate_organisation_id_1 = validator(
@@ -149,7 +149,6 @@ class MinimalInviteCode(BaseModel):
 
 
 class InviteCode(MinimalInviteCode):
-    code: str
     issuer_id: str
     num_registered: int
 
