@@ -45,7 +45,7 @@ class Scripts:
 
     @staticmethod
     def fix_isort():
-        call(f"python -m isort -rc {src_path}".split(" "))
+        call(f"python -m isort {src_path}".split(" "))
 
     @staticmethod
     def fix():
