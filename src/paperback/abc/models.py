@@ -12,9 +12,7 @@ def custom_charset(cls: Any, value: str) -> str:
     if res:
         return value
     else:
-        raise ValueError(
-            "id must only include ASCII, `-` and `_` symbols "
-        )
+        raise ValueError("id must only include ASCII, `-` and `_` symbols ")
 
 
 class BaseRes(BaseModel):
@@ -143,9 +141,9 @@ class MinimalInviteCode(BaseModel):
     code: str = Field(..., min_length=8, max_length=32, regex=r"[\w\d_\-]+")
     add_to: str
 
-    _validate_organisation_id_1 = validator(
-        "organisation_id", allow_reuse=True
-    )(custom_charset)
+    _validate_organisation_id_1 = validator("add_to", allow_reuse=True)(
+        custom_charset
+    )
 
 
 class InviteCode(MinimalInviteCode):

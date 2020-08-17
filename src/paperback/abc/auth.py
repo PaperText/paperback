@@ -16,7 +16,7 @@ from pydantic import EmailStr
 from fastapi.middleware.cors import CORSMiddleware
 
 from .base import Base
-from .models import (
+from .models import (  # TokenListRes,
     NewUser,
     TokenRes,
     UserInfo,
@@ -25,7 +25,6 @@ from .models import (
     Credentials,
     TokenTester,
     Organisation,
-    # TokenListRes,
     OrgUpdateName,
     NewInvitedUser,
     OrgUpdateOrgId,
@@ -404,10 +403,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
 
     @abstractmethod
     async def update_user_password(
-        self,
-        user_id: str,
-        old_password: str,
-        new_password: str,
+        self, user_id: str, old_password: str, new_password: str,
     ) -> Dict[str, Union[str, int]]:
         """
         Updates user with given user_id
@@ -1071,9 +1067,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
             * created users loa is 1
             """
             return await self.create_user(
-                **dict(user),
-                level_of_access=1,
-                member_of=organisation_id,
+                **dict(user), level_of_access=1, member_of=organisation_id,
             )
 
         @router.put(
