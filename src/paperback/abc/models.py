@@ -141,7 +141,7 @@ class OrgUpdateName(BaseModel):
 
 class MinimalInviteCode(BaseModel):
     code: str = Field(..., min_length=8, max_length=32, regex=r"[\w\d_\-]+")
-    organisation_id: str
+    add_to: str
 
     _validate_organisation_id_1 = validator(
         "organisation_id", allow_reuse=True

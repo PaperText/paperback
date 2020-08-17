@@ -25,7 +25,7 @@ from .models import (
     Credentials,
     TokenTester,
     Organisation,
-    TokenListRes,
+    # TokenListRes,
     OrgUpdateName,
     NewInvitedUser,
     OrgUpdateOrgId,
@@ -176,8 +176,8 @@ class BaseAuth(Base, metaclass=ABCMeta):
     @abstractmethod
     def cleanup_tokens(self):
         """
-        will be added as job to BackgroudTasks on every signin
-        shoul remove all expired tokens
+        will be added as job to BackgroundTasks on every signin
+        should remove all expired tokens
         """
         raise NotImplementedError
 
@@ -308,7 +308,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
 
         Returns
         -------
-        Dict[str, Union[str, int, Any]]
+        Dict[str, Any]
             Contains:
                 user_id: str
                 email: str
@@ -593,8 +593,8 @@ class BaseAuth(Base, metaclass=ABCMeta):
 
     @abstractmethod
     async def create_invite_code(
-        self, issuer: str, organisation_id: str
-    ) -> str:
+        self, issuer: str, code: str, add_to: str
+    ) -> Dict[str, Any]:
         """
         creates invite code
 
@@ -602,7 +602,8 @@ class BaseAuth(Base, metaclass=ABCMeta):
         ----------
         issuer: str
             issuer of invite code
-        organisation_id: str
+        code: str
+        add_to: str
             id of organisation to add user to
 
         Returns
@@ -643,7 +644,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    async def delete_invite_codes(self, code: str):
+    async def delete_invite_code(self, code: str):
         """
         removes invite code
 
@@ -756,7 +757,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
             * created users are assigned to public organisation
             * created users loa is 1
             """
-            created_user = await self.create_user(
+            created_user: Dict[str, Any] = await self.create_user(
                 user_id=user.user_id,
                 email=user.email,
                 password=user.password,
@@ -1072,7 +1073,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
             return await self.create_user(
                 **dict(user),
                 level_of_access=1,
-                organisation_id=organisation_id,
+                member_of=organisation_id,
             )
 
         @router.put(
@@ -1096,7 +1097,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
                     status_code=status.HTTP_401_UNAUTHORIZED,
                     detail="Can't edit user with higher or same privileges",
                 )
-            if user.organisation_id == "org:public":
+            if user.member_of == "org:public":
                 await self.update_user(
                     user_id, new_organisation_id=organisation_id
                 )
@@ -1126,7 +1127,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
                     status_code=status.HTTP_401_UNAUTHORIZED,
                     detail="Can't edit user with higher or same privileges",
                 )
-            if user.organisation_id != "org:public":
+            if user.member_of != "org:public":
                 await self.update_user(
                     user_id, new_organisation_id=organisation_id
                 )
@@ -1165,16 +1166,16 @@ class BaseAuth(Base, metaclass=ABCMeta):
             if requester.level_of_access == 3:
                 pass
             else:
-                if invite_code.organisation_id not in [
+                if invite_code.add_to not in [
                     self.public_org_id,
-                    requester.organisation_id,
+                    requester.member_of,
                 ]:
                     raise HTTPException(
                         status_code=status.HTTP_401_UNAUTHORIZED,
                         detail="can't invite to non-user or non-public organisation",
                     )
             return await self.create_invite_code(
-                requester.user_id, invite_code.organisation_id
+                requester.user_id, invite_code.code, invite_code.add_to
             )
 
         @router.get(
@@ -1193,21 +1194,24 @@ class BaseAuth(Base, metaclass=ABCMeta):
                 InviteCode(**code) for code in raw_codes
             ]
             if requester.level_of_access == 3:
+                # admin
                 return InviteCodeListRes(response=codes)
-            if requester.level_of_access == 2:
+            elif requester.level_of_access == 2:
+                # organizer
                 new_codes: List[InviteCode] = []
                 for code in codes:
                     user: UserInfo = UserInfo(
                         **(await self.read_user(code.issuer_id))
                     )
                     if (
-                        user.organisation_id == requester.organisation_id
+                        user.member_of == requester.member_of
                         or user.user_id == requester.user_id
-                        or code.organisation_id == self.public_org_id
+                        or code.add_to == self.public_org_id
                     ):
                         new_codes.append(code)
                 return InviteCodeListRes(response=new_codes)
             else:
+                # anyone else
                 new_codes: List[InviteCode] = []
                 for code in codes:
                     user: UserInfo = UserInfo(
@@ -1215,7 +1219,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
                     )
                     if (
                         user.user_id == requester.user_id
-                        or code.organisation_id == self.public_org_id
+                        or code.add_to == self.public_org_id
                     ):
                         new_codes.append(code)
                 return InviteCodeListRes(response=new_codes)
@@ -1266,7 +1270,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
                     detail="can't delete this invite code",
                 )
 
-            await self.delete_invite_codes(invite_code)
+            await self.delete_invite_code(invite_code)
 
         self.add_routes(router)
         return router
