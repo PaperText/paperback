@@ -205,13 +205,24 @@ class BaseDocs(Base, metaclass=ABCMeta):
             """
             return ""
 
+        @router.get(
+            "/analyze/available_stats",
+            tags=["docs_module", "analyzer"],
+            response_model=AvailableStats,
+        )
+        def available_stats() -> StatsAnalyzeRes:
+            """
+            list of available stats
+            """
+            return []
+
         @router.post(
             "/analyze/stats",
             tags=["docs_module", "analyzer"],
             response_model=StatsAnalyzeRes,
         )
         def analyze_stats(
-            req: StatsAnalyzeReq, analyze_subcorps: bool = False
+            req: StatsAnalyzeReq, analyze_sub_entities: bool = False
         ) -> StatsAnalyzeRes:
             """
             analyzes stats on list of given ids

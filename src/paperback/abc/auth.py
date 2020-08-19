@@ -18,7 +18,7 @@ from fastapi.middleware.cors import CORSMiddleware
 from .base import Base
 from .models import (  # TokenListRes,
     NewUser,
-    TokenRes,
+    SignInRes, TokenListRes, TokenRes,
     UserInfo,
     InviteCode,
     OrgListRes,
@@ -141,7 +141,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
                             f"({user.level_of_access}) is not in "
                             f"required list ({one_of})",
                             "rus": "Уровень доступа пользователся "
-                            f"({user.level_of_access}) не нахолится в "
+                            f"({user.level_of_access}) не нахоится в "
                             f"списке необхрлимых ({one_of})",
                         },
                     )
@@ -261,14 +261,25 @@ class BaseAuth(Base, metaclass=ABCMeta):
         """
         raise NotImplementedError
 
+    async def read_tokens(self, user_id: str) -> List[Dict[str, Any]]:
+        """
+        reads all tokens issued by user with id `user_id`
+
+        Parameters
+        ----------
+        user_id: str
+            id of user-owner of tokens
+        """
+        raise NotImplementedError
+
     @abstractmethod
-    async def delete_token(self, token: str):
+    async def delete_token(self, token_identifier: str):
         """
         removes token
 
         Parameters
         ----------
-        token: str
+        token_identifier: str
             token to remove
         """
         raise NotImplementedError
@@ -674,18 +685,18 @@ class BaseAuth(Base, metaclass=ABCMeta):
 
         # signin and signout
         @router.post(
-            "/signin", tags=["auth_module", "auth"], response_model=TokenRes,
+            "/signin", tags=["auth_module", "auth"], response_model=SignInRes,
         )
         async def signin(
             credentials: Credentials,
             request: Request,
             background_tasks: BackgroundTasks,
-        ) -> TokenRes:
+        ) -> SignInRes:
             """
             generates new token if provided user_id and password are correct
             """
             background_tasks.add_task(self.cleanup_tokens)
-            return TokenRes(
+            return SignInRes(
                 response=await self.signin(
                     request=request,
                     password=credentials.password,
@@ -694,14 +705,14 @@ class BaseAuth(Base, metaclass=ABCMeta):
             )
 
         @router.post(
-            "/signup", tags=["auth_module", "auth"], response_model=TokenRes,
+            "/signup", tags=["auth_module", "auth"], response_model=SignInRes,
         )
-        async def signup(user: NewInvitedUser, request: Request,) -> TokenRes:
+        async def signup(user: NewInvitedUser, request: Request,) -> SignInRes:
             """
             creates new user with provided
                 user_id, password, name and invitation code
             """
-            return TokenRes(
+            return SignInRes(
                 response=await self.signup(request=request, **dict(user))
             )
 
@@ -728,6 +739,20 @@ class BaseAuth(Base, metaclass=ABCMeta):
             """
 
         # tokens
+        @router.get("/tokens", tags=["auth_module", "token"])
+        async def read_tokens(
+            requester: UserInfo = Depends(token_tester(greater_or_equal=0)),
+        ) -> TokenListRes:
+            """
+            removes token by provided identifier:
+                either token itself or token uuid
+            """
+            raw_tokens = await self.read_tokens(requester.user_id)
+            tokens = [TokenRes(**dict(token)) for token in raw_tokens]
+            return TokenListRes(
+                response=tokens
+            )
+
         @router.delete("/token", tags=["auth_module", "token"])
         async def delete_token(token_identifier: str = Body(...)):
             """

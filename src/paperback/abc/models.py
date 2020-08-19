@@ -3,6 +3,7 @@ from __future__ import annotations
 import re
 from typing import Any, Dict, List, Union, Callable, Optional, Protocol
 from datetime import datetime
+import uuid
 
 from pydantic import Field, EmailStr, BaseModel, validator
 
@@ -19,12 +20,20 @@ class BaseRes(BaseModel):
     response: Any
 
 
-class TokenRes(BaseRes):
+class SignInRes(BaseRes):
     response: str
 
 
-class TokenListRes(BaseRes):
-    response: List[str]
+class TokenRes(BaseModel):
+    token_uuid: uuid.UUID
+    issued_by: str = Field(..., description="id of user, who issued a token")
+    location: str
+    device: str
+    issued_at: str = Field(..., description="iso formatted datetime of token creation")
+
+
+class TokenListRes(BaseModel):
+    response: List[TokenRes]
 
 
 class Credentials(BaseModel):
@@ -138,6 +147,7 @@ class OrgUpdateName(BaseModel):
 
 
 class MinimalInviteCode(BaseModel):
+    invitation_code_uuid: uuid.UUID
     code: str = Field(..., min_length=8, max_length=32, regex=r"[\w\d_\-]+")
     add_to: str
 
@@ -222,9 +232,15 @@ class ReadDicts(BaseModel):
     response: List[ReadDict]
 
 
+class Entity(BaseModel):
+    type: str = Field(..., regex=r"(?:corp(?:us)?)|(?:doc(?:ument)?)")
+    id: str
+
+
 class AnalyzeReq(BaseModel):
-    entity_ids: List[str] = Field(
-        ..., title="list of documents and corpuses to analyze",
+    entity_ids: List[Entity] = Field(
+        ...,
+        title="list of documents and corpuses to analyze",
     )
 
 
@@ -236,19 +252,15 @@ class LexicsAnalyzeReq(AnalyzeReq):
     dicts: List[str]
 
 
-class Spans(BaseModel):
-    start_char: int
-    end_char: int
-    dictionary: str = Field(..., alias="dict")
-
-
 class LexicsAnalyzePreRes(BaseModel):
-    doc_id: str
-    spans: List[Spans]
+    entity_id: str
+    type: str = Field(..., regex=r"(?:corp(?:us)?)|(?:doc(?:ument)?)")
+    span: str
 
 
 class LexicsAnalyzeRes(BaseModel):
-    response: List[LexicsAnalyzePreRes]
+    spans: List[LexicsAnalyzePreRes]
+    frequencies: Dict[str, Dict[str, float]]
 
 
 class PredicatesAnalyzeReq(AnalyzeReq):
@@ -258,8 +270,9 @@ class PredicatesAnalyzeReq(AnalyzeReq):
 
 
 class PredicatesAnalyzePreRes(AnalyzeRes):
-    role: str
-    predicate: str
+    argument: Optional[str] = None
+    predicate: Optional[str] = None
+    role: Optional[str] = None
     context: Optional[str] = None
 
 
@@ -273,10 +286,15 @@ class StatsAnalyzeReq(AnalyzeReq):
 
 # will be returned as values in a dict
 class StatsAnalyzePreRes(AnalyzeRes):
+    id: str
+    type: str
     name: str
     unit: str
     value: Union[str, List[str], Dict[str, str]]
 
+
+class AvailableStats(BaseModel):
+    response: List[str]
 
 class StatsAnalyzeRes(BaseModel):
     """
@@ -299,4 +317,19 @@ class CompareAnalyzeReq(BaseModel):
 class CompareAnalyzeRes(BaseModel):
     first_set: Dict[str, StatsAnalyzePreRes]
     second_set: Dict[str, StatsAnalyzePreRes]
-    correlation: int
+    correlation: Dict[str, Dict[str, Union[int, Dict[str, str]]]]
+
+    # class Config:
+    #     schema_extra = {
+    #         "example": {
+    #             "correlation": {
+    #                 "correlation_stat": {
+    #                     "value": 3.14,
+    #                     "translation": {
+    #                         "rus": "",
+    #                         "eng": "",
+    #                     }
+    #                 }
+    #             }
+    #         }
+    #     }
