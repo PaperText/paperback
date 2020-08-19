@@ -246,6 +246,7 @@ class AnalyzeReq(BaseModel):
 
 class AnalyzeRes(BaseModel):
     entity_id: str
+    type: str
 
 
 class LexicsAnalyzeReq(AnalyzeReq):
@@ -280,32 +281,21 @@ class PredicatesAnalyzeRes(BaseModel):
     response: List[PredicatesAnalyzePreRes]
 
 
+class AvailableStats(BaseModel):
+    response: List[str]
+
+
 class StatsAnalyzeReq(AnalyzeReq):
     statistics: List[str]
 
 
 # will be returned as values in a dict
 class StatsAnalyzePreRes(AnalyzeRes):
-    id: str
-    type: str
-    name: str
-    unit: str
-    value: Union[str, List[str], Dict[str, str]]
+    stat: Dict[str, Union[str, int, float]]
 
-
-class AvailableStats(BaseModel):
-    response: List[str]
 
 class StatsAnalyzeRes(BaseModel):
-    """
-    mapping from string key to stats about key object\n
-    key can be either\n
-    `all` for stats on whole set\n
-    `corp:***` for stats about corpus (also a set of documents)\n
-    `doc:***` for stats about document
-    """
-
-    response: Dict[str, StatsAnalyzePreRes]
+    response: List[StatsAnalyzePreRes]
 
 
 class CompareAnalyzeReq(BaseModel):
