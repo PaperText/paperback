@@ -254,7 +254,7 @@ class LexicsAnalyzeReq(AnalyzeReq):
 
 
 class LexicsAnalyzePreRes(BaseModel):
-    entity_id: str
+    source_entity_id: str
     type: str = Field(..., regex=r"(?:corp(?:us)?)|(?:doc(?:ument)?)")
     span: str
 
