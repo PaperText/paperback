@@ -4,8 +4,8 @@ EXPOSE 7878
 
 # list in square brackets OF COMA SEPARATED links
 ENV MODULES="\
-    git+https://github.com/PaperText/papertext_auth, \
-    git+https://github.com/PaperText/papertext_docs\
+    git+https://gitlab.com/papertext/papertext_auth \
+    git+https://gitlab.com/PaperText/papertext_docs\
 "
 
 ENV SSH_PRIVATE_KEY=""
