@@ -765,7 +765,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
         # | users |
         # +-------+
         @router.post(
-            "/usr",
+            "/usrs",
             tags=["auth_module", "user", "access_level_2"],
             response_model=UserInfo,
         )
@@ -806,7 +806,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
             return requester
 
         @router.get(
-            "/usr/{user_id}",
+            "/usrs/{user_id}",
             tags=["auth_module", "user", "access_level_2"],
             response_model=UserInfo,
         )
@@ -847,8 +847,8 @@ class BaseAuth(Base, metaclass=ABCMeta):
             ]
             return UserListResponse(response=users)
 
-        @router.put(
-            "/usr/{user_id}:user_id",
+        @router.patch(
+            "/usrs/{user_id}/user_id",
             tags=["auth_module", "user", "access_level_2"],
         )
         async def update_users_user_id(
@@ -871,8 +871,8 @@ class BaseAuth(Base, metaclass=ABCMeta):
                 user_id=user_id, new_user_id=new_user_id.new_user_id
             )
 
-        @router.put(
-            "/usr/{user_id}:password",
+        @router.patch(
+            "/usr/{user_id}/password",
             tags=["auth_module", "user", "access_level_2"],
         )
         async def update_users_password(
@@ -897,8 +897,8 @@ class BaseAuth(Base, metaclass=ABCMeta):
                 new_password=passwords.new_password,
             )
 
-        @router.put(
-            "/usr/{user_id}:user_name",
+        @router.patch(
+            "/usr/{user_id}/user_name",
             tags=["auth_module", "user", "access_level_2"],
         )
         async def update_users_fullname(
@@ -921,8 +921,8 @@ class BaseAuth(Base, metaclass=ABCMeta):
                 user_id=user_id, new_user_name=new_fullname.new_user_name
             )
 
-        @router.get(
-            "/usr/{user_id}:promote",
+        @router.post(
+            "/usr/{user_id}/promote",
             tags=["auth_module", "user", "access_level_2"],
         )
         async def promote_user(
@@ -951,8 +951,8 @@ class BaseAuth(Base, metaclass=ABCMeta):
                 user_id=user_id, new_level_of_access=new_loa
             )
 
-        @router.get(
-            "/usr/{user_id}:demote",
+        @router.post(
+            "/usr/{user_id}/demote",
             tags=["auth_module", "user", "access_level_2"],
         )
         async def demote_user(
@@ -1021,7 +1021,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
             return OrgListRes(response=orgs)
 
         @router.post(
-            "/org",
+            "/orgs",
             tags=["auth_module", "organisation", "access_level_3"],
             dependencies=[Depends(token_tester(greater_or_equal=3))],
         )
@@ -1032,7 +1032,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
             await self.create_org(org.organisation_id, org.organisation_name)
 
         @router.get(
-            "/org/{member_of}",
+            "/orgs/{organisation_id}",
             tags=["auth_module", "organisation", "access_level_3"],
             response_model=Organisation,
             dependencies=[Depends(token_tester(greater_or_equal=3))],
@@ -1043,8 +1043,8 @@ class BaseAuth(Base, metaclass=ABCMeta):
             """
             return Organisation(**(await self.read_org(organisation_id)))
 
-        @router.put(
-            "/org/{member_of}:org_id",
+        @router.patch(
+            "/orgs/{organisation_id}/org_id",
             tags=["auth_module", "organisation", "access_level_2"],
             dependencies=[Depends(token_tester(greater_or_equal=2))],
         )
@@ -1059,8 +1059,8 @@ class BaseAuth(Base, metaclass=ABCMeta):
                 new_organisation_id=new_org_id.new_organisation_id,
             )
 
-        @router.put(
-            "/org/{member_of}:name",
+        @router.patch(
+            "/orgs/{organisation_id}/name",
             tags=["auth_module", "organisation", "access_level_2"],
             dependencies=[Depends(token_tester(greater_or_equal=2))],
         )
@@ -1075,7 +1075,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
             )
 
         @router.post(
-            "/org/{member_of}/usr",
+            "/orgs/{organisation_id}/usrs",
             tags=["auth_module", "organisation", "access_level_3"],
             dependencies=[Depends(token_tester(greater_or_equal=3))],
         )
@@ -1095,8 +1095,8 @@ class BaseAuth(Base, metaclass=ABCMeta):
                 **dict(user), level_of_access=1, member_of=organisation_id,
             )
 
-        @router.put(
-            "/org/{member_of}/usr/{user_id}",
+        @router.post(
+            "/orgs/{organisation_id}/usrs/{user_id}",
             tags=["auth_module", "organisation", "access_level_3"],
         )
         async def add_user_to_org(
@@ -1127,7 +1127,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
                 )
 
         @router.delete(
-            "/org/{member_of}/usr/{user_id}",
+            "/orgs/{organisation_id}/usrs/{user_id}",
             tags=["auth_module", "organisation"],
         )
         async def delete_user_from_org(
@@ -1157,7 +1157,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
                 )
 
         @router.delete(
-            "/org/{member_of}",
+            "/orgs/{organisation_id}",
             tags=["auth_module", "organisation", "access_level_3"],
             dependencies=[Depends(token_tester(greater_or_equal=3))],
         )
@@ -1172,7 +1172,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
         # +---------+
 
         @router.post(
-            "/invite", tags=["auth_module", "invite", "access_level_1"],
+            "/invites", tags=["auth_module", "invite", "access_level_1"],
         )
         async def create_invite_code(
             invite_code: MinimalInviteCode,
@@ -1244,7 +1244,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
                 return InviteCodeListRes(response=new_codes)
 
         @router.get(
-            "/invite/{invite_code}",
+            "/invites/{invite_code}",
             tags=["auth_module", "invite", "access_level_1"],
             response_model=InviteCode,
         )
@@ -1269,7 +1269,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
         #     return await self.read_invite_codes()
 
         @router.delete(
-            "/invite/{invite_code}",
+            "/invites/{invite_code}",
             tags=["auth_module", "invite", "access_level_1"],
         )
         async def delete_invite_code(
