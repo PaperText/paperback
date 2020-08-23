@@ -1,4 +1,4 @@
-FROM python:3.8.1-slim
+FROM python:3.8.5-slim
 
 EXPOSE 7878
 
