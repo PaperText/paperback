@@ -6,7 +6,6 @@
 .venv
 dist
 docs
-poetry.toml
 
 poetry.lock
 .env
