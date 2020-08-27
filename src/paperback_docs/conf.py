@@ -1,3 +1,5 @@
+from typing import Any, Dict, Optional
+
 from recommonmark.transform import AutoStructify
 import sphinx_rtd_theme
 
@@ -14,9 +16,29 @@ version, release = pt_version, pt_version
 # configuration
 master_doc = "index"
 source_suffix = [".rst", ".md"]
+gitlab_url: str = "https://gitlab.com/papertext/paperback/"
+
+
+def linkcode_resolve(domain: str, info: Dict[str, Any]) -> Optional[str]:
+    if domain == "py":
+        if not info["module"]:
+            return None
+        # skip non-class links
+        if len(info["fullname"].split(".")) > 1:
+            return None
+        path: str = info["module"].replace(".", "/")
+        if info["fullname"] == "Base":
+            filename: str = "base.py"
+        else:
+            filename: str = info["fullname"].replace("Base", "").lower() + ".py"
+        print(f"{gitlab_url}/-/tree/master/src/{path}/{filename}")
+        return f"{gitlab_url}/-/tree/master/src/{path}/{filename}"
+    return None
+
+
 extensions = [
     "sphinx.ext.autodoc",
-    "sphinx.ext.viewcode",
+    "sphinx.ext.linkcode",
     "sphinx.ext.napoleon",
     "recommonmark",
     "sphinx_rtd_theme",
@@ -30,7 +52,6 @@ extensions = [
 # HTML specific
 html_theme = "sphinx_rtd_theme"
 # html_static_path = ["static"]
-
 # custom hooks
 
 def setup(app):
