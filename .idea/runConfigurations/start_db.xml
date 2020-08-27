@@ -1,12 +1,12 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="start_db" type="PythonConfigurationType" factoryName="Python" nameIsGenerated="true">
-    <module name=".papertext" />
+    <module name="" />
     <option name="INTERPRETER_OPTIONS" value="" />
     <option name="PARENT_ENVS" value="true" />
     <envs>
       <env name="PYTHONUNBUFFERED" value="1" />
     </envs>
-    <option name="SDK_HOME" value="$USER_HOME$/.virtualenvs/paperback/bin/python" />
+    <option name="SDK_HOME" value="$USER_HOME$/.pyenv/versions/papertext/bin/python3" />
     <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src/paperback" />
     <option name="IS_MODULE_SDK" value="false" />
     <option name="ADD_CONTENT_ROOTS" value="true" />
