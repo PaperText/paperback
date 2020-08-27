@@ -1,3 +1,3 @@
 # docs only dependencies
 
-sphinx-typlog-theme
+sphinx-rtd-theme

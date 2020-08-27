@@ -1,4 +1,5 @@
 from recommonmark.transform import AutoStructify
+import sphinx_rtd_theme
 
 import paperback
 
@@ -27,35 +28,10 @@ extensions = [
 # exclude_patterns = []
 
 # HTML specific
-html_theme = "sphinx_typlog_theme"
-html_theme_options = {
-    "logo_name": "PaperBack",
-    "description": "🗄API of 📎PaperText app",
-    "github_user": "PaperText",
-    "github_repo": "paperback",
-}
-html_sidebars = {
-    "**": [
-        "logo.html",
-        "github.html",
-        "searchbox.html",
-        "globaltoc.html",
-        "relations.html",
-    ]
-}
+html_theme = "sphinx_rtd_theme"
 # html_static_path = ["static"]
 
 # custom hooks
-source_link = "https://gitlab.com/papertext/paperback"
-
-
-def linkcode_resolve(domain, info):
-    if domain != "py":
-        return None
-    module = info["module"].replace(".", "/")
-    filename = info["fullname"].replace(".", "/")
-    return "%s/%s/%s.py" % (source_link, module, filename)
-
 
 def setup(app):
     app.add_config_value(
