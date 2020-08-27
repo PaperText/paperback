@@ -46,7 +46,7 @@ html_sidebars = {
 # html_static_path = ["static"]
 
 # custom hooks
-source_link = "https://github.com/PaperText/paperback/blob/master/src"
+source_link = "https://gitlab.com/papertext/paperback"
 
 
 def linkcode_resolve(domain, info):
