@@ -21,6 +21,7 @@
     <option name="INPUT_FILE" value="" />
     <method v="2">
       <option name="RunConfigurationTask" enabled="true" run_configuration_name="start_db" run_configuration_type="PythonConfigurationType" />
+      <option name="LaunchBrowser.Before.Run" url="localhost:7878/documentation" />
     </method>
   </configuration>
 </component>
