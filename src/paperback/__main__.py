@@ -88,7 +88,7 @@ default_config_path = Path.home() / ".papertext"
         {"CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG", "NOTSET"}
     ),
 )
-def cli(config_dir: Path, log_level: str) -> NoReturn:
+def cli(config_dir: Path, log_level: str):
     """
     main command for running API through CLI
     """
