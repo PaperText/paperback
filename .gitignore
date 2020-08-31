@@ -9,6 +9,7 @@ docs
 
 poetry.lock
 .env
+to_source.sh
 tmpdir/
 
 **/__pycache__
