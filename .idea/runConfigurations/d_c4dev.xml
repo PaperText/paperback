@@ -1,0 +1,29 @@
+<component name="ProjectRunConfigurationManager">
+  <configuration default="false" name="d-c4dev" type="docker-deploy" factoryName="docker-compose.yml" server-name="Docker">
+    <deployment type="docker-compose.yml">
+      <settings>
+        <option name="envVars">
+          <list>
+            <DockerEnvVarImpl>
+              <option name="name" value="SSH_PRIVATE_KEY" />
+              <option name="value" value="NONE" />
+            </DockerEnvVarImpl>
+            <DockerEnvVarImpl>
+              <option name="name" value="CONFIG" />
+              <option name="value" value="&quot; [core]     host=\&quot;0.0.0.0\&quot; [auth]     IPstack_api_key=\&quot;93568023d349c7dd60b5b254c269266d\&quot; #    [auth.hash] #        algo=\&quot;argon2\&quot;     [auth.db]         host=\&quot;relational_db\&quot;     [auth.token]         generate_keys=true &quot;" />
+            </DockerEnvVarImpl>
+          </list>
+        </option>
+        <option name="removeVolumesOnComposeDown" value="true" />
+        <option name="commandLineOptions" value="--build" />
+        <option name="secondarySourceFiles">
+          <list>
+            <option value="docker-compose.dev.yml" />
+          </list>
+        </option>
+        <option name="sourceFilePath" value="docker-compose.yml" />
+      </settings>
+    </deployment>
+    <method v="2" />
+  </configuration>
+</component>
