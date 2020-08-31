@@ -1,7 +1,7 @@
 version: "3.7"
 services:
   paperback:
-    image: paperback:latest
+    image: quay.io/papertext/paperback:latest
     networks:
       - backend
       - frontend

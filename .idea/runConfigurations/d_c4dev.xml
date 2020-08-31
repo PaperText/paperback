@@ -6,11 +6,11 @@
           <list>
             <DockerEnvVarImpl>
               <option name="name" value="SSH_PRIVATE_KEY" />
-              <option name="value" value="NONE" />
+              <option name="value" value="$SSH_PRIVATE_KEY" />
             </DockerEnvVarImpl>
             <DockerEnvVarImpl>
               <option name="name" value="CONFIG" />
-              <option name="value" value="&quot; [core]     host=\&quot;0.0.0.0\&quot; [auth]     IPstack_api_key=\&quot;93568023d349c7dd60b5b254c269266d\&quot; #    [auth.hash] #        algo=\&quot;argon2\&quot;     [auth.db]         host=\&quot;relational_db\&quot;     [auth.token]         generate_keys=true &quot;" />
+              <option name="value" value="[core]\n\thost=\&quot;0.0.0.0\&quot;\n[auth]\n\tIPstack_api_key=\&quot;93568023d349c7dd60b5b254c269266d\&quot;\n\t[auth.db]\n\t\thost=\&quot;relational_db\&quot;\n\t[auth.token]\n\t\tgenerate_keys=true" />
             </DockerEnvVarImpl>
           </list>
         </option>
