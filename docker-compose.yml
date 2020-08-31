@@ -1,0 +1,88 @@
+version: "3.7"
+services:
+  paperback:
+    image: paperback:latest
+    networks:
+      - backend
+      - frontend
+    ports:
+      - "7878:7878"
+    logging:
+      driver: json-file
+    depends_on:
+      - relational_db
+      - graph_db
+    links:
+      - "relational_db"
+      - "graph_db"
+    environment:
+      SSH_PRIVATE_KEY: $SSH_PRIVATE_KEY
+      CONFIG: $CONFIG
+#    deploy:
+#      mode: global
+#      resources:
+#        limits:
+#          cpus: '0.25'
+#          memory: 10Gb
+#        reservations:
+#          cpus: '0.10'
+#          memory: 50Gb
+#      restart_policy:
+#        condition: on-failure
+#        max_attempts: 3
+#        window: 120s
+
+  relational_db:
+    image: postgres:13
+    networks:
+      - backend
+    logging:
+      driver: json-file
+    deploy:
+      mode: global
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 10Gb
+        reservations:
+          cpus: '0.10'
+          memory: 50Gb
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+        window: 120s
+    environment:
+      POSTGRES_PASSWORD: "password"
+      POSTGRES_DB: "papertext"
+    ports:
+      - "5432:5432"
+    volumes:
+      - "~/.papertext/postgresql:/var/lib/postgresql/data:z"
+
+  graph_db:
+    image: neo4j:4.1.1
+
+    logging:
+      driver: json-file
+    ports:
+      - "7474:7474"
+      - "7687:7687"
+    volumes:
+      - "~/.papertext/neo4j:/data:z"
+    deploy:
+      mode: global
+      resources:
+        limits:
+          cpus: '0.25'
+          memory: 10Gb
+        reservations:
+          cpus: '0.10'
+          memory: 50Gb
+      restart_policy:
+        condition: on-failure
+        max_attempts: 3
+        window: 120s
+
+networks:
+  backend:
+  frontend:

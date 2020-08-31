@@ -11,4 +11,6 @@ insert_final_newline = true
 [*.md]
 indent_style = tab
 trim_trailing_whitespace = false
-        
+
+[*.y{a,}ml]
+indent_size = 2
