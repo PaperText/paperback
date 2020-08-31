@@ -284,6 +284,8 @@ class App:
         self.add_handlers(api)
         self.add_routers(api)
 
+        self.logger.debug("loaded configs: %s", self.cfg)
+
         uvicorn_log_config = uvicorn.config.LOGGING_CONFIG
         del uvicorn_log_config["loggers"]
 
