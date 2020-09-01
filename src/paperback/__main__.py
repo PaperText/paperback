@@ -84,6 +84,7 @@ default_config_path = Path.home() / ".papertext"
     "log_level",
     default="INFO",
     help="set logging level",
+    envvar="PT__log_level",
     type=click.Choice(
         {"CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG", "NOTSET"}
     ),
