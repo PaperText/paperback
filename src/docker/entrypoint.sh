@@ -1,15 +1,21 @@
 #!/usr/bin/env sh
 
 eval "$(ssh-agent -s)"
-echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
 
 mkdir -p ~/.ssh
 chmod 700 ~/.ssh
+
 ssh-keyscan github.com >> ~/.ssh/known_hosts
 chmod 644 ~/.ssh/known_hosts
 
-mkdir -p ~/.papertext
-echo "$CONFIG" > ~/.papertext/config.toml
+if [ -f file ]; then
+    cp ~/.ssh/key ~/.ssh/private_key
+    chmod 400 ~/.ssh/private_key
+    ssh-add ~/.ssh/private_key
+fi
+
+echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add - > /dev/null
+
 
 modules=$(python3.8 -c '
 import os
