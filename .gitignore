@@ -1,6 +1,6 @@
-.vscode
-.idea/*
-!.idea/runConfigurations
+.vscode/
+.idea/
+!.idea/runConfigurations/
 
 .mypy_cache
 .venv
