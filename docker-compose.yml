@@ -16,8 +16,15 @@ services:
       - "relational_db"
       - "graph_db"
     environment:
-      SSH_PRIVATE_KEY: $SSH_PRIVATE_KEY
-      CONFIG: $CONFIG
+      - SSH_PRIVATE_KEY
+      - PT__log_level
+      - PT__core__host
+      - PT__auth__IPstack_api_key
+      - PT__auth__db__host
+      - PT__auth__db__user
+      - PT__auth__db__dbname
+      - PT__auth__db__password
+      - PT__auth__token__generate_keys
 #    deploy:
 #      mode: global
 #      resources:
@@ -54,6 +61,7 @@ services:
     environment:
       POSTGRES_PASSWORD: "password"
       POSTGRES_DB: "papertext"
+      paperback_dbuser_passwd: "password"
     ports:
       - "5432:5432"
     volumes:
