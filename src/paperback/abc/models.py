@@ -4,6 +4,7 @@ import re
 from typing import Any, Dict, List, Union, Callable, Optional, Protocol
 from datetime import datetime
 import uuid
+from enum import Enum
 
 from pydantic import Field, EmailStr, BaseModel, validator
 
@@ -169,31 +170,44 @@ class InviteCodeListRes(BaseModel):
 # | Docs |
 # +------+
 
+class OwnerType(str, Enum):
+    user = "user"
+    organisation = "organisation"
 
-class DMEntityCreateBase(BaseModel):
-    owner: str
-    private: bool = False
+
+class Owner(BaseModel):
+    type: OwnerType
+    id: str
+
+
+class CreateDoc(BaseModel):
+    doc_id: str
     name: Optional[str] = None
+    parent_corp_id: str
+    text: str
+
+    private: bool = False
     has_access: Optional[List[str]] = None
 
-
-class DMEntityReadBase(DMEntityCreateBase):
-    creator: str
-
-
-class CreateDoc(DMEntityCreateBase):
-    text: str
     author: Optional[str] = None
     created: Optional[datetime] = None
     tags: Optional[List[str]] = None
 
 
-class ReadMinimalDoc(DMEntityReadBase):
+class ReadMinimalDoc(BaseModel):
     doc_id: str
+    name: Optional[str] = None
+    parent_corp_id: str
+
+    private: bool = False
 
 
 class ReadDoc(ReadMinimalDoc):
     text: str
+
+    owner: OwnerType
+    has_access: Optional[List[str]] = None
+
     author: Optional[str] = None
     created: Optional[datetime] = None
     tags: Optional[List[str]] = None
@@ -203,15 +217,30 @@ class ReadDocs(BaseModel):
     response: List[ReadMinimalDoc]
 
 
-class CreateCorp(DMEntityCreateBase):
-    include: List[str]
+class CreateCorp(BaseModel):
+    corp_id: str
+    name: Optional[str] = None
+    parent_corp_id: Optional[str] = None
+
+    private: bool = False
+    has_access: Optional[List[str]] = None
+    to_include: List[str] = Field(
+        [],
+        description="list of id strings to include into corpus"
+    )
 
 
-class ReadMinimalCorp(DMEntityReadBase):
-    corpus_id: str
+class ReadMinimalCorp(BaseModel):
+    corp_id: str
+    name: Optional[str] = None
+    parent_corp_id: Optional[str] = None
+
+    private: bool = False
 
 
 class ReadCorp(ReadMinimalCorp):
+    owner: OwnerType
+    has_access: Optional[List[str]] = None
     includes: List[Union[ReadMinimalDoc, ReadMinimalCorp]]
 
 
@@ -219,13 +248,23 @@ class ReadCorps(BaseModel):
     response: List[ReadMinimalCorp]
 
 
-class CreateDict(DMEntityCreateBase):
-    words: List[str]
+class CreateDict(BaseModel):
+    dict_id: str
+    name: Optional[str] = None
+    words: List[str] = Field(..., min_length=1)
+
+    private: bool = False
+    has_access: Optional[List[str]] = None
 
 
-class ReadDict(DMEntityReadBase):
+class ReadDict(BaseModel):
     dic_id: str
     words: List[str]
+    owner: str
+    private: bool = False
+    name: Optional[str] = None
+    has_access: Optional[List[str]] = None
+    creator: str
 
 
 class ReadDicts(BaseModel):
@@ -315,7 +354,7 @@ class CompareAnalyzeRes(BaseModel):
     #             "correlation": {
     #                 "correlation_stat": {
     #                     "value": 3.14,
-    #                     "translation": {
+    #                     "translations": {
     #                         "rus": "",
     #                         "eng": "",
     #                     }
