@@ -2,10 +2,9 @@
 
 eval "$(ssh-agent -s)"
 
-mkdir -p ~/.ssh
 chmod 700 ~/.ssh
 
-ssh-keyscan github.com >> ~/.ssh/known_hosts
+ssh-keyscan gitlab.com >> ~/.ssh/known_hosts
 chmod 644 ~/.ssh/known_hosts
 
 if [ -f file ]; then
