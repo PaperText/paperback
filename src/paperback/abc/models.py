@@ -1,12 +1,12 @@
 from __future__ import annotations
 
 import re
-from typing import Any, Dict, List, Union, Callable, Optional, Protocol
-from datetime import datetime
 import uuid
+from datetime import datetime
 from enum import Enum
+from typing import Any, Callable, Dict, List, Optional, Protocol, Union
 
-from pydantic import Field, EmailStr, BaseModel, validator
+from pydantic import BaseModel, EmailStr, Field, validator
 
 
 def custom_charset(cls: Any, value: str) -> str:
@@ -30,7 +30,9 @@ class TokenRes(BaseModel):
     issued_by: str = Field(..., description="id of user, who issued a token")
     location: str
     device: str
-    issued_at: str = Field(..., description="iso formatted datetime of token creation")
+    issued_at: str = Field(
+        ..., description="iso formatted datetime of token creation"
+    )
 
 
 class TokenListRes(BaseModel):
@@ -170,6 +172,7 @@ class InviteCodeListRes(BaseModel):
 # | Docs |
 # +------+
 
+
 class OwnerType(str, Enum):
     user = "user"
     organisation = "organisation"
@@ -225,8 +228,7 @@ class CreateCorp(BaseModel):
     private: bool = False
     has_access: Optional[List[str]] = None
     to_include: List[str] = Field(
-        [],
-        description="list of id strings to include into corpus"
+        [], description="list of id strings to include into corpus"
     )
 
 
@@ -278,8 +280,7 @@ class Entity(BaseModel):
 
 class AnalyzeReq(BaseModel):
     entity_ids: List[Entity] = Field(
-        ...,
-        title="list of documents and corpuses to analyze",
+        ..., title="list of documents and corpuses to analyze",
     )
 
 

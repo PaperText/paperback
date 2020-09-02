@@ -1,6 +1,6 @@
-from typing import NoReturn
 from pathlib import Path
 from subprocess import call
+from typing import NoReturn
 
 import click
 

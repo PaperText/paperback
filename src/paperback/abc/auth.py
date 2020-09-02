@@ -1,40 +1,42 @@
 from abc import ABCMeta, abstractmethod
-from typing import Any, Dict, List, Union, Callable, ClassVar, Optional
+from typing import Any, Callable, ClassVar, Dict, List, Optional, Union
 
 from fastapi import (
+    APIRouter,
+    BackgroundTasks,
     Body,
-    Header,
     Depends,
     FastAPI,
-    Request,
-    APIRouter,
+    Header,
     HTTPException,
-    BackgroundTasks,
+    Request,
     status,
 )
-from pydantic import EmailStr
 from fastapi.middleware.cors import CORSMiddleware
+from pydantic import EmailStr
 
 from .base import Base
 from .models import (  # TokenListRes,
-    NewUser,
-    SignInRes, TokenListRes, TokenRes,
-    UserInfo,
-    InviteCode,
-    OrgListRes,
     Credentials,
-    TokenTester,
-    Organisation,
-    OrgUpdateName,
-    NewInvitedUser,
-    OrgUpdateOrgId,
-    UserUpdateName,
-    UserListResponse,
-    UserUpdateUserId,
+    InviteCode,
     InviteCodeListRes,
     MinimalInviteCode,
-    UserUpdatePassword,
     MinimalOrganisation,
+    NewInvitedUser,
+    NewUser,
+    Organisation,
+    OrgListRes,
+    OrgUpdateName,
+    OrgUpdateOrgId,
+    SignInRes,
+    TokenListRes,
+    TokenRes,
+    TokenTester,
+    UserInfo,
+    UserListResponse,
+    UserUpdateName,
+    UserUpdatePassword,
+    UserUpdateUserId,
 )
 
 
@@ -749,9 +751,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
             """
             raw_tokens = await self.read_tokens(requester.user_id)
             tokens = [TokenRes(**dict(token)) for token in raw_tokens]
-            return TokenListRes(
-                response=tokens
-            )
+            return TokenListRes(response=tokens)
 
         @router.delete("/token", tags=["auth_module", "token"])
         async def delete_token(token_identifier: str = Body(...)):

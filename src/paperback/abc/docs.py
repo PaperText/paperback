@@ -1,8 +1,8 @@
 from abc import ABCMeta, abstractmethod
-from typing import Any, Dict, List, Callable, ClassVar, Optional
 from datetime import datetime
+from typing import Any, Callable, ClassVar, Dict, List, Optional
 
-from fastapi import Body, Query, APIRouter
+from fastapi import APIRouter, Body, Query
 
 from .base import Base
 from .models import *

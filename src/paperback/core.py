@@ -1,25 +1,20 @@
+import logging
 import time
 import uuid
-import logging
 from copy import deepcopy
-from typing import Any, Dict, Callable, MutableMapping
 from pathlib import Path
+from typing import Any, Callable, Dict, MutableMapping
 
 import uvicorn
-from config import (
-    ConfigurationSet,
-    config_from_env,
-    config_from_dict,
-    config_from_toml,
-)
+from config import config_from_dict, config_from_env, config_from_toml, ConfigurationSet
 from fastapi import FastAPI, Request
 from pkg_resources import iter_entry_points
 from uvicorn.logging import ColourizedFormatter
 
-from .abc import BaseAuth, BaseDocs, BaseMisc
-from .util import async_lib_name
-from .exceptions import InheritanceError, DuplicateModuleError
 from .__version__ import __version__
+from .abc import BaseAuth, BaseDocs, BaseMisc
+from .exceptions import DuplicateModuleError, InheritanceError
+from .util import async_lib_name
 
 api = FastAPI(
     title="PaperText backend [Paperback]",

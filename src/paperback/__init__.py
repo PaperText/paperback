@@ -2,5 +2,5 @@
 
 """🗄API of 📎PaperText app"""
 
-from .core import App
 from .__version__ import __version__
+from .core import App

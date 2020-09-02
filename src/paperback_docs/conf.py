@@ -1,7 +1,7 @@
 from typing import Any, Dict, Optional
 
-from recommonmark.transform import AutoStructify
 import sphinx_rtd_theme
+from recommonmark.transform import AutoStructify
 
 import paperback
 
@@ -30,7 +30,9 @@ def linkcode_resolve(domain: str, info: Dict[str, Any]) -> Optional[str]:
         if info["fullname"] == "Base":
             filename: str = "base.py"
         else:
-            filename: str = info["fullname"].replace("Base", "").lower() + ".py"
+            filename: str = info["fullname"].replace(
+                "Base", ""
+            ).lower() + ".py"
         print(f"{gitlab_url}/-/tree/master/src/{path}/{filename}")
         return f"{gitlab_url}/-/tree/master/src/{path}/{filename}"
     return None
@@ -53,6 +55,7 @@ extensions = [
 html_theme = "sphinx_rtd_theme"
 # html_static_path = ["static"]
 # custom hooks
+
 
 def setup(app):
     app.add_config_value(

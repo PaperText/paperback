@@ -1,13 +1,13 @@
 from __future__ import annotations
 
 from abc import ABCMeta, abstractmethod
-from types import SimpleNamespace
-from typing import Any, Dict, Callable, ClassVar, Optional
 from pathlib import Path
+from types import SimpleNamespace
+from typing import Any, Callable, ClassVar, Dict, Optional
 
 from fastapi import APIRouter
 
-from .models import UserInfo, TokenTester
+from .models import TokenTester, UserInfo
 
 
 class Base(metaclass=ABCMeta):

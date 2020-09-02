@@ -1,7 +1,7 @@
 from abc import ABCMeta, abstractmethod
-from types import SimpleNamespace
-from typing import Dict, ClassVar, Optional
 from pathlib import Path
+from types import SimpleNamespace
+from typing import ClassVar, Dict, Optional
 
 from . import Base, BaseAuth, BaseDocs
 
