@@ -46,7 +46,7 @@ class BaseDocs(Base, metaclass=ABCMeta):
         author: Optional[str] = None,
         created_before: Optional[datetime] = None,
         created_after: Optional[datetime] = None,
-        tags: Optional[List[str]] = Query(None),
+        tags: Optional[List[str]] = None,
     ):
         raise NotImplementedError
 
