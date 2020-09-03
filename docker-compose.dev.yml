@@ -4,3 +4,8 @@ services:
   paperback:
     build: .
     image: paperback:latest
+    environment:
+      MODULES: "[/root/papertext_auth, /root/papertext_docs]"
+    volumes:
+      - "~/Projects/papertext_auth:/root/papertext_auth:z"
+      - "~/Projects/papertext_docs:/root/papertext_docs:z"
