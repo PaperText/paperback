@@ -224,14 +224,22 @@ class App:
             else:
                 module_dir = None
 
-            if name in {"auth", "docs"}:
+            if name == "auth":
                 module = cls(
-                    self.cfg[name] if name in self.cfg else {}, module_dir,
+                    self.cfg[name] if name in self.cfg else {},
+                    module_dir     if cls.requires_dir else None,
+                )
+            elif name == "docs":
+                module = cls(
+                    self.cfg[name]       if name in self.cfg  else {},
+                    module_dir           if cls.requires_dir  else None,
+                    self.modules["auth"] if cls.requires_auth else None,
+
                 )
             else:
                 module = cls(
-                    self.cfg[name] if name in self.cfg else {},
-                    module_dir,
+                    self.cfg[name]       if name in self.cfg  else {},
+                    module_dir           if cls.requires_dir  else None,
                     self.modules["auth"] if cls.requires_auth else None,
                     self.modules["docs"] if cls.requires_docs else None,
                 )

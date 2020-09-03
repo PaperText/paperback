@@ -2,10 +2,16 @@ from abc import ABCMeta, abstractmethod
 from datetime import datetime
 from typing import Any, Callable, ClassVar, Dict, List, Optional
 
-from fastapi import APIRouter, Body, Query
+from fastapi import APIRouter, Body, Query, Depends
 
 from .base import Base
-from .models import *
+from .models import TokenTester, UserInfo, CreateCorp, ReadMinimalCorp,\
+    ReadCorp, ReadCorps, CreateDoc, ReadMinimalDoc, ReadDoc, ReadDocs,\
+    CreateDict, ReadDict, ReadDicts, LexicsAnalyzeReq, LexicsAnalyzePreRes, LexicsAnalyzeRes,\
+    PredicatesAnalyzeReq, PredicatesAnalyzePreRes, PredicatesAnalyzeRes,\
+    AvailableStats, StatsAnalyzeReq, StatsAnalyzePreRes, StatsAnalyzeRes, \
+    CompareAnalyzeReq, CompareAnalyzeRes
+
 
 
 class BaseDocs(Base, metaclass=ABCMeta):
@@ -20,6 +26,8 @@ class BaseDocs(Base, metaclass=ABCMeta):
         python dict of default values for configuration
     requires_dir: bool
         describes if directory for storage will be provide to __init__ call
+    requires_auth: bool
+        describes if Auth class will be provide to __init__ call
     """
 
     TYPE: ClassVar[str] = "DOCS"
@@ -53,13 +61,14 @@ class BaseDocs(Base, metaclass=ABCMeta):
     @abstractmethod
     async def create_corp(
         self,
+        issuer: UserInfo,
         corp_id: str,
         name: Optional[str] = None,
         parent_corp_id: Optional[str] = None,
         private: bool = False,
         has_access: Optional[List[str]] = None,
         to_include=None,
-    ):
+    ) -> Dict[str, Any]:
         if to_include is None:
             to_include = []
         raise NotImplementedError
@@ -78,7 +87,7 @@ class BaseDocs(Base, metaclass=ABCMeta):
             to_include = []
         raise NotImplementedError
 
-    def create_router(self, token: TokenTester) -> APIRouter:
+    def create_router(self, token_tester: TokenTester) -> APIRouter:
         router = APIRouter()
 
         # document access
@@ -133,11 +142,14 @@ class BaseDocs(Base, metaclass=ABCMeta):
 
         # corpus management
         @router.post("/corps", tags=["docs_module", "corps"])
-        async def create_corp(corp: CreateCorp):
+        async def create_corp(
+            corp: CreateCorp,
+            requester: UserInfo = Depends(token_tester(greater_or_equal=0)),
+        ):
             """
             creates corpus with given id if it's not occupied
             """
-            return await self.create_corp(**dict(corp))
+            return await self.create_corp(issuer=requester, **dict(corp))
 
         @router.get(
             "/corps", tags=["docs_module", "corps"], response_model=ReadCorps,
