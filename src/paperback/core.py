@@ -4,6 +4,7 @@ import uuid
 from copy import deepcopy
 from pathlib import Path
 from typing import Any, Callable, Dict, MutableMapping
+from collections import defaultdict
 
 import uvicorn
 from config import config_from_dict, config_from_env, config_from_toml, ConfigurationSet
@@ -208,9 +209,12 @@ class App:
 
     def load_modules(self):
         self.logger.info("loading modules")
+        ddsorter = defaultdict(lambda: 0)
+        ddsorter["docs"] = -1
+        ddsorter["auth"] = -2
         for name, cls in sorted(
             self.classes.items(),
-            key=lambda el: 1 if el[0] in {"auth", "docs"} else 0,
+            key=lambda kv: ddsorter[kv[0]]
         ):
             self.logger.debug("loading %s module", name)
             if cls.requires_dir:
@@ -275,11 +279,10 @@ class App:
 
     def run(self):
         self.find_pip_modules()
+        self.logger.debug("loaded configs: %s", self.cfg)
         self.load_modules()
         self.add_handlers(api)
         self.add_routers(api)
-
-        self.logger.debug("loaded configs: %s", self.cfg)
 
         uvicorn_log_config = uvicorn.config.LOGGING_CONFIG
         del uvicorn_log_config["loggers"]
