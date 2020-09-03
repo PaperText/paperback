@@ -37,4 +37,4 @@ done
 pip install uvloop
 pip install argon2-cffi gmpy2
 
-paperback -l DEBUG
+paperback
