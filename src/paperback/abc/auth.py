@@ -113,12 +113,12 @@ class BaseAuth(Base, metaclass=ABCMeta):
                 "either greater_or_equal or one_of should be provided"
             )
 
-        def return_function(authentication: str = Header(...)) -> UserInfo:
+        def return_function(x_authentication: str = Header(...)) -> UserInfo:
             # TODO: change to this in python3.9
-            # token: str = authentication.removeprefix("Bearer: ")
-            token: str = authentication[8:] if authentication.startswith(
+            # token: str = x_authentication.removeprefix("Bearer: ")
+            token: str = x_authentication[8:] if x_authentication.startswith(
                 "Bearer: "
-            ) else authentication
+            ) else x_authentication
 
             user: UserInfo = UserInfo(**self.token2user(token))
             if greater_or_equal is not None:
@@ -721,16 +721,16 @@ class BaseAuth(Base, metaclass=ABCMeta):
         @router.get("/signout", tags=["auth_module", "auth"])
         async def signout(
             # requester: UserInfo = Depends(token_tester(greater_or_equal=0)),
-            authentication: str = Header(...),
+            x_authentication: str = Header(...),
         ):
             """
             removes token from db of tokens
             """
+            # x_authentication.removeprefix("Bearer: ")
             token: str = (
-                authentication[7:]
-                # authentication.removeprefix("Bearer: ")
-                if authentication.startswith("Bearer: ")
-                else authentication
+                x_authentication[7:]
+                if x_authentication.startswith("Bearer: ")
+                else x_authentication
             )
             await self.delete_token(token)
 
