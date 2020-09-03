@@ -16,15 +16,17 @@ services:
       - "relational_db"
       - "graph_db"
     environment:
-      - SSH_PRIVATE_KEY
-      - PT__log_level
-      - PT__core__host
-      - PT__auth__IPstack_api_key
-      - PT__auth__db__host
-      - PT__auth__db__user
-      - PT__auth__db__dbname
-      - PT__auth__db__password
-      - PT__auth__token__generate_keys
+      SSH_PRIVATE_KEY: $SSH_PRIVATE_KEY
+      PT__log_level: "DEBUG"
+      PT__core__host: "0.0.0.0"
+      PT__auth__IPstack_api_key: $IPstack_api_key
+      PT__auth__db__host: "relational_db"
+      PT__auth__db__user: "paperback"
+      PT__auth__db__dbname: "auth_module"
+      PT__auth__db__password: $psql_password
+      PT__auth__token__generate_keys: $PT__auth__token__generate_keys
+      PT__docs__graph_db__host: "graph_db"
+      PT__docs__graph_db__auth__password: $neo4j_password
 #    deploy:
 #      mode: global
 #      resources:
@@ -59,9 +61,8 @@ services:
         max_attempts: 3
         window: 120s
     environment:
-      POSTGRES_PASSWORD: "password"
-      POSTGRES_DB: "papertext"
-      paperback_dbuser_passwd: "password"
+      POSTGRES_PASSWORD: $psql_password
+      paperback_dbuser_passwd: $psql_password
     ports:
       - "5432:5432"
     volumes:
@@ -70,7 +71,8 @@ services:
 
   graph_db:
     image: neo4j:4.1.1
-
+    networks:
+      - backend
     logging:
       driver: json-file
     ports:
@@ -78,6 +80,8 @@ services:
       - "7687:7687"
     volumes:
       - "~/.papertext/neo4j:/data:z"
+    environment:
+       NEO4J_AUTH: "neo4j/$neo4j_password"
     deploy:
       mode: global
       resources:
