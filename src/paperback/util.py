@@ -1,14 +1,10 @@
 import asyncio
 
+async_lib_name: str = "asyncio"
 
-def get_async_lib() -> str:
-    try:
-        import uvloop
-
-        uvloop.install()
-        return "uvloop"
-    except Exception:
-        return "asyncio"
-
-
-async_lib_name = get_async_lib()
+try:
+    import uvloop
+    uvloop.install()
+    async_lib_name = "uvloop"
+except ImportError:
+    pass
