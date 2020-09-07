@@ -1,11 +1,12 @@
 from pathlib import Path
 from subprocess import call
-from typing import NoReturn
+import asyncio
 
 import click
 
 from . import __version__
 from .core import App
+from .util import async_lib_name # noqa
 
 src_path = Path(__file__) / ".." / ".."
 src_path = src_path.resolve()
@@ -94,6 +95,9 @@ def cli(config_dir: Path, log_level: str):
     main command for running API through CLI
     """
     app = App(config_dir, log_level)
+    loop = asyncio.get_event_loop()
+    loop.run_until_complete(app.setup())
+    loop.close()
     app.run()
 
 

@@ -49,6 +49,16 @@ class Base(metaclass=ABCMeta):
         instance = super().__new__(cls)
         return instance
 
+    async def __async__init__(self):
+        """
+        additional initialization step, which will be awaited
+
+        Note
+        ----
+        Should not accept any arguments
+        """
+        pass
+
     @abstractmethod
     def create_router(self, token_tester: TokenTester,) -> APIRouter:
         """

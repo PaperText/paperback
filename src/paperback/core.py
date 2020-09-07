@@ -16,32 +16,7 @@ from .__version__ import __version__
 from .abc import BaseAuth, BaseDocs, BaseMisc
 from .exceptions import DuplicateModuleError, InheritanceError
 from .util import async_lib_name
-
-api = FastAPI(
-    title="PaperText backend [Paperback]",
-    description="Backend API for PaperText",
-    version=__version__,
-    openapi_tags=[
-        {"name": "auth", "description": "authorization"},
-        {"name": "token", "description": "token manipulation"},
-        {"name": "user", "description": "users manipulation"},
-        {"name": "organisation", "description": "organisation manipulation"},
-        {"name": "invite", "description": "invite codes manipulation"},
-        {"name": "docs", "description": "document manipulation"},
-        {"name": "corps", "description": "corpus manipulation"},
-        {"name": "dict", "description": "dictionaries manipulation"},
-        {"name": "analyzer", "description": "analyzer usage"},
-    ]
-    + [
-        {
-            "name": f"access_level_{i}",
-            "description": f"paths that require level {i} access",
-        }
-        for i in range(4)
-    ],
-    docs_url="/documentation",
-    redoc_url="/re_documentation",
-)
+from .app import api
 
 
 class App:
@@ -207,7 +182,7 @@ class App:
             self.classes[name] = cls
             self.default_config[name] = deepcopy(cls.DEFAULTS)
 
-    def load_modules(self):
+    async def load_modules(self):
         self.logger.info("loading modules")
         ddsorter = defaultdict(lambda: 0)
         ddsorter["docs"] = -1
@@ -243,6 +218,7 @@ class App:
                     self.modules["auth"] if cls.requires_auth else None,
                     self.modules["docs"] if cls.requires_docs else None,
                 )
+            await module.__async__init__()
             self.modules[name] = module
 
     def add_handlers(self, root_api: FastAPI):
@@ -285,19 +261,20 @@ class App:
                     router, prefix=f"/{name}",
                 )
 
-    def run(self):
+    async def setup(self):
         self.find_pip_modules()
         self.logger.debug("loaded configs: %s", self.cfg)
-        self.load_modules()
+        await self.load_modules()
         self.add_handlers(api)
         self.add_routers(api)
 
+    def run(self):
         uvicorn_log_config = uvicorn.config.LOGGING_CONFIG
         del uvicorn_log_config["loggers"]
 
         self.logger.info("starting uvicorn with %s loop", async_lib_name)
         uvicorn.run(
-            "paperback.core:api",
+            "paperback.app:api",
             host=self.cfg.core.host,
             port=int(self.cfg.core.port),
             log_config=uvicorn_log_config,
