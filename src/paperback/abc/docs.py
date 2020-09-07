@@ -1,17 +1,19 @@
 from abc import ABCMeta, abstractmethod
 from datetime import datetime
 from typing import Any, Callable, ClassVar, Dict, List, Optional
+from types import SimpleNamespace
+from pathlib import Path
 
 from fastapi import APIRouter, Body, Query, Depends
 
 from .base import Base
+from .auth import BaseAuth
 from .models import TokenTester, UserInfo, CreateCorp, ReadMinimalCorp,\
     ReadCorp, ReadCorps, CreateDoc, ReadMinimalDoc, ReadDoc, ReadDocs,\
     CreateDict, ReadDict, ReadDicts, LexicsAnalyzeReq, LexicsAnalyzePreRes, LexicsAnalyzeRes,\
     PredicatesAnalyzeReq, PredicatesAnalyzePreRes, PredicatesAnalyzeRes,\
     AvailableStats, StatsAnalyzeReq, StatsAnalyzePreRes, StatsAnalyzeRes, \
     CompareAnalyzeReq, CompareAnalyzeRes
-
 
 
 class BaseDocs(Base, metaclass=ABCMeta):
@@ -31,6 +33,15 @@ class BaseDocs(Base, metaclass=ABCMeta):
     """
 
     TYPE: ClassVar[str] = "DOCS"
+
+    @abstractmethod
+    def __init__(
+        self,
+        cfg: SimpleNamespace,
+        storage_dir: Path,
+        auth_module: BaseAuth
+    ):
+        raise NotImplementedError
 
     @abstractmethod
     async def create_doc(
