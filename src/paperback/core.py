@@ -3,7 +3,7 @@ import time
 import uuid
 from copy import deepcopy
 from pathlib import Path
-from typing import Any, Callable, Dict, MutableMapping
+from typing import Any, Callable, Dict, List, MutableMapping
 from collections import defaultdict
 
 import uvicorn
@@ -82,6 +82,7 @@ class App:
         }
         self.classes: MutableMapping[str, Any] = {}
         self.modules: MutableMapping[str, Any] = {}
+        self.to_run_async: List = []
 
     @property
     def cfg(self) -> ConfigurationSet:
@@ -182,7 +183,7 @@ class App:
             self.classes[name] = cls
             self.default_config[name] = deepcopy(cls.DEFAULTS)
 
-    async def load_modules(self):
+    def load_modules(self):
         self.logger.info("loading modules")
         ddsorter = defaultdict(lambda: 0)
         ddsorter["docs"] = -1
@@ -218,11 +219,16 @@ class App:
                     self.modules["auth"] if cls.requires_auth else None,
                     self.modules["docs"] if cls.requires_docs else None,
                 )
-            await module.__async__init__()
+            self.to_run_async.append(module.__async__init__)
             self.modules[name] = module
 
     def add_handlers(self, root_api: FastAPI):
         self.logger.info("setting up API handlers")
+
+        @root_api.on_event("startup")
+        async def startup_event():
+            for event in self.to_run_async:
+                await event()
 
         @root_api.get("/stats", tags=["root"])
         def stats():
@@ -261,14 +267,13 @@ class App:
                     router, prefix=f"/{name}",
                 )
 
-    async def setup(self):
+    def run(self):
         self.find_pip_modules()
         self.logger.debug("loaded configs: %s", self.cfg)
-        await self.load_modules()
+        self.load_modules()
         self.add_handlers(api)
         self.add_routers(api)
 
-    def run(self):
         uvicorn_log_config = uvicorn.config.LOGGING_CONFIG
         del uvicorn_log_config["loggers"]
 
