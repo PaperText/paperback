@@ -72,7 +72,8 @@ class BaseDocs(Base, metaclass=ABCMeta):
     @abstractmethod
     async def create_corp(
         self,
-        issuer: UserInfo,
+        issuer_id: str,
+        issuer_type: str,
         corp_id: str,
         name: Optional[str] = None,
         parent_corp_id: Optional[str] = None,
@@ -160,7 +161,11 @@ class BaseDocs(Base, metaclass=ABCMeta):
             """
             creates corpus with given id if it's not occupied
             """
-            return await self.create_corp(issuer=requester, **dict(corp))
+            return await self.create_corp(
+                issuer_id=requester.user_id,
+                issuer_type="user",
+                **dict(corp)
+            )
 
         @router.get(
             "/corps", tags=["docs_module", "corps"], response_model=ReadCorps,
