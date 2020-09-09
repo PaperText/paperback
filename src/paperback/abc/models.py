@@ -359,8 +359,8 @@ class CompareAnalyzeReq(BaseModel):
 
 
 class CompareAnalyzeRes(BaseModel):
-    first_set: Dict[str, StatsAnalyzePreRes]
-    second_set: Dict[str, StatsAnalyzePreRes]
+    first_set: List[StatsAnalyzePreRes]
+    second_set: List[StatsAnalyzePreRes]
     correlation: Dict[str, Dict[str, Union[int, Dict[str, str]]]]
 
     # class Config:
