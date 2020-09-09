@@ -46,6 +46,8 @@ class BaseDocs(Base, metaclass=ABCMeta):
     @abstractmethod
     async def create_doc(
         self,
+        issuer_id: str,
+        issuer_type: str,
         doc_id: str,
         parent_corp_id: str,
         text: str,
@@ -88,15 +90,11 @@ class BaseDocs(Base, metaclass=ABCMeta):
     @abstractmethod
     async def read_corps(
         self,
-        corp_id: str,
-        name: Optional[str] = None,
+        requester_id: str,
         parent_corp_id: Optional[str] = None,
         private: bool = False,
         has_access: Optional[List[str]] = None,
-        to_include=None,
     ):
-        if to_include is None:
-            to_include = []
         raise NotImplementedError
 
     def create_router(self, token_tester: TokenTester) -> APIRouter:
@@ -104,11 +102,18 @@ class BaseDocs(Base, metaclass=ABCMeta):
 
         # document access
         @router.post("/docs", tags=["docs_module", "docs"])
-        async def create_doc(doc: CreateDoc):
+        async def create_doc(
+            doc: CreateDoc,
+            requester: UserInfo = Depends(token_tester(greater_or_equal=0)),
+        ):
             """
             creates document with given id if it's not occupied
             """
-            return await self.create_doc(**dict(doc))
+            return await self.create_doc(
+                issuer_id=requester.user_id,
+                issuer_type="user",
+                **dict(doc)
+            )
 
         @router.get(
             "/docs", tags=["docs_module", "docs"], response_model=ReadDocs,
@@ -170,11 +175,13 @@ class BaseDocs(Base, metaclass=ABCMeta):
         @router.get(
             "/corps", tags=["docs_module", "corps"], response_model=ReadCorps,
         )
-        async def read_corps() -> ReadCorps:
+        async def read_corps(
+            requester: UserInfo = Depends(token_tester(greater_or_equal=0)),
+        ) -> ReadCorps:
             """
             returns list of all corpuses, accessible to user
             """
-            return await self.read_corps()
+            return await self.read_corps(requester_id=requester.user_id)
 
         @router.get(
             "/corps/{corp_id}",
