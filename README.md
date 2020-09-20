@@ -3,7 +3,7 @@ PaperBack
 [![Documentation Status][docs_badge]][docs_link]
 [![Docker Repository on Quay][container_badge]][container_link]
 
-[![Checked with mypy](http://www.mypy-lang.org/static/mypy_badge.svg?style=flat-square)](http://mypy-lang.org/)
+[![Checked with mypy][mypy_badge]](http://mypy-lang.org/)
 [![Code style: black][black_badge]](https://github.com/psf/black)
 [![Imports: isort][isort_badge]](https://pycqa.github.io/isort/)
 
@@ -56,8 +56,9 @@ The project is licensed under the MIT license.
 [container_badge]: https://quay.io/repository/papertext/paperback/status?style=flat-square
 [container_link]: https://quay.io/repository/papertext/paperback
 
+[mypy_badge]: https://img.shields.io/badge/mypy-checked-2a6db2?style=flat-square
 [black_badge]: https://img.shields.io/badge/code%20style-black-000000.svg?style=flat-square
-[isort_badge]: https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&labelColor=ef8336
+[isort_badge]: https://img.shields.io/badge/imports-isort-1674b1?style=flat-square&labelColor=ef8336
 
-[MIT_license_badge]: https://img.shields.io/badge/License-MIT-yellow.svg
+[MIT_license_badge]: https://img.shields.io/badge/License-MIT-yellow.svg?style=flat-square
 [license_link]: https://gitlab.com/PaperText/paperback/blob/master/LICENSE
