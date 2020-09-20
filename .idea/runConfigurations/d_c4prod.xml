@@ -16,7 +16,7 @@
         </option>
         <option name="removeVolumesOnComposeDown" value="true" />
         <option name="commandLineOptions" value="--build" />
-        <option name="sourceFilePath" value="docker-compose.yml" />
+        <option name="sourceFilePath" value="src/docker/docker-compose.yml" />
       </settings>
     </deployment>
     <method v="2" />

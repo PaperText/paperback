@@ -21,7 +21,7 @@
             <option value="docker-compose.dev.yml" />
           </list>
         </option>
-        <option name="sourceFilePath" value="docker-compose.yml" />
+        <option name="sourceFilePath" value="src/docker/docker-compose.yml" />
       </settings>
     </deployment>
     <method v="2" />
