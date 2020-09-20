@@ -69,7 +69,7 @@ services:
       - "5432:5432"
     volumes:
       - "~/.papertext/postgresql:/var/lib/postgresql/data:z"
-      - ".init_graph_db.sh:/container-entrypoint-initdb.d/init-user-db.sh:z"
+      - "./init_graph_db.sh:/container-entrypoint-initdb.d/init-user-db.sh:z"
 
   graph_db:
     image: neo4j:4.1.1
