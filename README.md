@@ -1,10 +1,12 @@
 PaperBack
 =========
-[![Documentation Status](https://readthedocs.org/projects/paperback/badge/?version=latest&style=flat-square)](https://paperback.readthedocs.io/en/latest/?badge=latest)
-[![Docker Repository on Quay](https://quay.io/repository/papertext/paperback/status?style=flat-square)](https://quay.io/repository/papertext/paperback)
-\
-[![Code style: black](https://img.shields.io/badge/code%20style-black-000000.svg?style=flat-square)](https://github.com/psf/black)
-[![GitHub license](https://img.shields.io/github/license/PaperText/paperback?style=flat-square)](https://github.com/PaperText/paperback/blob/master/LICENSE)
+[![Documentation Status][docs_badge]][docs_link]
+[![Docker Repository on Quay][container_badge]][container_link]
+
+[![Code style: black][black_badge]](https://github.com/psf/black)
+[![Imports: isort][isort_badge]](https://pycqa.github.io/isort/)
+
+[![GitLab license][MIT_license_badge]][license_link]
 
 Features
 --------
@@ -45,3 +47,16 @@ If you are having issues, please let us know through
 License
 -------
 The project is licensed under the MIT license.
+
+<!-- links -->
+[docs_badge]: https://readthedocs.org/projects/paperback/badge/?version=latest&style=flat-square
+[docs_link]: https://paperback.readthedocs.io/en/latest/?badge=latest
+
+[container_badge]: https://quay.io/repository/papertext/paperback/status?style=flat-square
+[container_link]: https://quay.io/repository/papertext/paperback
+
+[black_badge]: https://img.shields.io/badge/code%20style-black-000000.svg?style=flat-square
+[isort_badge]: https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&labelColor=ef8336
+
+[MIT_license_badge]: https://img.shields.io/badge/License-MIT-yellow.svg
+[license_badge]: https://gitlab.com/PaperText/paperback/blob/master/LICENSE
