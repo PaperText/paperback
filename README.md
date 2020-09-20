@@ -3,6 +3,7 @@ PaperBack
 [![Documentation Status][docs_badge]][docs_link]
 [![Docker Repository on Quay][container_badge]][container_link]
 
+[![Checked with mypy](http://www.mypy-lang.org/static/mypy_badge.svg?style=flat-square)](http://mypy-lang.org/)
 [![Code style: black][black_badge]](https://github.com/psf/black)
 [![Imports: isort][isort_badge]](https://pycqa.github.io/isort/)
 
@@ -59,4 +60,4 @@ The project is licensed under the MIT license.
 [isort_badge]: https://img.shields.io/badge/%20imports-isort-%231674b1?style=flat&labelColor=ef8336
 
 [MIT_license_badge]: https://img.shields.io/badge/License-MIT-yellow.svg
-[license_badge]: https://gitlab.com/PaperText/paperback/blob/master/LICENSE
+[license_link]: https://gitlab.com/PaperText/paperback/blob/master/LICENSE
