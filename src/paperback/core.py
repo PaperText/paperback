@@ -50,6 +50,8 @@ class App:
 
         self.logger.info("initializing PaperBack app")
 
+        self.api = api
+
         self.logger.debug("searching for config.toml file")
         self.config_file = self.config_dir / "config.toml"
         if self.config_file.exists() and self.config_file.is_file():
@@ -267,12 +269,15 @@ class App:
                     router, prefix=f"/{name}",
                 )
 
-    def run(self):
+    def setup(self):
         self.find_pip_modules()
         self.logger.debug("loaded configs: %s", self.cfg)
         self.load_modules()
-        self.add_handlers(api)
-        self.add_routers(api)
+        self.add_handlers(self.api)
+        self.add_routers(self.api)
+
+    def run(self):
+        self.setup()
 
         uvicorn_log_config = uvicorn.config.LOGGING_CONFIG
         del uvicorn_log_config["loggers"]
