@@ -7,8 +7,8 @@ services:
       - frontend
     ports:
       - "7878:7878"
-    logging:
-      driver: json-file
+#    logging:
+#      driver: json-file
     depends_on:
       - relational_db
       - graph_db
@@ -100,4 +100,6 @@ services:
 
 networks:
   backend:
+    name: "backend"
   frontend:
+    name: "frontend"

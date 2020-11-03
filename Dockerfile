@@ -1,11 +1,11 @@
-FROM python:3.8.5-slim
+FROM python:3.8.6
 
 EXPOSE 7878
 
 # list of comma separated strings
 ENV MODULES="\
     git+https://gitlab.com/papertext/papertext_auth \
-    git+https://gitlab.com/PaperText/papertext_docs\
+    git+https://gitlab.com/PaperText/papertext_docs \
 "
 
 ENV SSH_PRIVATE_KEY=""
@@ -25,13 +25,14 @@ RUN apt-get install --no-install-recommends -y \
 RUN apt-get clean
 RUN rm -rf /var/lib/apt/lists/*
 
-COPY ../../README.md /root/paperback/
-COPY ../../LICENSE /root/paperback/
-COPY ../../pyproject.toml /root/paperback/
-COPY ../paperback /root/paperback/src/paperback
+COPY README.md /root/paperback/
+COPY LICENSE /root/paperback/
+COPY pyproject.toml /root/paperback/
+COPY src/paperback /root/paperback/src/paperback
 
 WORKDIR /root/paperback
+RUN pip install --upgrade pip
 RUN pip install "."
 
-COPY ./entrypoint.sh /root/entrypoint.sh
+COPY src/container/entrypoint.sh /root/entrypoint.sh
 CMD sh ~/entrypoint.sh
