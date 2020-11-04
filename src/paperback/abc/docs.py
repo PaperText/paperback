@@ -1,19 +1,40 @@
 from abc import ABCMeta, abstractmethod
 from datetime import datetime
-from typing import Any, Callable, ClassVar, Dict, List, Optional
-from types import SimpleNamespace
 from pathlib import Path
+from types import SimpleNamespace
+from typing import Any, Callable, ClassVar, Dict, List, Optional
 
-from fastapi import APIRouter, Body, Query, Depends
+from fastapi import APIRouter, Body, Depends, Query
 
-from .base import Base
 from .auth import BaseAuth
-from .models import TokenTester, UserInfo, CreateCorp, ReadMinimalCorp,\
-    ReadCorp, ReadCorps, CreateDoc, ReadMinimalDoc, ReadDoc, ReadDocs,\
-    CreateDict, ReadDict, ReadDicts, LexicsAnalyzeReq, LexicsAnalyzePreRes, LexicsAnalyzeRes,\
-    PredicatesAnalyzeReq, PredicatesAnalyzePreRes, PredicatesAnalyzeRes,\
-    AvailableStats, StatsAnalyzeReq, StatsAnalyzePreRes, StatsAnalyzeRes, \
-    CompareAnalyzeReq, CompareAnalyzeRes
+from .base import Base
+from .models import (
+    AvailableStats,
+    CompareAnalyzeReq,
+    CompareAnalyzeRes,
+    CreateCorp,
+    CreateDict,
+    CreateDoc,
+    LexicsAnalyzePreRes,
+    LexicsAnalyzeReq,
+    LexicsAnalyzeRes,
+    PredicatesAnalyzePreRes,
+    PredicatesAnalyzeReq,
+    PredicatesAnalyzeRes,
+    ReadCorp,
+    ReadCorps,
+    ReadDict,
+    ReadDicts,
+    ReadDoc,
+    ReadDocs,
+    ReadMinimalCorp,
+    ReadMinimalDoc,
+    StatsAnalyzePreRes,
+    StatsAnalyzeReq,
+    StatsAnalyzeRes,
+    TokenTester,
+    UserInfo,
+)
 
 
 class BaseDocs(Base, metaclass=ABCMeta):
@@ -36,10 +57,7 @@ class BaseDocs(Base, metaclass=ABCMeta):
 
     @abstractmethod
     def __init__(
-        self,
-        cfg: SimpleNamespace,
-        storage_dir: Path,
-        auth_module: BaseAuth
+        self, cfg: SimpleNamespace, storage_dir: Path, auth_module: BaseAuth
     ):
         """
         constructor of new module
@@ -139,10 +157,7 @@ class BaseDocs(Base, metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    async def read_doc(
-        self,
-        doc_id: str,
-    ) -> Dict[str, Any]:
+    async def read_doc(self, doc_id: str,) -> Dict[str, Any]:
         """
         read document with specified id
 
@@ -209,8 +224,7 @@ class BaseDocs(Base, metaclass=ABCMeta):
 
     @abstractmethod
     async def delete_doc(
-        self,
-        doc_id: str,
+        self, doc_id: str,
     ):
         """
         delete document with specified id
@@ -267,10 +281,7 @@ class BaseDocs(Base, metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    async def read_corps(
-        self,
-        requester_id: str,
-    ) -> List[Dict[str, Any]]:
+    async def read_corps(self, requester_id: str,) -> List[Dict[str, Any]]:
         """
         read corpuses of specified user
 
@@ -286,10 +297,7 @@ class BaseDocs(Base, metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    async def read_corp(
-        self,
-        corp_id: str,
-    ) -> Dict[str, Any]:
+    async def read_corp(self, corp_id: str,) -> Dict[str, Any]:
         """
         read corpus with specified id
 
@@ -363,9 +371,7 @@ class BaseDocs(Base, metaclass=ABCMeta):
             creates document with given id if it's not occupied
             """
             return await self.create_doc(
-                creator_id=requester.user_id,
-                creator_type="user",
-                **dict(doc)
+                creator_id=requester.user_id, creator_type="user", **dict(doc)
             )
 
         @router.get(
@@ -388,7 +394,9 @@ class BaseDocs(Base, metaclass=ABCMeta):
                 created_after=created_after,
                 tags=tags,
             )
-            return ReadDocs(response=[ReadMinimalDoc(**doc) for doc in raw_docs])
+            return ReadDocs(
+                response=[ReadMinimalDoc(**doc) for doc in raw_docs]
+            )
 
         @router.get(
             "/docs/{doc_id}",
@@ -408,10 +416,7 @@ class BaseDocs(Base, metaclass=ABCMeta):
             """
             updates document with given id if it exists
             """
-            return await self.update_doc(
-                doc_id=doc_id,
-                **dict(doc),
-            )
+            return await self.update_doc(doc_id=doc_id, **dict(doc),)
 
         @router.delete("/docs/{doc_id}", tags=["docs_module", "docs"])
         async def delete_doc(doc_id: str):
@@ -430,9 +435,7 @@ class BaseDocs(Base, metaclass=ABCMeta):
             creates corpus with given id if it's not occupied
             """
             return await self.create_corp(
-                issuer_id=requester.user_id,
-                issuer_type="user",
-                **dict(corp)
+                issuer_id=requester.user_id, issuer_type="user", **dict(corp)
             )
 
         @router.get(
@@ -444,8 +447,12 @@ class BaseDocs(Base, metaclass=ABCMeta):
             """
             returns list of all corpuses, accessible to user
             """
-            raw_corpuses: List[Dict[str, Any]] = await self.read_corps(requester_id=requester.user_id)
-            return ReadCorps(response=[ReadMinimalCorp(**corp) for corp in raw_corpuses])
+            raw_corpuses: List[Dict[str, Any]] = await self.read_corps(
+                requester_id=requester.user_id
+            )
+            return ReadCorps(
+                response=[ReadMinimalCorp(**corp) for corp in raw_corpuses]
+            )
 
         @router.get(
             "/corps/{corp_id}",
@@ -465,10 +472,7 @@ class BaseDocs(Base, metaclass=ABCMeta):
             """
             updates corpus with given id if it exists
             """
-            return await self.update_corp(
-                corp_id=corp_id,
-                **dict(corp),
-            )
+            return await self.update_corp(corp_id=corp_id, **dict(corp),)
 
         @router.delete(
             "/corps/{corp_id}", tags=["docs_module", "corps"],

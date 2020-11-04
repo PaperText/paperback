@@ -5,7 +5,7 @@ import click
 
 from . import __version__
 from .core import App
-from .util import async_lib_name # noqa
+from .util import async_lib_name  # noqa
 
 src_path = Path(__file__) / ".." / ".."
 src_path = src_path.resolve()

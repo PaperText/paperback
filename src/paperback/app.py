@@ -1,7 +1,6 @@
-from .__version__ import __version__
-
 from fastapi import FastAPI
 
+from .__version__ import __version__
 
 api = FastAPI(
     title="PaperText backend [Paperback]",

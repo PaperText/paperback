@@ -1,10 +1,10 @@
 import logging
 import time
 import uuid
+from collections import defaultdict
 from copy import deepcopy
 from pathlib import Path
 from typing import Any, Callable, Dict, List, MutableMapping
-from collections import defaultdict
 
 import uvicorn
 from config import config_from_dict, config_from_env, config_from_toml, ConfigurationSet
@@ -14,9 +14,9 @@ from uvicorn.logging import ColourizedFormatter
 
 from .__version__ import __version__
 from .abc import BaseAuth, BaseDocs, BaseMisc
+from .app import api
 from .exceptions import DuplicateModuleError, InheritanceError
 from .util import async_lib_name
-from .app import api
 
 
 class App:
@@ -191,8 +191,7 @@ class App:
         ddsorter["docs"] = -1
         ddsorter["auth"] = -2
         for name, cls in sorted(
-            self.classes.items(),
-            key=lambda kv: ddsorter[kv[0]]
+            self.classes.items(), key=lambda kv: ddsorter[kv[0]]
         ):
             self.logger.debug("loading %s module", name)
             if cls.requires_dir:
@@ -205,19 +204,18 @@ class App:
             if name == "auth":
                 module = cls(
                     self.cfg[name] if name in self.cfg else {},
-                    module_dir     if cls.requires_dir else None,
+                    module_dir if cls.requires_dir else None,
                 )
             elif name == "docs":
                 module = cls(
-                    self.cfg[name]       if name in self.cfg  else {},
-                    module_dir           if cls.requires_dir  else None,
+                    self.cfg[name] if name in self.cfg else {},
+                    module_dir if cls.requires_dir else None,
                     self.modules["auth"] if cls.requires_auth else None,
-
                 )
             else:
                 module = cls(
-                    self.cfg[name]       if name in self.cfg  else {},
-                    module_dir           if cls.requires_dir  else None,
+                    self.cfg[name] if name in self.cfg else {},
+                    module_dir if cls.requires_dir else None,
                     self.modules["auth"] if cls.requires_auth else None,
                     self.modules["docs"] if cls.requires_docs else None,
                 )

@@ -1,7 +1,7 @@
 from abc import ABCMeta, abstractmethod
-from typing import Any, Callable, ClassVar, Dict, List, Optional, Union
-from types import SimpleNamespace
 from pathlib import Path
+from types import SimpleNamespace
+from typing import Any, Callable, ClassVar, Dict, List, Optional, Union
 
 from fastapi import (
     APIRouter,
@@ -157,9 +157,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
 
     @abstractmethod
     def __init__(
-        self,
-        cfg: SimpleNamespace,
-        storage_dir: Path,
+        self, cfg: SimpleNamespace, storage_dir: Path,
     ):
         raise NotImplementedError
 

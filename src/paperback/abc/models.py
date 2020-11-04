@@ -252,10 +252,7 @@ class ReadCorps(BaseModel):
     class Config:
         schema_extra = {
             "example": [
-                {
-                    "corp_id": "corp_1",
-                    "corp_name": "Первый корпус",
-                },
+                {"corp_id": "corp_1", "corp_name": "Первый корпус",},
                 {
                     "corp_id": "pushkin_1",
                     "corp_name": "Корпус сочинений Пушкина",
