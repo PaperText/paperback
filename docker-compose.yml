@@ -22,7 +22,7 @@ services:
       PT__auth__IPstack_api_key: $IPstack_api_key
       PT__auth__db__host: "relational_db"
       PT__auth__db__user: "paperback"
-      PT__auth__db__dbname: "auth_module"
+      PT__auth__db__dbname: $psql_db_name
       PT__auth__db__password: $psql_password
       PT__auth__token__generate_keys: $PT__auth__token__generate_keys
       PT__docs__processor__host: $PT__docs__processor__host
@@ -63,13 +63,14 @@ services:
         max_attempts: 3
         window: 120s
     environment:
+      POSTGRES_DB: $psql_db_name
       POSTGRES_PASSWORD: $psql_password
       paperback_dbuser_passwd: $psql_password
     ports:
       - "5432:5432"
     volumes:
       - "~/.papertext/postgresql:/var/lib/postgresql/data:z"
-      - "./init_graph_db.sh:/container-entrypoint-initdb.d/init-user-db.sh:z"
+      - "./src/container/init_graph_db.sh:/container-entrypoint-initdb.d/init-user-db.sh:z"
 
   graph_db:
     image: neo4j:4.1.1
