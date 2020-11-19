@@ -73,7 +73,7 @@ services:
       - "./src/container/init_graph_db.sh:/container-entrypoint-initdb.d/init-user-db.sh:z"
 
   graph_db:
-    image: neo4j:4.1.1
+    image: neo4j:4.2.0
     networks:
       - backend
     logging:
