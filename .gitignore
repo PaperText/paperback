@@ -1,16 +1,17 @@
+# config
 .vscode/
 .idea/
-!.idea/runConfigurations/
 
+# cache
+**/__pycache__/
+**/*.egg-info
 .mypy_cache
-.venv
-dist
-docs
 
-poetry.lock
+# build
+.venv/
+dist
+
+# other
 .env
 to_source.sh
 tmpdir/
-
-**/__pycache__
-**/*.egg-info
