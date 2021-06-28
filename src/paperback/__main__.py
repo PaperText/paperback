@@ -1,5 +1,6 @@
 from pathlib import Path
 from subprocess import call
+from shlex import split
 
 import click
 
@@ -13,39 +14,48 @@ src_path = src_path.resolve()
 source_path = src_path / ".."
 source_path = source_path.resolve()
 
+docs_path = source_path / "docs"
+docs_path = docs_path.resolve()
+
 pyproject_path = source_path / "pyproject.toml"
 pyproject_path = pyproject_path.resolve()
 
 
 class Scripts:
     @staticmethod
-    def lint_flakehell():
-        print("+--------------------+")
-        print("| [flake]hell linter |")
-        print("+--------------------+")
-        call(f"python -m flakehell lint {src_path}".split(" "))
+    def pretty_print(string):
+        print("+-"+"-"*len(string)+"-+")
+        print("| "+str(string)+" |")
+        print("+-" + "-" * len(string) + "-+")
+
+    @staticmethod
+    def execute(cmd):
+        return call(split(cmd))
+
+    @staticmethod
+    def lint_flake8():
+        Scripts.pretty_print("flake8[9] linter")
+        Scripts.execute(f"python -m flake8 {src_path}")
 
     @staticmethod
     def lint_mypy():
-        print("+-------------+")
-        print("| mypy linter |")
-        print("+-------------+")
-        call(f"python -m mypy {src_path}".split(" "))
+        Scripts.pretty_print("mypy linter")
+        Scripts.execute(f"python -m mypy {src_path}")
 
     @staticmethod
     def lint():
-        Scripts.lint_flakehell()
+        Scripts.lint_flake8()
         Scripts.lint_mypy()
 
     @staticmethod
     def fix_black():
-        call(
-            f"python -m black {src_path} --config {pyproject_path}".split(" ")
-        )
+        Scripts.pretty_print("black fixer")
+        Scripts.execute(f"python -m black {src_path} --config {pyproject_path}")
 
     @staticmethod
     def fix_isort():
-        call(f"python -m isort {src_path}".split(" "))
+        Scripts.pretty_print("isort fixer")
+        Scripts.execute(f"python -m isort {src_path}")
 
     @staticmethod
     def fix():
@@ -54,15 +64,11 @@ class Scripts:
 
     @staticmethod
     def docs_build():
-        call(
-            f"sphinx-build -b html {src_path / 'paperback_docs'} {source_path / 'docs'}".split(
-                " "
-            )
-        )
+        Scripts.execute(f"sphinx-build -b html {src_path / 'paperback_docs'} {docs_path}")
 
     @staticmethod
     def docs_clean():
-        call(f"rm -rf {source_path / 'docs'}".split(" "))
+        Scripts.execute(f"rm -rf {docs_path}")
 
 
 default_config_path = Path.home() / ".papertext"
