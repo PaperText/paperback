@@ -7,7 +7,12 @@ from pathlib import Path
 from typing import Any, Callable, Dict, List, MutableMapping
 
 import uvicorn
-from config import config_from_dict, config_from_env, config_from_toml, ConfigurationSet
+from config import (
+    config_from_dict,
+    config_from_env,
+    config_from_toml,
+    ConfigurationSet,
+)
 from fastapi import FastAPI, Request
 from pkg_resources import iter_entry_points
 from uvicorn.logging import ColourizedFormatter
