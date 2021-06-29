@@ -1,87 +1,116 @@
+[build-system]
+requires = ["poetry_core>=1.0.0"]
+build-backend = "poetry.core.masonry.api"
+
 [tool.poetry]
 name = "paperback"
 version = "0.2.0"
-description = ""
-authors = ["Danil Kireev <danilunrandom@gmail.com>"]
+description = "implementation of Relation Analysis backend"
+authors = ["Danil Kireev <unrndm@gmail.com>"]
 license = "MIT"
 readme="README.md"
-homepage="https://github.com/PaperText/paperback"
-repository="https://github.com/PaperText/paperback"
+homepage="https://gitlab.com/papertext/paperback"
+repository="https://gitlab.com/papertext/paperback"
 documentation="https://paperback.readthedocs.io/en/latest/"
-classifiers=[
-    "Topic :: Software Development :: Build Tools",
-    "Topic :: Software Development :: Libraries :: Python Modules"
-]
 include = ["LICENSE", "pyproject.toml"]
 
 [tool.poetry.urls]
-"Source Code" = "https://github.com/PaperText/paperback#container"
-"Issue Tracker" = "https://github.com/PaperText/paperback/issues"
-"Documentation" = "https://paperback.readthedocs.io/en/latest/?badge=latest"
-"Homepage" = ""
-
-[build-system]
-requires = ["poetry>=0.12"]
-build-backend = "poetry.masonry.api"
+"Issue Tracker" = "https://gitlab.com/papertext/paperback/-/issues"
 
 [tool.poetry.scripts]
 paperback = "paperback.__main__:cli"
-fix = "paperback.__main__:Scripts.fix"
-lint = "paperback.__main__:Scripts.lint"
-docs-build = "paperback.__main__:Scripts.docs_build"
-docs-clean = "paperback.__main__:Scripts.docs_clean"
+fix = "paperback.scripts:Scripts.fix"
+lint = "paperback.scripts:Scripts.lint"
+build = "paperback.scripts:Scripts.docs_build"
+clean = "paperback.scripts:Scripts.docs_clean"
 
 [tool.poetry.dependencies]
-python = "^3.7"
+python = "^3.8"
+# read configs from multiple sources
 python-configuration = {extras = ["toml"], version = "^0.8.0"}
-uvicorn = "^0.12.0"
-email-validator = "^1.0"
-pydantic = "^1.4"
-python-multipart = "^0.0.5"
+# framework
 fastapi = "^0.61.0"
-toml = "^0.10.1"
+# ASGI runner
+uvicorn = "^0.12.0"
+# dep of pydantic, allows for creation of type checked classes
+pydantic = "^1.4"
+# dep of pydantic
+email-validator = "^1.0"
+# dep of pydantic
+python-multipart = "^0.0.5"
+# faster loop for uvicorn
 uvloop = {version = "^0.14.0", optional = true}
-
-[tool.poetry.dev-dependencies]
-pytest = "^6.0"
-flake8 = "^3.7"
-flakehell = "^0.7.0"
-flake8-fixme = "^1.1"
-pep8-naming = "^0.11.1"
-black = "19.10b0"
-isort = "^5.3"
-mypy = "^0.782"
-rope = "^0.18.0"
-recommonmark = "^0.6.0"
-sphinx = "^3.2.0"
-sphinx_rtd_theme = "^0.5.0"
 
 [tool.poetry.extras]
 fast_loop = ["uvloop"]
 
-[tool.flakehell]
-exclude = ["__pycahce__"]
-format = "grouped"
-show_source = true
-max_line_length = 79
-
-[tool.flakehell.plugins]
-"flake8-fixme" = ["+*"]
-"pep8-naming" = ["+*"]
-"mccabe" = ["+*"]
-"pycodestyle" = ["+*"]
-"pyflakes" = ["+*"]
-"pylint" = ["+*"]
+[tool.poetry.dev-dependencies]
+# testing framework
+pytest = "^6.0"
+# fixer
+black = "19.10b0"
+# flake8 linter but with pyproject.toml support
+flake9 = "^3.8.3"
+# flake-8 plugins
+darglint = "^1.8.0"
+# flake8-fixme = "^1.1"
+# flake8-pie = "^0.14.0"
+pep8-naming = "^0.11.1"
+flake8-black = "^0.2.1"
+flake8-isort = "^4.0.0"
+flake8-length = "^0.1.0"
+# flake8-return = "^1.1.3"
+# flake8-mutable = "^1.2.0"
+# flake8-bugbear = "^21.4.3"
+# flake8-builtins = "^1.5.3"
+# flake8-assertive = "^1.3.0"
+# flake8-eradicate = "^1.1.0"
+# flake8-simplify = "^0.14.1"
+# flake8-use-fstring = "^1.1"
+flake8-docstrings = "^1.6.0"
+# flake8-annotations = "^2.6.2"
+# flake8-pytest-style = "^1.5.0"
+# flake8-type-checking = "^1.0.3"
+# flake8-annotations-coverage = "^0.0.5"
+# flake8-cognitive-complexity = "^0.1.0"
+# fixer
+isort = "^5.3"
+# typing linter
+mypy = "^0.910"
+# codium dependency for renaming
+rope = "^0.18.0"
+# docs
+sphinx = "^3.2.0"
+recommonmark = "^0.6.0"
+sphinx_rtd_theme = "^0.5.0"
 
 [tool.black]
 target-version = ['py38']
 line_length = 79
 
+[tool.flake8]
+exclude = ["__pycahce__"]
+max-line-length = 79
+ignore = [
+  # line length error
+  "E501",
+  # line length warning
+  "W505",
+  # ignore `flake8-annotations`
+  "ANN",]
+# enable `flake8-type-checking`
+enable-extensions = ["TC", "TC1"]
+docstring-convention="numpy"
+
 [tool.isort]
 profile="black"
-force_alphabetical_sort_within_sections=true
-skip_gitignore=true
+line_length=79
+py_version="38"
 color_output=true
+skip_gitignore=true
+group_by_package=true
+src_paths = ["src", "tests"]
+force_alphabetical_sort_within_sections=true
 
 [tool.mypy]
 plugins = "pydantic.mypy"
