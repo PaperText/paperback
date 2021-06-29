@@ -29,9 +29,9 @@ python = "^3.8"
 # read configs from multiple sources
 python-configuration = {extras = ["toml"], version = "^0.8.0"}
 # framework
-fastapi = "^0.61.0"
+fastapi = "^0.65.2"
 # ASGI runner
-uvicorn = "^0.12.0"
+uvicorn = "^0.14.0"
 # dep of pydantic, allows for creation of type checked classes
 pydantic = "^1.4"
 # dep of pydantic
@@ -39,7 +39,7 @@ email-validator = "^1.0"
 # dep of pydantic
 python-multipart = "^0.0.5"
 # faster loop for uvicorn
-uvloop = {version = "^0.14.0", optional = true}
+uvloop = {version = "^0.15.2", optional = true}
 
 [tool.poetry.extras]
 fast_loop = ["uvloop"]
@@ -48,7 +48,7 @@ fast_loop = ["uvloop"]
 # testing framework
 pytest = "^6.0"
 # fixer
-black = "19.10b0"
+black = "^21.6b0"
 # flake8 linter but with pyproject.toml support
 flake9 = "^3.8.3"
 # flake-8 plugins
@@ -78,10 +78,10 @@ isort = "^5.3"
 # typing linter
 mypy = "^0.910"
 # codium dependency for renaming
-rope = "^0.18.0"
+rope = "^0.19.0"
 # docs
-sphinx = "^3.2.0"
-recommonmark = "^0.6.0"
+sphinx = "^4.0.2"
+recommonmark = "^0.7.1"
 sphinx_rtd_theme = "^0.5.0"
 
 [tool.black]
