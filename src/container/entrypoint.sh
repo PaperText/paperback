@@ -12,8 +12,7 @@ modules = modules.rstrip("]")
 modules = modules.split(",")
 
 for module in modules:
-    module = module.strip()
-    print(module)
+    print(module.strip())
 ')
 
 # install modules

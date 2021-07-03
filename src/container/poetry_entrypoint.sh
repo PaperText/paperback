@@ -15,14 +15,13 @@ modules = modules.rstrip("]")
 modules = modules.split(",")
 
 for module in modules:
-    module = module.strip()
-    print(module)
+    print(module.strip())
 ')
 
 # install modules
 for module in $modules; do
     echo "$module"
-    poetry install "$module"
+    poetry install --no-dev "$module"
 done
 
 
