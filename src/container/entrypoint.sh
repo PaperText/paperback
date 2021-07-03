@@ -18,7 +18,7 @@ for module in modules:
 # install modules
 for module in $modules; do
     echo "$module"
-    poetry install "$module"
+    pip install "$module"
 done
 
 # install optional dependency of paperback
