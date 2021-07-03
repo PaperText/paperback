@@ -24,11 +24,12 @@ COPY README.md /root/paperback/
 COPY LICENSE /root/paperback/
 COPY pyproject.toml /root/paperback/
 COPY src/paperback /root/paperback/src/paperback
+COPY src/container/entrypoint.sh ./entrypoint.sh
+COPY src/container/poetry_entrypoint.sh ./poetry_entrypoint.sh
 
 WORKDIR /root/paperback
 RUN python3.8 -m pip install --upgrade pip
 RUN python3.8 -m pip install --upgrade setuptools
 RUN python3.8 -m pip install .
 
-COPY src/container/entrypoint.sh /root/entrypoint.sh
 CMD sh ~/entrypoint.sh
