@@ -20,16 +20,18 @@ RUN apt-get install --no-install-recommends -y \
 RUN apt-get clean
 RUN rm -rf /var/lib/apt/lists/*
 
-COPY README.md /root/paperback/
-COPY LICENSE /root/paperback/
-COPY pyproject.toml /root/paperback/
-COPY src/paperback /root/paperback/src/paperback
-COPY src/container/entrypoint.sh ./entrypoint.sh
-COPY src/container/poetry_entrypoint.sh ./poetry_entrypoint.sh
-
-WORKDIR /root/paperback
 RUN python3.8 -m pip install --upgrade pip
 RUN python3.8 -m pip install --upgrade setuptools
+
+WORKDIR /root/paperback
+
+COPY README.md                          /root/paperback/
+COPY LICENSE                            /root/paperback/
+COPY pyproject.toml                     /root/paperback/
+COPY src/paperback                      /root/paperback/src/paperback
+COPY src/container/entrypoint.sh        /root/entrypoint.sh
+COPY src/container/poetry_entrypoint.sh /root/poetry_entrypoint.sh
+
 RUN python3.8 -m pip install .
 
 CMD sh ~/entrypoint.sh
