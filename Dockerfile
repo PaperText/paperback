@@ -8,18 +8,14 @@ ENV MODULES="\
     git+https://gitlab.com/PaperText/papertext_docs \
 "
 
-ENV SSH_PRIVATE_KEY=""
-
 ENV PT__auth__hash__algo="argon2"
 ENV PT__log_level="INFO"
 
-RUN mkdir ~/.ssh
 RUN mkdir ~/.papertext
 
 RUN apt-get update
 RUN apt-get install --no-install-recommends -y \
     build-essential \
-    git \
     libmpc-dev
 RUN apt-get clean
 RUN rm -rf /var/lib/apt/lists/*
@@ -30,8 +26,9 @@ COPY pyproject.toml /root/paperback/
 COPY src/paperback /root/paperback/src/paperback
 
 WORKDIR /root/paperback
-RUN pip install --upgrade pip
-RUN pip install "."
+RUN python3.8 -m pip install --upgrade pip
+RUN python3.8 -m pip install --upgrade setuptools
+RUN python3.8 -m pip install .
 
 COPY src/container/entrypoint.sh /root/entrypoint.sh
 CMD sh ~/entrypoint.sh
