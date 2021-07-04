@@ -30,19 +30,17 @@ python = "^3.8"
 python-configuration = {extras = ["toml"], version = "^0.8.0"}
 # framework
 fastapi = "^0.65.2"
-# ASGI runner
-uvicorn = "^0.14.0"
-# dep of pydantic, allows for creation of type checked classes
-pydantic = "^1.4"
-# dep of pydantic
-email-validator = "^1.0"
-# dep of pydantic
+## ASGI runner for fastapi
+uvicorn = {extras = ["standard"], version = "^0.14.0"}
+## dep of fastapi, allows for creation of type checked classes
+pydantic = {extras = ["email"], version = "^1.8.2"}
+## dep of fastapi
 python-multipart = "^0.0.5"
-# faster loop for uvicorn
-uvloop = {version = "^0.15.2", optional = true}
+# extra for faster json
+orjson = {version = "^3.5.4", optional = true}
 
 [tool.poetry.extras]
-fast_loop = ["uvloop"]
+fast_json = ["orjson"]
 
 [tool.poetry.dev-dependencies]
 # testing framework

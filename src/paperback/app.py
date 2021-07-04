@@ -1,6 +1,22 @@
 from fastapi import FastAPI
+from starlette.responses import JSONResponse
+
+from typing import Any
 
 from .__version__ import __version__
+
+
+default_response_class: Any
+
+try:
+    from fastapi.responses import ORJSONResponse
+    default_response_class = ORJSONResponse
+except Exception:
+    pass
+    # maybe notify about optional dependency?
+
+default_response_class = JSONResponse
+
 
 api = FastAPI(
     title="PaperText backend [Paperback]",
@@ -26,4 +42,5 @@ api = FastAPI(
     ],
     docs_url="/documentation",
     redoc_url="/re_documentation",
+    default_response_class=default_response_class,
 )
