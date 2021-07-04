@@ -23,16 +23,14 @@ RUN rm -rf /var/lib/apt/lists/*
 RUN python3.8 -m pip install --upgrade pip
 RUN python3.8 -m pip install --upgrade setuptools
 
-WORKDIR /root/paperback
+WORKDIR /root
 
-COPY README.md                          /root/paperback/
-COPY LICENSE                            /root/paperback/
-COPY pyproject.toml                     /root/paperback/
-COPY src/paperback                      /root/paperback/src/paperback
+COPY README.md      ./paperback/
+COPY LICENSE        ./paperback/
+COPY pyproject.toml ./paperback/
+COPY src/paperback  ./paperback/src/paperback
 
-RUN python3.8 -m pip install .
+RUN python3.8 -m pip install ./paperback
 
-COPY src/container/entrypoint.sh        /root/entrypoint.sh
-COPY src/container/poetry_entrypoint.sh /root/poetry_entrypoint.sh
-
+COPY src/container/entrypoint.sh ./entrypoint.sh
 CMD sh ~/entrypoint.sh
