@@ -22,7 +22,7 @@ for module in $modules; do
 done
 
 # install optional dependency of paperback
-pip install uvloop
+pip install orjson
 
 # install optional dependencies of auth module
 pip install argon2-cffi gmpy2
