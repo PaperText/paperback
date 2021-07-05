@@ -27,12 +27,13 @@ def linkcode_resolve(domain: str, info: Dict[str, Any]) -> Optional[str]:
         if len(info["fullname"].split(".")) > 1:
             return None
         path: str = info["module"].replace(".", "/")
+        filename: str
         if info["fullname"] == "Base":
-            filename: str = "base.py"
+            filename = "base.py"
         else:
-            filename: str = info["fullname"].replace(
-                "Base", ""
-            ).lower() + ".py"
+            filename = (
+                info["fullname"].replace("Base", "").lower() + ".py"
+            )
         print(f"{gitlab_url}/-/tree/master/src/{path}/{filename}")
         return f"{gitlab_url}/-/tree/master/src/{path}/{filename}"
     return None

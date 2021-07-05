@@ -50,9 +50,8 @@ class App:
             self.logger.debug("created logging folder")
 
         self.logger.debug("configuring logger")
+        self.logger.removeHandler(tmp_stream_handler)
         self.setup_logging()
-        self.logger.handlers = []
-
         self.logger.info("initializing PaperBack app")
 
         self.api = api
@@ -85,7 +84,10 @@ class App:
             self.logger.info("created storage folder")
 
         self.default_config: Dict[str, Any] = {
-            "core": {"host": "127.0.0.1", "port": "7878",},
+            "core": {
+                "host": "127.0.0.1",
+                "port": "7878",
+            },
         }
         self.classes: MutableMapping[str, Any] = {}
         self.modules: MutableMapping[str, Any] = {}
@@ -109,19 +111,21 @@ class App:
             style="{",
         )
 
+        file_handler = logging.handlers.RotatingFileHandler(
+            self.logs_dir / "root.log",
+            maxBytes=1024 ** 3,
+            backupCount=20,
+        )
+        file_handler.setFormatter(text_formatter)
+        file_handler.setLevel("DEBUG")
+        root_logger.addHandler(file_handler)
+
         console_formatter = ColourizedFormatter(
             "{levelprefix:<8} @ {name:<10} : {message}",
             "%Y-%m-%d %H:%M:%S",
             style="{",
             use_colors=True,
         )
-
-        file_handler = logging.handlers.RotatingFileHandler(
-            self.logs_dir / "root.log", maxBytes=1024 ** 3, backupCount=20,
-        )
-        file_handler.setFormatter(text_formatter)
-        file_handler.setLevel("DEBUG")
-        root_logger.addHandler(file_handler)
 
         console_handler = logging.StreamHandler()
         console_handler.setFormatter(console_formatter)
@@ -269,7 +273,8 @@ class App:
                 root_api.include_router(router)
             else:
                 root_api.include_router(
-                    router, prefix=f"/{name}",
+                    router,
+                    prefix=f"/{name}",
                 )
 
     def setup(self):

@@ -157,7 +157,10 @@ class BaseDocs(Base, metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    async def read_doc(self, doc_id: str,) -> Dict[str, Any]:
+    async def read_doc(
+        self,
+        doc_id: str,
+    ) -> Dict[str, Any]:
         """
         read document with specified id
 
@@ -224,7 +227,8 @@ class BaseDocs(Base, metaclass=ABCMeta):
 
     @abstractmethod
     async def delete_doc(
-        self, doc_id: str,
+        self,
+        doc_id: str,
     ):
         """
         delete document with specified id
@@ -281,7 +285,10 @@ class BaseDocs(Base, metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    async def read_corps(self, requester_id: str,) -> List[Dict[str, Any]]:
+    async def read_corps(
+        self,
+        requester_id: str,
+    ) -> List[Dict[str, Any]]:
         """
         read corpuses of specified user
 
@@ -297,7 +304,10 @@ class BaseDocs(Base, metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    async def read_corp(self, corp_id: str,) -> Dict[str, Any]:
+    async def read_corp(
+        self,
+        corp_id: str,
+    ) -> Dict[str, Any]:
         """
         read corpus with specified id
 
@@ -375,7 +385,9 @@ class BaseDocs(Base, metaclass=ABCMeta):
             )
 
         @router.get(
-            "/docs", tags=["docs_module", "docs"], response_model=ReadDocs,
+            "/docs",
+            tags=["docs_module", "docs"],
+            response_model=ReadDocs,
         )
         async def read_docs(
             contains: Optional[str] = None,
@@ -410,13 +422,17 @@ class BaseDocs(Base, metaclass=ABCMeta):
             return ReadDoc(**(await self.read_doc(doc_id)))
 
         @router.put(
-            "/docs/{doc_id}", tags=["docs_module", "docs"],
+            "/docs/{doc_id}",
+            tags=["docs_module", "docs"],
         )
         async def update_doc(doc_id: str, doc: CreateDoc):
             """
             updates document with given id if it exists
             """
-            return await self.update_doc(doc_id=doc_id, **dict(doc),)
+            return await self.update_doc(
+                doc_id=doc_id,
+                **dict(doc),
+            )
 
         @router.delete("/docs/{doc_id}", tags=["docs_module", "docs"])
         async def delete_doc(doc_id: str):
@@ -439,7 +455,9 @@ class BaseDocs(Base, metaclass=ABCMeta):
             )
 
         @router.get(
-            "/corps", tags=["docs_module", "corps"], response_model=ReadCorps,
+            "/corps",
+            tags=["docs_module", "corps"],
+            response_model=ReadCorps,
         )
         async def read_corps(
             requester: UserInfo = Depends(token_tester(greater_or_equal=0)),
@@ -466,16 +484,21 @@ class BaseDocs(Base, metaclass=ABCMeta):
             return ReadCorp(**(await self.read_corp(corp_id=corp_id)))
 
         @router.put(
-            "/corps/{corp_id}", tags=["docs_module", "corps"],
+            "/corps/{corp_id}",
+            tags=["docs_module", "corps"],
         )
         async def update_corp(corp_id: str, corp: CreateCorp):
             """
             updates corpus with given id if it exists
             """
-            return await self.update_corp(corp_id=corp_id, **dict(corp),)
+            return await self.update_corp(
+                corp_id=corp_id,
+                **dict(corp),
+            )
 
         @router.delete(
-            "/corps/{corp_id}", tags=["docs_module", "corps"],
+            "/corps/{corp_id}",
+            tags=["docs_module", "corps"],
         )
         async def delete_corp(corp_id: str):
             """
@@ -492,7 +515,9 @@ class BaseDocs(Base, metaclass=ABCMeta):
             return None
 
         @router.get(
-            "/dicts", tags=["docs_module", "dict"], response_model=ReadDicts,
+            "/dicts",
+            tags=["docs_module", "dict"],
+            response_model=ReadDicts,
         )
         async def read_dicts() -> ReadDicts:
             """
@@ -512,7 +537,8 @@ class BaseDocs(Base, metaclass=ABCMeta):
             return None
 
         @router.put(
-            "/dicts/{dict_id}", tags=["docs_module", "dict"],
+            "/dicts/{dict_id}",
+            tags=["docs_module", "dict"],
         )
         async def update_dict(dict_id: str, dict: CreateDict):
             """
@@ -521,7 +547,8 @@ class BaseDocs(Base, metaclass=ABCMeta):
             return None
 
         @router.delete(
-            "/dicts/{dict_id}", tags=["docs_module", "dict"],
+            "/dicts/{dict_id}",
+            tags=["docs_module", "dict"],
         )
         async def delete_dict(dict_id: str):
             """

@@ -118,9 +118,11 @@ class BaseAuth(Base, metaclass=ABCMeta):
         def return_function(x_authentication: str = Header(...)) -> UserInfo:
             # TODO: change to this in python3.9
             # token: str = x_authentication.removeprefix("Bearer: ")
-            token: str = x_authentication[8:] if x_authentication.startswith(
-                "Bearer: "
-            ) else x_authentication
+            token: str = (
+                x_authentication[8:]
+                if x_authentication.startswith("Bearer: ")
+                else x_authentication
+            )
 
             user: UserInfo = UserInfo(**self.token2user(token))
             if greater_or_equal is not None:
@@ -157,7 +159,9 @@ class BaseAuth(Base, metaclass=ABCMeta):
 
     @abstractmethod
     def __init__(
-        self, cfg: SimpleNamespace, storage_dir: Path,
+        self,
+        cfg: SimpleNamespace,
+        storage_dir: Path,
     ):
         raise NotImplementedError
 
@@ -424,7 +428,10 @@ class BaseAuth(Base, metaclass=ABCMeta):
 
     @abstractmethod
     async def update_user_password(
-        self, user_id: str, old_password: str, new_password: str,
+        self,
+        user_id: str,
+        old_password: str,
+        new_password: str,
     ) -> Dict[str, Union[str, int]]:
         """
         Updates user with given user_id
@@ -494,7 +501,9 @@ class BaseAuth(Base, metaclass=ABCMeta):
 
     @abstractmethod
     async def create_org(
-        self, organisation_id: str, organisation_name: Optional[str] = None,
+        self,
+        organisation_id: str,
+        organisation_name: Optional[str] = None,
     ) -> Dict[str, Union[str, List[str]]]:
         """
         creates organisation with given name and title
@@ -672,7 +681,10 @@ class BaseAuth(Base, metaclass=ABCMeta):
         """
         raise NotImplementedError
 
-    def create_router(self, token_tester: TokenTester,) -> APIRouter:
+    def create_router(
+        self,
+        token_tester: TokenTester,
+    ) -> APIRouter:
         """
         creates router
 
@@ -695,7 +707,9 @@ class BaseAuth(Base, metaclass=ABCMeta):
 
         # signin and signout
         @router.post(
-            "/signin", tags=["auth_module", "auth"], response_model=SignInRes,
+            "/signin",
+            tags=["auth_module", "auth"],
+            response_model=SignInRes,
         )
         async def signin(
             credentials: Credentials,
@@ -715,9 +729,14 @@ class BaseAuth(Base, metaclass=ABCMeta):
             )
 
         @router.post(
-            "/signup", tags=["auth_module", "auth"], response_model=SignInRes,
+            "/signup",
+            tags=["auth_module", "auth"],
+            response_model=SignInRes,
         )
-        async def signup(user: NewInvitedUser, request: Request,) -> SignInRes:
+        async def signup(
+            user: NewInvitedUser,
+            request: Request,
+        ) -> SignInRes:
             """
             creates new user with provided
                 user_id, password, name and invitation code
@@ -1058,7 +1077,8 @@ class BaseAuth(Base, metaclass=ABCMeta):
             dependencies=[Depends(token_tester(greater_or_equal=2))],
         )
         async def update_org_organisation_id(
-            organisation_id: str, new_org_id: OrgUpdateOrgId,
+            organisation_id: str,
+            new_org_id: OrgUpdateOrgId,
         ):
             """
             changes org_id of organisation to new_org_id
@@ -1074,7 +1094,8 @@ class BaseAuth(Base, metaclass=ABCMeta):
             dependencies=[Depends(token_tester(greater_or_equal=2))],
         )
         async def update_org_name(
-            org_id: str, new_name: OrgUpdateName,
+            org_id: str,
+            new_name: OrgUpdateName,
         ):
             """
             changes name of organisation with given org_id to new_name
@@ -1089,7 +1110,8 @@ class BaseAuth(Base, metaclass=ABCMeta):
             dependencies=[Depends(token_tester(greater_or_equal=3))],
         )
         async def create_user_in_org(
-            organisation_id: str, user: NewUser,
+            organisation_id: str,
+            user: NewUser,
         ):
             """
             creates user with provided user_id, password and user_name
@@ -1101,7 +1123,9 @@ class BaseAuth(Base, metaclass=ABCMeta):
             * created users loa is 1
             """
             return await self.create_user(
-                **dict(user), level_of_access=1, member_of=organisation_id,
+                **dict(user),
+                level_of_access=1,
+                member_of=organisation_id,
             )
 
         @router.post(
@@ -1181,7 +1205,8 @@ class BaseAuth(Base, metaclass=ABCMeta):
         # +---------+
 
         @router.post(
-            "/invites", tags=["auth_module", "invite", "access_level_1"],
+            "/invites",
+            tags=["auth_module", "invite", "access_level_1"],
         )
         async def create_invite_code(
             invite_code: MinimalInviteCode,
@@ -1257,7 +1282,9 @@ class BaseAuth(Base, metaclass=ABCMeta):
             tags=["auth_module", "invite", "access_level_1"],
             response_model=InviteCode,
         )
-        async def read_invite_code(invite_code: str,) -> InviteCode:
+        async def read_invite_code(
+            invite_code: str,
+        ) -> InviteCode:
             """
             acquires info about invite code with given code
             """

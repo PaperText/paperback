@@ -60,7 +60,10 @@ class Base(metaclass=ABCMeta):
         pass
 
     @abstractmethod
-    def create_router(self, token_tester: TokenTester,) -> APIRouter:
+    def create_router(
+        self,
+        token_tester: TokenTester,
+    ) -> APIRouter:
         """
         creates Router to mount to the main app
 

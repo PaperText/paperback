@@ -45,7 +45,10 @@ class Credentials(BaseModel):
 
     class Config:
         schema_extra = {
-            "example": {"identifier": "user_id", "password": "password",}
+            "example": {
+                "identifier": "user_id",
+                "password": "password",
+            }
         }
 
 
@@ -252,7 +255,10 @@ class ReadCorps(BaseModel):
     class Config:
         schema_extra = {
             "example": [
-                {"corp_id": "corp_1", "corp_name": "Первый корпус",},
+                {
+                    "corp_id": "corp_1",
+                    "corp_name": "Первый корпус",
+                },
                 {
                     "corp_id": "pushkin_1",
                     "corp_name": "Корпус сочинений Пушкина",
@@ -291,7 +297,8 @@ class Entity(BaseModel):
 
 class AnalyzeReq(BaseModel):
     entity_ids: List[Entity] = Field(
-        ..., title="list of documents and corpuses to analyze",
+        ...,
+        title="list of documents and corpuses to analyze",
     )
 
 
