@@ -747,6 +747,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
             """
             removes all tokens, associated with tokens user
             """
+            raise NotImplementedError
 
         # tokens
         @router.get("/tokens", tags=["auth_module", "token"])
