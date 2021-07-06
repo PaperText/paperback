@@ -81,9 +81,9 @@ class BaseDocs(Base, metaclass=ABCMeta):
         creator_id: str,
         creator_type: str,
         doc_id: str,
-        parent_corp_id: str,
         text: str,
         private: bool = False,
+        parent_corp_id: Optional[str] = None,
         name: Optional[str] = None,
         has_access: Optional[List[str]] = None,
         author: Optional[str] = None,
@@ -101,12 +101,12 @@ class BaseDocs(Base, metaclass=ABCMeta):
             type of user, who issued request for creation
         doc_id: str
             id of corpus to read
-        parent_corp_id: str, optional
-            new parent corpus, specified by it's id. default is None
         text : str
             text of the document
         private: bool, optional
             new private info. default is False
+        parent_corp_id: str, optional
+            new parent corpus, specified by it's id. default is None
         name: str, optional
             new name of corpus. default is None
         has_access: List[str], optional

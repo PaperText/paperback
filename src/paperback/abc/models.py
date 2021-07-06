@@ -188,14 +188,13 @@ class Owner(BaseModel):
 
 class CreateDoc(BaseModel):
     doc_id: str
-    name: Optional[str] = None
-    parent_corp_id: str
     text: str
 
     private: bool = False
+    name: Optional[str] = None
+    parent_corp_id: Optional[str] = None
     has_access: Optional[List[str]] = None
 
-    author: Optional[str] = None
     created: Optional[datetime] = None
     tags: Optional[List[str]] = None
 
