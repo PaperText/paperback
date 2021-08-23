@@ -26,6 +26,3 @@ pip install orjson
 
 # install optional dependencies of auth module
 pip install argon2-cffi gmpy2
-
-# launch paperback
-paperback

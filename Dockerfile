@@ -29,8 +29,12 @@ COPY README.md      ./paperback/
 COPY LICENSE        ./paperback/
 COPY pyproject.toml ./paperback/
 COPY src/paperback  ./paperback/src/paperback
-
 RUN python3.8 -m pip install ./paperback
 
-COPY src/container/entrypoint.sh ./entrypoint.sh
-CMD sh ~/entrypoint.sh
+COPY src/container/install_deps.sh ./install_deps.sh
+# RUN ./install_deps.sh
+
+# COPY src/container/entrypoint.sh ./entrypoint.sh
+# CMD sh ~/entrypoint.sh
+
+CMD ./install_deps.sh && paperback
