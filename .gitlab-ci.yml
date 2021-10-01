@@ -9,9 +9,9 @@ stages:
   - deploy
 
 conteinerize:
+  stage: build
   variables:
     STORAGE_DRIVER: vfs
-  stage: build
   ##
   ## use buildah instead of dind to build containers
   ##
