@@ -1,5 +1,5 @@
 variables:
-  GIT_DEPTH: 1
+  GIT_DEPTH: "10"
   GIT_SUBMODULE_STRATEGY: none
   GROUP_NAME: papertext
   PROJECT_NAME: paperback
@@ -18,7 +18,7 @@ conteinerize:
   before_script:
     - echo $CONTAINER_REGISTRY_PASS | buildah login -u $CONTAINER_REGISTRY_USER --password-stdin $CONTAINER_REGISTRY_LINK
   script:
-    - buildah pull $CONTAINER_REGISTRY_LINK/$GROUP_NAME/$PROJECT_NAME:latest
+    - STORAGE_DRIVER=vfs buildah pull $CONTAINER_REGISTRY_LINK/$GROUP_NAME/$PROJECT_NAME:latest
     - buildah bud \
         --cache-from$CONTAINER_REGISTRY_LINK/$GROUP_NAME/$PROJECT_NAME:latest \
         --tag $CONTAINER_REGISTRY_LINK/$GROUP_NAME/$PROJECT_NAME:latest \
