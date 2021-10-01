@@ -16,7 +16,7 @@ conteinerize:
   image:
     name: registry.gitlab.com/unrndm/buildah-in-container:latest
   before_script:
-    - echo $CONTAINER_REGISTRY_PASS | buildah login $CONTAINER_REGISTRY_LINK -u $CONTAINER_REGISTRY_USER --password-stdin
+    - echo $CONTAINER_REGISTRY_PASS | buildah login -u $CONTAINER_REGISTRY_USER --password-stdin $CONTAINER_REGISTRY_LINK
   script:
     - buildah pull $CONTAINER_REGISTRY_LINK/$GROUP_NAME/$PROJECT_NAME:latest
     - buildah bud \
