@@ -9,6 +9,8 @@ stages:
   - deploy
 
 conteinerize:
+  variables:
+    STORAGE_DRIVER: vfs
   stage: build
   ##
   ## use buildah instead of dind to build containers
@@ -18,7 +20,7 @@ conteinerize:
   before_script:
     - echo $CONTAINER_REGISTRY_PASS | buildah login -u $CONTAINER_REGISTRY_USER --password-stdin $CONTAINER_REGISTRY_LINK
   script:
-    - STORAGE_DRIVER=vfs buildah pull $CONTAINER_REGISTRY_LINK/$GROUP_NAME/$PROJECT_NAME:latest
+    - buildah pull $CONTAINER_REGISTRY_LINK/$GROUP_NAME/$PROJECT_NAME:latest
     - buildah bud \
         --cache-from$CONTAINER_REGISTRY_LINK/$GROUP_NAME/$PROJECT_NAME:latest \
         --tag $CONTAINER_REGISTRY_LINK/$GROUP_NAME/$PROJECT_NAME:latest \
