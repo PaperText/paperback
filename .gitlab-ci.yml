@@ -12,6 +12,8 @@ conteinerize:
   stage: build
   variables:
     STORAGE_DRIVER: vfs
+    BUILDAH_FORMAT: docker
+    BUILDAH_ISOLATION: rootless
   ##
   ## use buildah instead of dind to build containers
   ##
