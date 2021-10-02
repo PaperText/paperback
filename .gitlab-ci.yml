@@ -23,8 +23,7 @@ conteinerize:
     - echo $CONTAINER_REGISTRY_PASS | buildah login -u $CONTAINER_REGISTRY_USER --password-stdin $CONTAINER_REGISTRY_LINK
   script:
     - buildah pull $CONTAINER_REGISTRY_LINK/$GROUP_NAME/$PROJECT_NAME:latest || true
-    - |
-      buildah bud \
+    - buildah bud \
         --cache-from $CONTAINER_REGISTRY_LINK/$GROUP_NAME/$PROJECT_NAME:latest \
         --tag $CONTAINER_REGISTRY_LINK/$GROUP_NAME/$PROJECT_NAME:latest \
         --tag $CONTAINER_REGISTRY_LINK/$GROUP_NAME/$PROJECT_NAME:$CI_COMMIT_SHA \
