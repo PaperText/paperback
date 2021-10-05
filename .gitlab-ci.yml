@@ -23,15 +23,15 @@ conteinerize:
     - echo $CONTAINER_REGISTRY_PASS | buildah login -u $CONTAINER_REGISTRY_USER --password-stdin $CONTAINER_REGISTRY_LINK
   script:
     # builda doesn't currently support cache-from, uncomment and remove next command when added
-    # - buildah pull $CONTAINER_REGISTRY_LINK/$GROUP_NAME/$PROJECT_NAME:latest || true
+    # - buildah pull registry.gitlab.com/papertext/paperback:latest || true
     # - buildah bud \
-    #   --cache-from $CONTAINER_REGISTRY_LINK/$GROUP_NAME/$PROJECT_NAME:latest \
-    #   --tag $CONTAINER_REGISTRY_LINK/$GROUP_NAME/$PROJECT_NAME:latest \
-    #   --tag $CONTAINER_REGISTRY_LINK/$GROUP_NAME/$PROJECT_NAME:$CI_COMMIT_SHA \
+    #   --cache-from registry.gitlab.com/papertext/paperback:latest \
+    #   --tag registry.gitlab.com/papertext/paperback:latest \
+    #   --tag registry.gitlab.com/papertext/paperback:$CI_COMMIT_SHA \
     #   .
-    - buildah bud --tag $CONTAINER_REGISTRY_LINK/$GROUP_NAME/$PROJECT_NAME:latest --tag $CONTAINER_REGISTRY_LINK/$GROUP_NAME/$PROJECT_NAME:$CI_COMMIT_SHA .
-    - buildah push $CONTAINER_REGISTRY_LINK/$GROUP_NAME/$PROJECT_NAME:latest
-    - buildah push $CONTAINER_REGISTRY_LINK/$GROUP_NAME/$PROJECT_NAME:$CI_COMMIT_SHA
+    - buildah bud --tag registry.gitlab.com/papertext/paperback:latest --tag registry.gitlab.com/papertext/paperback:$CI_COMMIT_SHA .
+    - buildah push registry.gitlab.com/papertext/paperback:latest
+    - buildah push registry.gitlab.com/papertext/paperback:$CI_COMMIT_SHA
 
 deploy prod:
   stage: deploy
