@@ -127,6 +127,7 @@ class BaseDocs(Base, metaclass=ABCMeta):
     @abstractmethod
     async def read_docs(
         self,
+        requester_id: str,
         contains: Optional[str] = None,
         author: Optional[str] = None,
         created_before: Optional[datetime] = None,
@@ -390,6 +391,7 @@ class BaseDocs(Base, metaclass=ABCMeta):
             response_model=ReadDocs,
         )
         async def read_docs(
+            requester: UserInfo = Depends(token_tester(greater_or_equal=0)),
             contains: Optional[str] = None,
             author: Optional[str] = None,
             created_before: Optional[datetime] = None,
@@ -400,6 +402,7 @@ class BaseDocs(Base, metaclass=ABCMeta):
             returns list of all documents, accessible to user
             """
             raw_docs: List[Dict[str, Any]] = await self.read_docs(
+                requester_id=requester.user_id,
                 contains=contains,
                 author=author,
                 created_before=created_before,
