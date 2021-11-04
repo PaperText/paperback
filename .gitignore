@@ -1,6 +1,7 @@
 # config
 .vscode/
 .idea/
+.python-version
 
 # cache
 **/__pycache__/
