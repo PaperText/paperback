@@ -1,7 +1,9 @@
 PaperBack
 =========
+
 [![Documentation Status][docs_badge]][docs_link]
-[![Docker Repository on Quay][container_badge]][container_link]
+
+[comment]: <> (TODO: add container registry link)
 
 [![Checked with mypy][mypy_badge]](http://mypy-lang.org/)
 [![Code style: black][black_badge]](https://github.com/psf/black)
@@ -19,19 +21,15 @@ Features
 Usage
 -----
 1. Install `paperback` with any `auth` and `docs` modules.
-    You can use standard implementation, 
-    i.e. [`papertext_auth`]() and [`papertext_docs`]().
-2. Install any miscellaneous modules you want.
-3. Run paperback with `paperback run --create-config`\
-Note 📓:\
-    You don't need to always run paperback with `--create-config` flag.
-    After first startup you can just use `paperback run`.
-4. Optionally, configure paperback at `~/.paperback/config.toml`
+    You can use standard implementation: [`papertext_auth`]() and [`papertext_docs`]().
+2. Install any other module you want.
+3. Run paperback with `paperback run`
 
 Container
 ---------
-Paperback is also available as docker-compliant container.
-You can read more in [docs]()
+Paperback is also available as a container. You can read more in [docs](docs_link)
+\
+example: `docker build -f ./src/container/Containerfile .`
 
 Contribute
 ----------
@@ -41,7 +39,7 @@ Contribute
 Support
 -------
 If you are having issues, please let us know through
-[issue tracker](https://github.com/PaperText/paperback/issues).
+    [issue tracker](https://github.com/PaperText/paperback/issues).
 
 License
 -------
@@ -51,8 +49,8 @@ The project is licensed under the MIT license.
 [docs_badge]: https://readthedocs.org/projects/paperback/badge/?version=latest&style=flat-square
 [docs_link]: https://paperback.readthedocs.io/en/latest/?badge=latest
 
-[container_badge]: https://quay.io/repository/papertext/paperback/status?style=flat-square
-[container_link]: https://quay.io/repository/papertext/paperback
+[container_badge]: <>
+[container_link]: <>
 
 [mypy_badge]: https://img.shields.io/badge/mypy-checked-2a6db2?style=flat-square
 [black_badge]: https://img.shields.io/badge/code%20style-black-000000.svg?style=flat-square
