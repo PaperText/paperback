@@ -13,10 +13,8 @@ Features
 --------
 - Uses modern async typed python framework [fastapi](https://fastapi.tiangolo.com/)
 - Manages package in `pyproject.toml` with [poetry](https://python-poetry.org/)
-- Implements module system with 3 types of modules 
-    managed by python's package manager `pip`
-- Has a multilayer configuration system,
-    capable of picking up environment variables with separators
+- Implements modular system with 3 types of modules managed by pythons entrypoints
+- Has a multilayer configuration system, capable of picking up environment variables and config files
 
 Usage
 -----
