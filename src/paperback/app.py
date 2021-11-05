@@ -5,7 +5,7 @@ from starlette.responses import JSONResponse
 
 from .__version__ import __version__
 
-default_response_class: Any
+default_response_class: Any = JSONResponse
 
 try:
     from fastapi.responses import ORJSONResponse
@@ -14,8 +14,6 @@ try:
 except Exception:
     pass
     # maybe notify about optional dependency?
-
-default_response_class = JSONResponse
 
 
 api = FastAPI(
