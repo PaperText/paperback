@@ -27,7 +27,7 @@ Usage
 
 Container
 ---------
-Paperback is also available as a container. You can read more in [docs](docs_link)
+Paperback is also available as a container. You can read more in [docs][docs_link]
 \
 example: `docker build -f ./src/container/Containerfile .`
 
