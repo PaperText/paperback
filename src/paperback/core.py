@@ -17,11 +17,11 @@ from fastapi import FastAPI, Request
 from pkg_resources import iter_entry_points
 from uvicorn.logging import ColourizedFormatter
 
-from .__version__ import __version__
-from .abc import BaseAuth, BaseDocs, BaseMisc
-from .app import api
-from .exceptions import DuplicateModuleError, InheritanceError
-from .util import async_lib_name
+from paperback import __version__
+from paperback.abc import BaseAuth, BaseDocs, BaseMisc
+from paperback.app import api
+from paperback.exceptions import DuplicateModuleError, InheritanceError
+from paperback.util import async_lib_name
 
 
 class App:
@@ -299,4 +299,22 @@ class App:
             log_level=self.log_level.lower(),
             loop=async_lib_name,
             proxy_headers=True,
+        )
+
+    def dev(self):
+        self.setup()
+
+        uvicorn_log_config = uvicorn.config.LOGGING_CONFIG
+        del uvicorn_log_config["loggers"]
+
+        self.logger.info("starting uvicorn in development mode with %s loop", async_lib_name)
+        uvicorn.run(
+            "paperback.app:api",
+            host=self.cfg.core.host,
+            port=int(self.cfg.core.port),
+            log_config=uvicorn_log_config,
+            log_level=self.log_level.lower(),
+            loop=async_lib_name,
+            proxy_headers=True,
+            reload=True,
         )

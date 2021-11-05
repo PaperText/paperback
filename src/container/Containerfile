@@ -37,4 +37,4 @@ COPY src/container/install_deps.sh ./install_deps.sh
 # COPY src/container/entrypoint.sh ./entrypoint.sh
 # CMD sh ~/entrypoint.sh
 
-CMD ./install_deps.sh && paperback
+CMD ./install_deps.sh && paperback run

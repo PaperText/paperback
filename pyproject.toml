@@ -18,7 +18,7 @@ include = ["LICENSE", "pyproject.toml"]
 "Issue Tracker" = "https://gitlab.com/papertext/paperback/-/issues"
 
 [tool.poetry.scripts]
-paperback = "paperback.__main__:cli"
+paperback = "paperback.cli:cli"
 fix = "paperback.scripts:Scripts.fix"
 lint = "paperback.scripts:Scripts.lint"
 build = "paperback.scripts:Scripts.docs_build"
@@ -26,6 +26,8 @@ clean = "paperback.scripts:Scripts.docs_clean"
 
 [tool.poetry.dependencies]
 python = "^3.8"
+# cli, locked version for cellery
+click = "^7.0.0"
 # read configs from multiple sources
 python-configuration = {extras = ["toml"], version = "^0.8.0"}
 # framework
@@ -38,6 +40,7 @@ pydantic = {extras = ["email"], version = "^1.8.2"}
 python-multipart = "^0.0.5"
 # extra for faster json
 orjson = {version = "^3.5.4", optional = true}
+
 
 [tool.poetry.extras]
 fast_json = ["orjson"]
