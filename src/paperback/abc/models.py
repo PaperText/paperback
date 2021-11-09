@@ -1,10 +1,11 @@
 from __future__ import annotations
 
 import re
+from pydantic.generics import GenericModel
 import uuid
 from datetime import datetime
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional, Protocol, Union
+from typing import Any, Callable, Dict, List, Optional, Protocol, Union, TypeVar, Generic
 
 from pydantic import BaseModel, EmailStr, Field, validator
 
@@ -186,9 +187,13 @@ class Owner(BaseModel):
     id: str
 
 
-class CreateDoc(BaseModel):
+Analyzers = TypeVar("Analyzers")
+
+
+class CreateDoc(GenericModel, Generic[Analyzers]):
     doc_id: str
     text: str
+    analyzer_id: Optional[Analyzers] = None
 
     private: bool = False
     name: Optional[str] = None

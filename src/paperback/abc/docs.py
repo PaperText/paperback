@@ -2,7 +2,8 @@ from abc import ABCMeta, abstractmethod
 from datetime import datetime
 from pathlib import Path
 from types import SimpleNamespace
-from typing import Any, Callable, ClassVar, Dict, List, Optional
+from typing import Any, Callable, ClassVar, Dict, List, Optional, Final
+from enum import Enum
 
 from fastapi import APIRouter, Body, Depends, Query
 
@@ -53,7 +54,7 @@ class BaseDocs(Base, metaclass=ABCMeta):
         describes if Auth class will be provide to __init__ call
     """
 
-    TYPE: ClassVar[str] = "DOCS"
+    TYPE: Final = "DOCS"
 
     @abstractmethod
     def __init__(
@@ -82,6 +83,7 @@ class BaseDocs(Base, metaclass=ABCMeta):
         creator_type: str,
         doc_id: str,
         text: str,
+        analyzer_id: Optional["BaseDocs.AnalyzerEnum"] = None,
         private: bool = False,
         parent_corp_id: Optional[str] = None,
         name: Optional[str] = None,
@@ -103,6 +105,8 @@ class BaseDocs(Base, metaclass=ABCMeta):
             id of corpus to read
         text : str
             text of the document
+        analyzer_id : AnalyzerEnum, optional
+            id of analyzer to use
         private: bool, optional
             new private info. default is False
         parent_corp_id: str, optional
@@ -375,7 +379,7 @@ class BaseDocs(Base, metaclass=ABCMeta):
         # document access
         @router.post("/docs", tags=["docs_module", "docs"])
         async def create_doc(
-            doc: CreateDoc,
+            doc: CreateDoc[str],
             requester: UserInfo = Depends(token_tester(greater_or_equal=0)),
         ):
             """
