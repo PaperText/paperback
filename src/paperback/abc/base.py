@@ -79,7 +79,7 @@ class Base(metaclass=ABCMeta):
             "Unsupported class inheritance: cant inherit from `Base`"
         )
 
-    def add_routes(self, router: APIRouter):
+    def add_routes(self, router: APIRouter, token_tester: TokenTester):
         """
         function to add routes to predefined router instance
 
@@ -87,5 +87,10 @@ class Base(metaclass=ABCMeta):
         ----------
         router: APIRouter
             instance of APIRouter to add custom routes without redefining predefined self.create_router
+        token_tester: TokenTester
+
+        Notes
+        -----
+        might remove later, can be replicated with create_router and call to parent class with these arguments
         """
         pass
