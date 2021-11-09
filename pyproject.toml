@@ -88,11 +88,9 @@ sphinx_rtd_theme = "^0.5.0"
 
 [tool.black]
 target-version = ['py38']
-line_length = 79
 
 [tool.flake8]
 exclude = ["__pycahce__"]
-max-line-length = 79
 ignore = [
   # line length error
   "E501",
@@ -106,7 +104,6 @@ docstring-convention="numpy"
 
 [tool.isort]
 profile="black"
-line_length=79
 py_version="38"
 color_output=true
 skip_gitignore=true
