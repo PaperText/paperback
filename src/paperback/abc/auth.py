@@ -1,7 +1,7 @@
 from abc import ABCMeta, abstractmethod
 from pathlib import Path
 from types import SimpleNamespace
-from typing import Any, Callable, ClassVar, Dict, List, Optional, Union
+from typing import Any, Callable, ClassVar, Dict, List, Optional, Union, Final
 
 from fastapi import (
     APIRouter,
@@ -57,7 +57,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
         describes if directory for storage will be provide to __init__ call
     """
 
-    TYPE: ClassVar[str] = "AUTH"
+    TYPE: Final = "AUTH"
 
     public_org_id: str = "public"
 

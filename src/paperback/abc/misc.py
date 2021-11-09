@@ -1,7 +1,7 @@
 from abc import ABCMeta, abstractmethod
 from pathlib import Path
 from types import SimpleNamespace
-from typing import ClassVar, Dict, Optional
+from typing import ClassVar, Dict, Optional, Final
 
 from . import Base, BaseAuth, BaseDocs
 
@@ -24,7 +24,7 @@ class BaseMisc(Base, metaclass=ABCMeta):
         weather docs will be provided to init
     """
 
-    TYPE: ClassVar[Optional[str]] = "MISC"
+    TYPE: Final = "MISC"
     requires_auth: ClassVar[Optional[bool]]
     requires_docs: ClassVar[Optional[bool]]
 
