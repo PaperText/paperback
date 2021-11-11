@@ -1,7 +1,7 @@
 version: 2
 
 sphinx:
-  configuration: src/paperback_docs/conf.py
+  configuration: src/documentation/conf.py
 
 formats: all
 
@@ -10,4 +10,4 @@ python:
   install:
       - method: pip
         path: .
-      - requirements: src/paperback_docs/requirments.txt
+      - requirements: src/documentation/requirments.txt

@@ -8,7 +8,7 @@ cur_path = Path(getcwd()).resolve()
 docs_path = cur_path / "docs"
 docs_path = docs_path.resolve()
 
-docs_source = cur_path / "src" / "paperback_docs"
+docs_source = cur_path / "src" / "documentation"
 docs_source = docs_source.resolve()
 
 docs_dest = cur_path / "docs"
