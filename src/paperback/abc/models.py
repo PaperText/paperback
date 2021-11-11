@@ -1,13 +1,23 @@
 from __future__ import annotations
 
 import re
-from pydantic.generics import GenericModel
 import uuid
 from datetime import datetime
 from enum import Enum
-from typing import Any, Callable, Dict, List, Optional, Protocol, Union, TypeVar, Generic
+from typing import (
+    Any,
+    Callable,
+    Dict,
+    Generic,
+    List,
+    Optional,
+    Protocol,
+    TypeVar,
+    Union,
+)
 
 from pydantic import BaseModel, EmailStr, Field, validator
+from pydantic.generics import GenericModel
 
 
 def custom_charset(cls: Any, value: str) -> str:
@@ -31,9 +41,7 @@ class TokenRes(BaseModel):
     issued_by: str = Field(..., description="id of user, who issued a token")
     location: str
     device: str
-    issued_at: str = Field(
-        ..., description="iso formatted datetime of token creation"
-    )
+    issued_at: str = Field(..., description="iso formatted datetime of token creation")
 
 
 class TokenListRes(BaseModel):
@@ -59,9 +67,7 @@ class NewUser(BaseModel):
     password: str
     user_name: Optional[str] = None
 
-    _validate_user_id_1 = validator("user_id", allow_reuse=True)(
-        custom_charset
-    )
+    _validate_user_id_1 = validator("user_id", allow_reuse=True)(custom_charset)
 
 
 class NewInvitedUser(NewUser):
@@ -75,9 +81,7 @@ class UserInfo(BaseModel):
     member_of: Optional[str]
     level_of_access: int = 0
 
-    _validate_user_id_1 = validator("user_id", allow_reuse=True)(
-        custom_charset
-    )
+    _validate_user_id_1 = validator("user_id", allow_reuse=True)(custom_charset)
 
 
 # class FullUserInfo(Credentials, UserInfo):
@@ -91,9 +95,7 @@ class UserListResponse(BaseModel):
 class UserUpdateUserId(BaseModel):
     new_user_id: str
 
-    _validate_new_user_id_1 = validator("new_user_id", allow_reuse=True)(
-        custom_charset
-    )
+    _validate_new_user_id_1 = validator("new_user_id", allow_reuse=True)(custom_charset)
 
 
 class UserUpdateName(BaseModel):
@@ -128,9 +130,9 @@ class MinimalOrganisation(BaseModel):
     organisation_id: str
     organisation_name: Optional[str] = None
 
-    _validate_organisation_id_1 = validator(
-        "organisation_id", allow_reuse=True
-    )(custom_charset)
+    _validate_organisation_id_1 = validator("organisation_id", allow_reuse=True)(
+        custom_charset
+    )
 
 
 class OrgListRes(BaseModel):
@@ -158,9 +160,7 @@ class MinimalInviteCode(BaseModel):
     code: str = Field(..., min_length=8, max_length=32, regex=r"[\w\d_\-]+")
     add_to: str
 
-    _validate_organisation_id_1 = validator("add_to", allow_reuse=True)(
-        custom_charset
-    )
+    _validate_organisation_id_1 = validator("add_to", allow_reuse=True)(custom_charset)
 
 
 class InviteCode(MinimalInviteCode):

@@ -1,7 +1,7 @@
 from abc import ABCMeta, abstractmethod
 from pathlib import Path
 from types import SimpleNamespace
-from typing import Any, Callable, ClassVar, Dict, List, Optional, Union, Final
+from typing import Any, Callable, ClassVar, Dict, Final, List, Optional, Union
 
 from fastapi import (
     APIRouter,
@@ -111,9 +111,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
             )
 
         if greater_or_equal is None and one_of is None:
-            raise ValueError(
-                "either greater_or_equal or one_of should be provided"
-            )
+            raise ValueError("either greater_or_equal or one_of should be provided")
 
         def return_function(x_authentication: str = Header(...)) -> UserInfo:
             # TODO: change to this in python3.9
@@ -527,9 +525,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
         raise NotImplementedError
 
     @abstractmethod
-    async def read_org(
-        self, organisation_id: str
-    ) -> Dict[str, Union[str, List[str]]]:
+    async def read_org(self, organisation_id: str) -> Dict[str, Union[str, List[str]]]:
         """
         returns info about organisation with given `member_of`
 
@@ -741,9 +737,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
             creates new user with provided
                 user_id, password, name and invitation code
             """
-            return SignInRes(
-                response=await self.signup(request=request, **dict(user))
-            )
+            return SignInRes(response=await self.signup(request=request, **dict(user)))
 
         @router.get("/signout", tags=["auth_module", "auth"])
         async def signout(
@@ -972,12 +966,8 @@ class BaseAuth(Base, metaclass=ABCMeta):
                     status_code=status.HTTP_401_UNAUTHORIZED,
                     detail="Can't edit user with higher or same privileges",
                 )
-            new_loa: int = min(
-                user.level_of_access + 1, requester.level_of_access
-            )
-            return await self.update_user(
-                user_id=user_id, new_level_of_access=new_loa
-            )
+            new_loa: int = min(user.level_of_access + 1, requester.level_of_access)
+            return await self.update_user(user_id=user_id, new_level_of_access=new_loa)
 
         @router.post(
             "/usr/{user_id}/demote",
@@ -1002,16 +992,10 @@ class BaseAuth(Base, metaclass=ABCMeta):
                     status_code=status.HTTP_401_UNAUTHORIZED,
                     detail="Can't edit user with higher or same privileges",
                 )
-            new_loa: int = max(
-                user.level_of_access - 1, requester.level_of_access
-            )
-            return await self.update_user(
-                user_id=user_id, new_level_of_access=new_loa
-            )
+            new_loa: int = max(user.level_of_access - 1, requester.level_of_access)
+            return await self.update_user(user_id=user_id, new_level_of_access=new_loa)
 
-        @router.delete(
-            "/usr/{user_id}", tags=["auth_module", "user", "access_level_2"]
-        )
+        @router.delete("/usr/{user_id}", tags=["auth_module", "user", "access_level_2"])
         async def delete_user(
             user_id: str,
             requester: UserInfo = Depends(token_tester(greater_or_equal=1)),
@@ -1150,9 +1134,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
                     detail="Can't edit user with higher or same privileges",
                 )
             if user.member_of == "org:public":
-                await self.update_user(
-                    user_id, new_organisation_id=organisation_id
-                )
+                await self.update_user(user_id, new_organisation_id=organisation_id)
             else:
                 raise HTTPException(
                     status_code=status.HTTP_409_CONFLICT,
@@ -1180,9 +1162,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
                     detail="Can't edit user with higher or same privileges",
                 )
             if user.member_of != "org:public":
-                await self.update_user(
-                    user_id, new_organisation_id=organisation_id
-                )
+                await self.update_user(user_id, new_organisation_id=organisation_id)
             else:
                 raise HTTPException(
                     status_code=status.HTTP_409_CONFLICT,
@@ -1243,9 +1223,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
             acquires invite codes
             """
             raw_codes: List[Dict[str, str]] = await self.read_invite_codes()
-            codes: List[InviteCode] = [
-                InviteCode(**code) for code in raw_codes
-            ]
+            codes: List[InviteCode] = [InviteCode(**code) for code in raw_codes]
             if requester.level_of_access == 3:
                 # admin
                 return InviteCodeListRes(response=codes)
@@ -1253,9 +1231,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
                 # organizer
                 new_codes: List[InviteCode] = []
                 for code in codes:
-                    user: UserInfo = UserInfo(
-                        **(await self.read_user(code.issuer_id))
-                    )
+                    user: UserInfo = UserInfo(**(await self.read_user(code.issuer_id)))
                     if (
                         user.member_of == requester.member_of
                         or user.user_id == requester.user_id
@@ -1267,9 +1243,7 @@ class BaseAuth(Base, metaclass=ABCMeta):
                 # anyone else
                 new_codes: List[InviteCode] = []
                 for code in codes:
-                    user: UserInfo = UserInfo(
-                        **(await self.read_user(code.issuer_id))
-                    )
+                    user: UserInfo = UserInfo(**(await self.read_user(code.issuer_id)))
                     if (
                         user.user_id == requester.user_id
                         or code.add_to == self.public_org_id

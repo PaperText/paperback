@@ -1,9 +1,9 @@
 from abc import ABCMeta, abstractmethod
 from datetime import datetime
+from enum import Enum
 from pathlib import Path
 from types import SimpleNamespace
-from typing import Any, Callable, ClassVar, Dict, List, Optional, Final
-from enum import Enum
+from typing import Any, Callable, ClassVar, Dict, Final, List, Optional
 
 from fastapi import APIRouter, Body, Depends, Query
 
@@ -57,9 +57,7 @@ class BaseDocs(Base, metaclass=ABCMeta):
     TYPE: Final = "DOCS"
 
     @abstractmethod
-    def __init__(
-        self, cfg: SimpleNamespace, storage_dir: Path, auth_module: BaseAuth
-    ):
+    def __init__(self, cfg: SimpleNamespace, storage_dir: Path, auth_module: BaseAuth):
         """
         constructor of new module
 
@@ -413,9 +411,7 @@ class BaseDocs(Base, metaclass=ABCMeta):
                 created_after=created_after,
                 tags=tags,
             )
-            return ReadDocs(
-                response=[ReadMinimalDoc(**doc) for doc in raw_docs]
-            )
+            return ReadDocs(response=[ReadMinimalDoc(**doc) for doc in raw_docs])
 
         @router.get(
             "/docs/{doc_id}",

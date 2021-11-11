@@ -7,12 +7,7 @@ from pathlib import Path
 from typing import Any, Callable, Dict, List, MutableMapping
 
 import uvicorn
-from config import (
-    config_from_dict,
-    config_from_env,
-    config_from_toml,
-    ConfigurationSet,
-)
+from config import config_from_dict, config_from_env, config_from_toml, ConfigurationSet
 from fastapi import FastAPI, Request
 from pkg_resources import iter_entry_points
 from uvicorn.logging import ColourizedFormatter
@@ -21,6 +16,7 @@ from paperback import __version__
 from paperback.abc import BaseAuth, BaseDocs, BaseMisc
 from paperback.app import api
 from paperback.exceptions import DuplicateModuleError, InheritanceError
+from paperback.std import AuthImplemented, DocsImplemented
 from paperback.util import async_lib_name
 
 
@@ -32,13 +28,13 @@ class App:
         self.config_dir = config_path.resolve()
         self.log_level = log_level
 
+        # set up basic logger
         self.logger = logging.getLogger("paperback")
         self.logger.setLevel(self.log_level)
         tmp_stream_handler = logging.StreamHandler()
         tmp_stream_handler.setLevel("DEBUG")
         self.logger.addHandler(tmp_stream_handler)
-
-        self.logger.debug("setting temporary console-only logger")
+        self.logger.debug("temporary console-only logger was set up")
 
         self.logger.debug("checking for logging folder")
         self.logs_dir = self.config_dir / "logs"
@@ -65,15 +61,6 @@ class App:
             self.config_file.touch()
             self.logger.info("created config.toml file")
 
-        self.logger.debug("searching for modules folder")
-        self.modules_dir = self.config_dir / "modules"
-        if self.modules_dir.exists() and self.modules_dir.is_dir():
-            self.logger.info("found modules folder")
-        else:
-            self.logger.debug("can't find modules folder")
-            self.config_file.touch()
-            self.logger.info("created modules folder")
-
         self.logger.debug("searching for storage folder")
         self.storage_dir: Path = self.config_dir / "storage"
         if self.storage_dir.exists() and self.storage_dir.is_dir():
@@ -91,7 +78,7 @@ class App:
         }
         self.classes: MutableMapping[str, Any] = {}
         self.modules: MutableMapping[str, Any] = {}
-        self.to_run_async: List = []
+        self.to_run_async: List[Callable] = []
 
     @property
     def cfg(self) -> ConfigurationSet:
@@ -132,37 +119,13 @@ class App:
         console_handler.setLevel(self.log_level)
         root_logger.addHandler(console_handler)
 
-    def find_local_modules(self):
-        pass
-
-    #     for obj in self.modules_dir_path.iterdir():
-    #         if obj.name == "__pycache__" and obj.is_dir():
-    #             continue
-    #         elif obj.is_dir():
-    #             name: str = obj.name
-    #             location = obj / "__init__.py"
-    #             if not location.exists():
-    #                 continue
-    #         elif obj.suffix == ".py":
-    #             name: str = obj.name
-    #             if "." in name:
-    #                 name = name.split(".")[0]
-    #             location = obj
-    #         else:
-    #             continue
-    #         spec = importlib.util.spec_from_file_location(name, location)
-    #         module = importlib.util.module_from_spec(spec)
-    #         spec.loader.exec_module(module)
-    #
-    #         self.modules[name] = module
-    #         self.default_dict[name] = module.DEFAULTS
-    #         self.default_dict[name] = module.DEFAULTS
-    #
-    #         if self.verbose:
-    #             print(f"loaded {module}")
-
     def find_pip_modules(self):
         self.logger.info("searching for pip modules")
+
+        for name, cls in {"auth": AuthImplemented, "docs": DocsImplemented}.items():
+            self.classes[name] = cls
+            self.default_config[name] = deepcopy(cls.DEFAULTS)
+
         for entry_point in iter_entry_points("paperback.modules"):
             name = entry_point.name
             cls = entry_point.load()
@@ -174,15 +137,14 @@ class App:
             self.logger.debug("found %s module", name)
 
             if not any(
-                issubclass(cls, class_i)
-                for class_i in [BaseMisc, BaseAuth, BaseDocs]
+                issubclass(cls, class_i) for class_i in [BaseMisc, BaseAuth, BaseDocs]
             ):
                 self.logger.error(
                     "module %s doesn't inherit from BaseMisc, BaseAuth or BaseDocs",
                     name,
                 )
                 raise InheritanceError(
-                    "any module should ne subclass of Base or BaseAuth of BaseDocs"
+                    f"module {name} doesn't inherit from BaseMisc, BaseAuth or BaseDocs"
                 )
 
             if name in self.classes:
@@ -194,15 +156,30 @@ class App:
             self.classes[name] = cls
             self.default_config[name] = deepcopy(cls.DEFAULTS)
 
+    # rewrite to get better errors and better manage auth and docs modules
     def load_modules(self):
         self.logger.info("loading modules")
-        ddsorter = defaultdict(lambda: 0)
-        ddsorter["docs"] = -1
-        ddsorter["auth"] = -2
-        for name, cls in sorted(
-            self.classes.items(), key=lambda kv: ddsorter[kv[0]]
-        ):
+
+        auth_module_dir = self.storage_dir / "auth"
+        auth_module_dir.mkdir(exist_ok=True)
+        self.modules["auth"] = AuthImplemented(
+            self.cfg["auth"],
+            auth_module_dir,
+        )
+        self.to_run_async.append(AuthImplemented.__async__init__)
+
+        docs_module_dir = self.storage_dir / "docs"
+        docs_module_dir.mkdir(exist_ok=True)
+        self.modules["docs"] = DocsImplemented(
+            self.cfg["docs"] if "docs" in self.cfg else {},
+            docs_module_dir,
+            self.modules["auth"],
+        )
+        self.to_run_async.append(DocsImplemented.__async__init__)
+
+        for name, cls in self.classes.items():
             self.logger.debug("loading %s module", name)
+
             if cls.requires_dir:
                 module_dir = self.storage_dir / name
                 if not module_dir.exists():
@@ -211,10 +188,7 @@ class App:
                 module_dir = None
 
             if name == "auth":
-                module = cls(
-                    self.cfg[name] if name in self.cfg else {},
-                    module_dir if cls.requires_dir else None,
-                )
+                module = cls(self.cfg[name] if name in self.cfg else {}, module_dir)
             elif name == "docs":
                 module = cls(
                     self.cfg[name] if name in self.cfg else {},
@@ -228,8 +202,10 @@ class App:
                     self.modules["auth"] if cls.requires_auth else None,
                     self.modules["docs"] if cls.requires_docs else None,
                 )
-            self.to_run_async.append(module.__async__init__)
+
             self.modules[name] = module
+
+            self.to_run_async.append(module.__async__init__)
 
     def add_handlers(self, root_api: FastAPI):
         self.logger.info("setting up API handlers")
@@ -247,9 +223,7 @@ class App:
             }
 
         @root_api.middleware("http")
-        async def add_process_time_header(
-            request: Request, call_next: Callable
-        ):
+        async def add_process_time_header(request: Request, call_next: Callable):
             start_time: float = time.time()
             response = await call_next(request)
             process_time: float = time.time() - start_time
@@ -307,7 +281,9 @@ class App:
         uvicorn_log_config = uvicorn.config.LOGGING_CONFIG
         del uvicorn_log_config["loggers"]
 
-        self.logger.info("starting uvicorn in development mode with %s loop", async_lib_name)
+        self.logger.info(
+            "starting uvicorn in development mode with %s loop", async_lib_name
+        )
         uvicorn.run(
             "paperback.app:api",
             host=self.cfg.core.host,

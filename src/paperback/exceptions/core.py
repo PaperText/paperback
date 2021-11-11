@@ -20,6 +20,4 @@ class PaperBackError(HTTPException):
         detail: Any = None,
         headers: Optional[dict[str, Any]] = None,
     ) -> None:
-        super().__init__(
-            status_code=status_code, detail=detail, headers=headers
-        )
+        super().__init__(status_code=status_code, detail=detail, headers=headers)
