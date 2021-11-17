@@ -1301,5 +1301,5 @@ class BaseAuth(Base, metaclass=ABCMeta):
 
             await self.delete_invite_code(invite_code)
 
-        self.add_routes(router)
+        self.add_routes(router, token_tester)
         return router

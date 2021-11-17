@@ -14,5 +14,6 @@ dist
 
 # other
 .env
+rabbitmq.conf
 to_source.sh
 tmpdir/

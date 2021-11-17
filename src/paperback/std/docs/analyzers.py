@@ -1,13 +1,13 @@
 import logging
 import time
 from dataclasses import dataclass, field
-from typing import Any, cast, Dict, List, Tuple, Union
+from typing import Any, cast, Dict, List, Tuple, Union, Optional
 
 from py2neo import Node, Relationship
 from pyexling import PyExLing
 from titanis import Titanis
 
-from paperback.abc.analyzer import Analyzer, AnalyzerResult
+from paperback.std.docs.abc import Analyzer, AnalyzerResult
 
 
 class TitanisWrapper(Analyzer):
@@ -253,8 +253,19 @@ class TitanisWrapper(Analyzer):
 
 
 class PyExLingWrapper(Analyzer):
-    def __init__(self, host: str, service: str):
+    def __init__(self, host: str, service: str, titanis_host: Optional[str]=None):
+        self.host = host
+        self.service = service
+        self.titanis_host = titanis_host
+
         self.pyexling = PyExLing(host, service)
+        self.titanis = Titanis(
+            host=host,
+            psy_cues=True,                  # Рассчитывать психолингвистические/морфологические маркеры
+            psy_cues_normalization='words', # Условия нормализации для психолингвистических/морфологических маркеров
+            psy_dict=True,                  # Расчет словарных маркеров
+            psy_dict_normalization='words', # Условия нормализации для словарных маркеров
+        )
 
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(logging.getLogger("paperback").level)

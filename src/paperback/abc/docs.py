@@ -632,5 +632,5 @@ class BaseDocs(Base, metaclass=ABCMeta):
             """
             return ""
 
-        self.add_routes(router)
+        self.add_routes(router, token_tester)
         return router

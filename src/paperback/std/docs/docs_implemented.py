@@ -12,7 +12,7 @@ import py2neo
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from paperback.abc import BaseAuth, BaseDocs
-from paperback.abc.analyzer import Analyzer, AnalyzerResult
+from paperback.std.docs.abc import Analyzer, AnalyzerResult
 from paperback.abc.models import CreateDoc, ReadMinimalCorp, TokenTester, UserInfo
 from paperback.exceptions import PaperBackError
 from paperback.exceptions.docs import CorpusDoesntExist, DocumentNameError
@@ -89,16 +89,16 @@ class DocsImplemented(BaseDocs):
         self.logger.debug("synced with auth module")
 
         self.logger.debug("loading analyzers")
-        self.analyzers: Dict[AnalyzerEnum, Analyzer] = {
-            AnalyzerEnum.pyexling: PyExLingWrapper(
-                cfg.analyzers.pyexling.host, cfg.analyzers.pyexling.sercive
-            ),
-            AnalyzerEnum.titanis_open: TitanisWrapper(cfg.analyzers.titanis.host),
-        }
+        self.analyzers = self.get_analyzers(cfg.analyzers)
         self.logger.debug("loaded analyzers")
 
-    def get_analyzers(self):
-        return AnalyzerEnum
+    def get_analyzers(self, analyzers: SimpleNamespace) -> Dict[AnalyzerEnum, Analyzer]:
+        return {
+            AnalyzerEnum.pyexling: PyExLingWrapper(
+                analyzers.pyexling.host, analyzers.pyexling.service
+            ),
+            AnalyzerEnum.titanis_open: TitanisWrapper(analyzers.titanis.host),
+        }
 
     async def __async__init__(self):
         await self.sync_modules()

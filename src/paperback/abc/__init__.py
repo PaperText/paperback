@@ -1,4 +1,3 @@
-from paperback.abc.analyzer import Analyzer
 from paperback.abc.auth import BaseAuth
 from paperback.abc.base import Base
 from paperback.abc.docs import BaseDocs

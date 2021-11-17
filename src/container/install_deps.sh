@@ -20,9 +20,3 @@ for module in $modules; do
     echo "$module"
     pip install "$module"
 done
-
-# install optional dependency of paperback
-pip install orjson
-
-# install optional dependencies of auth module
-pip install argon2-cffi gmpy2

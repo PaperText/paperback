@@ -4,7 +4,7 @@ build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
 name = "paperback"
-version = "0.2.0"
+version = "0.3.0"
 description = "implementation of Relation Analysis backend"
 authors = ["Danil Kireev <unrndm@gmail.com>"]
 license = "MIT"

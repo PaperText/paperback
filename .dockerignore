@@ -1,6 +1,0 @@
-.git
-
-# Python
-src/paperback/__pycache__/
-src/paperback/abc/__pycache__/
-*.py[cod]
