@@ -11,6 +11,14 @@ PaperBack
 
 [![GitLab license][MIT_license_badge]][license_link]
 
+TODO
+----
+- [x] add root logger
+- [ ] remove core
+- [ ] add fastAPI config?
+- [x] test PyCharm community (docker&database not supported)
+- [ ] add defaults folder with uvicorn config and config folder path
+
 Features
 --------
 - Uses modern async typed python framework [fastapi](https://fastapi.tiangolo.com/)

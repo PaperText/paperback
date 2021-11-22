@@ -1,6 +1,7 @@
 # config
 .vscode/
 .idea/
+.run/
 .python-version
 
 # cache

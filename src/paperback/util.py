@@ -1,14 +1,27 @@
-# TODO: better library detection
-# usefull link: https://stackoverflow.com/questions/1051254/check-if-python-package-is-installed
+from typing import Literal, Any, Union
 
-import asyncio
 
-async_lib_name: str
+AsyncLibName = Literal["asyncio", "uvloop"]
 
-try:
-    import uvloop
 
-    asyncio.set_event_loop_policy(uvloop.EventLoopPolicy())
-    async_lib_name = "uvloop"
-except ImportError:
-    async_lib_name = "asyncio"
+def get_async_lib_name() -> AsyncLibName:
+    try:
+        import uvloop
+        uvloop.install()
+    except ImportError:
+        uvloop = None
+
+    return "uvloop" if uvloop else "asyncio"
+
+
+def get_response_class() -> Any:
+    from starlette.responses import JSONResponse
+
+    try:
+        from fastapi.responses import ORJSONResponse
+    except ImportError:
+        ORJSONResponse = None # noqa
+
+    return ORJSONResponse or JSONResponse
+
+

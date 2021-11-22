@@ -2,16 +2,13 @@ networks:
   backend:
   frontend:
 
-volumes:
-  postgresql: {}
-
 services:
   paperback:
 #    image: "paperback:latest-dev"
     build:
       dockerfile: ./src/container/Containerfile # relative to context
-      context: $PWD
-    command: paperback -l DEBUG dev
+      context: .
+    command: paperback -l DEBUG dev -r /root/paperback
     networks:
       - frontend
       - backend
@@ -27,6 +24,7 @@ services:
       PT__core__host: "0.0.0.0"
 
       PT__auth__IPstack_api_key: $IPstack_api_key
+
       PT__auth__root__password: $papertext_auth_root_password
 
       PT__auth__db__username: $psql_username
@@ -49,7 +47,7 @@ services:
     ports:
       - "7878:7878"
     volumes:
-      - "$PWD/src/paperback:/root/paperback/src/paperback:z"
+      - "../paperback:/root/paperback/src/paperback:z"
 
 # auth
 
@@ -64,7 +62,7 @@ services:
       psql_papertext_username: $psql_papertext_username
       psql_papertext_password: $psql_papertext_password
     volumes:
-      - "$PWD/src/container/create_auth_user_and_db.sh:/docker-entrypoint-initdb.d/init-dev-user_db.sh:z"
+      - "./create_auth_user_and_db.sh:/docker-entrypoint-initdb.d/init-dev-user_db.sh:z"
       - "~/.papertext/postgresql:/var/lib/postgresql/data:z"
     ports:
       - "5432:5432"
@@ -109,7 +107,7 @@ services:
       - backend
 #    hostname: "rabbitmq"
     volumes:
-      - "$PWD/rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:z"
+      - "../../rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:z"
     ports:
       - "5672:5672" # default port
       - "15672:15672" # web interface
