@@ -384,7 +384,7 @@ class BaseDocs(Base, metaclass=ABCMeta):
             creates document with given id if it's not occupied
             """
             return await self.create_doc(
-                creator_id=requester.user_id, creator_type="user", **dict(doc)
+                creator_id=requester.user_id, creator_type="user", **doc.dict()
             )
 
         @router.get(
@@ -434,7 +434,7 @@ class BaseDocs(Base, metaclass=ABCMeta):
             """
             return await self.update_doc(
                 doc_id=doc_id,
-                **dict(doc),
+                **doc.dict(),
             )
 
         @router.delete("/docs/{doc_id}", tags=["docs_module", "docs"])

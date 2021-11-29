@@ -12,7 +12,9 @@ def get_settings(
 ) -> SimpleNamespace:
 
     if config_file is None:
-        config_dir = Path(os.environ.get("PT__config_file", Path.home() / ".papertext")).resolve()
+        config_dir = Path(
+            os.environ.get("PT__config_file", Path.home() / ".papertext")
+        ).resolve()
         config_file = config_dir / "config.toml"
     if not config_file.exists() and not config_file.is_dir():
         config_file.touch(exist_ok=True)

@@ -30,13 +30,13 @@ ENV PT__log_level="INFO"
 
 RUN mkdir ~/.papertext
 
-COPY README.md                     /root/paperback/
-COPY LICENSE                       /root/paperback/
-COPY pyproject.toml                /root/paperback/
-COPY src/paperback                 /root/paperback/src/paperback
-COPY src/container/install_deps.sh /root/paperback/install_deps.sh
-
 WORKDIR /root/paperback
+
+COPY README.md                       ./
+COPY LICENSE                         ./
+COPY pyproject.toml                  ./
+COPY ./src/paperback                 ./src/paperback
+COPY ./src/container/install_deps.sh ./install_deps.sh
 
 RUN python3.8 -m pip install .
 RUN ./install_deps.sh

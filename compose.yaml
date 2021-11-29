@@ -4,11 +4,10 @@ networks:
 
 services:
   paperback:
-#    image: "paperback:latest-dev"
     build:
-      dockerfile: ./src/container/Containerfile # relative to context
+      dockerfile: ./Containerfile # relative to context
       context: .
-    command: paperback -l DEBUG dev -r /root/paperback
+    command: paperback -l DEBUG dev -r /root/paperback/
     networks:
       - frontend
       - backend
@@ -38,8 +37,9 @@ services:
       PT__docs__db__password: $neo4j_password
       PT__docs__db__host: "graph_db"
 
-      PT__docs__processor__host: $PT__docs__processor__host
-      PT__docs__processor__service: $PT__docs__processor__service
+      PT__docs__analyzers__pyexling__host: $PT__docs__analyzers__pyexling__host
+      PT__docs__analyzers__pyexling__service: $PT__docs__analyzers__pyexling__service
+      PT__docs__analyzers__pyexling__titanis_host: $PT__docs__analyzers__pyexling__titanis_host
 
       PT__docs__task_queue__user: $PT__docs__task_queue__user
       PT__docs__task_queue__password: $PT__docs__task_queue__password
@@ -47,7 +47,7 @@ services:
     ports:
       - "7878:7878"
     volumes:
-      - "../paperback:/root/paperback/src/paperback:z"
+      - "./src/paperback:/root/paperback/src/paperback:z"
 
 # auth
 
@@ -71,7 +71,6 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-#    user: postgres
 
 # docs
 

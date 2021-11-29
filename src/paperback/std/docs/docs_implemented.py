@@ -43,6 +43,7 @@ class DocsImplemented(BaseDocs):
             "pyexling": {
                 "host": "",
                 "service": "",
+                "titanis_host": "",
             },
         },
     }
@@ -95,7 +96,7 @@ class DocsImplemented(BaseDocs):
     def get_analyzers(self, analyzers: SimpleNamespace) -> Dict[AnalyzerEnum, Analyzer]:
         return {
             AnalyzerEnum.pyexling: PyExLingWrapper(
-                analyzers.pyexling.host, analyzers.pyexling.service
+                analyzers.pyexling.host, analyzers.pyexling.service, analyzers.pyexling.titanis_host
             ),
             AnalyzerEnum.titanis_open: TitanisWrapper(analyzers.titanis.host),
         }
@@ -180,7 +181,7 @@ class DocsImplemented(BaseDocs):
         creator_type: str,
         doc_id: str,
         text: str,
-        analyzer_id: Optional[str],
+        analyzer_id: Optional[AnalyzerEnum] = "pyexling",
         private: bool = False,
         parent_corp_id: Optional[str] = None,
         name: Optional[str] = None,
@@ -189,28 +190,74 @@ class DocsImplemented(BaseDocs):
         created: Optional[datetime] = None,
         tags: Optional[List[str]] = None,
     ) -> Dict[str, Any]:
-
-        if analyzer_id is None:
-            analyzer_id = "titanis_open"
-
-        # add_document(text)
+        self.logger.debug("adding new document")
 
         tx = self.graph_db.begin()
 
+        # check that Document with the same id
+
         docs_with_same_name = tx.graph.nodes.match(
-            "document", corp_id=parent_corp_id
+            "Document", doc_id=doc_id,
         ).first()
 
         if docs_with_same_name is not None:
             raise DocumentNameError
 
+        # create Document
+
+        doc_node = py2neo.Node(
+            "Document",
+            doc_id=doc_id,
+            text=text,
+            private=private,
+            name=name,
+            author=author,
+            created=created,
+            tags=tags,
+        )
+        tx.create(doc_node)
+
+        # connect Document with creator
+
+        if creator_type == "user":
+            author = tx.graph.nodes.match(
+                "user", user_id=creator_id
+            ).first()
+        else:
+            self.logger.warning("unknown user type: %s", creator_type)
+
+        tx.create(py2neo.Relationship(author, "created", doc_node))
+
+        # connect Document with corpus
+
         if parent_corp_id is not None:
-            parent_corp = tx.graph.nodes.match("corp", corp_id=parent_corp_id).first()
+            parent_corp = tx.graph.nodes.match("Corp", corp_id=parent_corp_id).first()
             if parent_corp is None:
                 raise CorpusDoesntExist
         else:
             parent_corp = self.root_corp
-            parent_corp_id = self.root_corp["corp_id"]
+        tx.create(py2neo.Relationship(parent_corp, "contains", doc_node))
+
+        # add analyzer node
+
+        analyzer_res_node = py2neo.Node("AnalyzerResult", analyzer_id=analyzer_id)
+        tx.create(analyzer_res_node)
+        tx.create(py2neo.Relationship(doc_node, "analyzed", analyzer_res_node))
+
+        # add
+
+        analyzer_result: AnalyzerResult = self.analyzers[analyzer_id](text, analyzer_res_node)
+
+        for node in analyzer_result["nodes"]:
+            tx.create(node)
+
+        for relationship in analyzer_result["relationships"]:
+            tx.create(relationship)
+
+        for command in analyzer_result["commands_to_run"]:
+            tx.run(command)
+
+        tx.commit()
 
     async def read_docs(
         self,
@@ -432,6 +479,6 @@ class DocsImplemented(BaseDocs):
             """
             creates document with given id if it's not occupied
             """
-            return await self.create_doc(
-                creator_id=requester.user_id, creator_type="user", **dict(doc)
+            return self.create_doc(
+                creator_id=requester.user_id, creator_type="user", **doc.dict()
             )

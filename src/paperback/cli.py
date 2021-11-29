@@ -18,6 +18,7 @@ CONTEXT_SETTINGS = {
 uvicorn_log_config = uvicorn.config.LOGGING_CONFIG
 # del uvicorn_log_config["loggers"]
 
+
 @click.group(context_settings=CONTEXT_SETTINGS)
 @click.version_option(version=__version__)
 @click.option(

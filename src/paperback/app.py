@@ -23,31 +23,33 @@ api = FastAPI(
     description="Backend API for PaperText",
     version=__version__,
     openapi_tags=[
-                     {"name": "auth", "description": "authorization"},
-                     {"name": "token", "description": "token manipulation"},
-                     {"name": "user", "description": "users manipulation"},
-                     {"name": "organisation", "description": "organisation manipulation"},
-                     {"name": "invite", "description": "invite codes manipulation"},
-                     {"name": "docs", "description": "document manipulation"},
-                     {"name": "corps", "description": "corpus manipulation"},
-                     {"name": "dict", "description": "dictionaries manipulation"},
-                     {"name": "analyzer", "description": "analyzer usage"},
-                 ]
-                 + [
-                     {
-                         "name": f"access_level_{i}",
-                         "description": f"paths that require level {i} access",
-                     }
-                     for i in range(4)
-                 ],
-    docs_url="/documentation",
-    redoc_url="/re_documentation",
+        {"name": "auth", "description": "authorization"},
+        {"name": "token", "description": "token manipulation"},
+        {"name": "user", "description": "users manipulation"},
+        {"name": "organisation", "description": "organisation manipulation"},
+        {"name": "invite", "description": "invite codes manipulation"},
+        {"name": "docs", "description": "document manipulation"},
+        {"name": "corps", "description": "corpus manipulation"},
+        {"name": "dict", "description": "dictionaries manipulation"},
+        {"name": "analyzer", "description": "analyzer usage"},
+    ]
+    + [
+        {
+            "name": f"access_level_{i}",
+            "description": f"paths that require level {i} access",
+        }
+        for i in range(4)
+    ],
+    docs_url="/spec",
+    redoc_url="/re_spec",
     default_response_class=get_response_class(),
 )
 
 # global settings
 
-config_dir = Path(os.environ.get("PT__config_dir", Path.home() / ".papertext")).resolve()
+config_dir = Path(
+    os.environ.get("PT__config_dir", Path.home() / ".papertext")
+).resolve()
 log_level = os.environ.get("PT__log_level", "")
 
 # setup logging
@@ -124,9 +126,7 @@ for entry_point in iter_entry_points("paperback.modules"):
     # load class and check that it's correct type and it's name is appropriate
     cls: Union[Any, BaseMisc, BaseAuth, BaseDocs] = entry_point.load()
 
-    if not any(
-        issubclass(cls, class_i) for class_i in [BaseMisc, BaseAuth, BaseDocs]
-    ):
+    if not any(issubclass(cls, class_i) for class_i in [BaseMisc, BaseAuth, BaseDocs]):
         logger.error(
             "plugin %s doesn't inherit from BaseMisc, BaseAuth or BaseDocs",
             name,
@@ -316,7 +316,7 @@ async def startup_event():
 
 @api.get("/info", tags=["root"])
 def stats():
-    """ basic app info
+    """basic app info
 
     Returns
     -------

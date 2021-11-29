@@ -253,24 +253,24 @@ class TitanisWrapper(Analyzer):
 
 
 class PyExLingWrapper(Analyzer):
-    def __init__(self, host: str, service: str, titanis_host: Optional[str]=None):
+    def __init__(self, host: str, service: str, titanis_host: str):
         self.host = host
         self.service = service
         self.titanis_host = titanis_host
 
         self.pyexling = PyExLing(host, service)
         self.titanis = Titanis(
-            host=host,
-            psy_cues=True,                  # Рассчитывать психолингвистические/морфологические маркеры
-            psy_cues_normalization='words', # Условия нормализации для психолингвистических/морфологических маркеров
-            psy_dict=True,                  # Расчет словарных маркеров
-            psy_dict_normalization='words', # Условия нормализации для словарных маркеров
+            host=titanis_host,
+            psy_cues=True,                   # Рассчитывать психолингвистические/морфологические маркеры
+            psy_cues_normalization="words",  # Условия нормализации для психолингвистических/морфологических маркеров
+            psy_dict=True,                   # Расчет словарных маркеров
+            psy_dict_normalization="words",  # Условия нормализации для словарных маркеров
         )
 
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(logging.getLogger("paperback").level)
         self.logger.info(
-            "using pyexling analyzer with `%s` host and `%s` service" % (host, service)
+            "using pyexling analyzer with `%s` host and `%s` service and `%s` titanis host" % (host, service, titanis_host)
         )
 
     @staticmethod
@@ -308,13 +308,26 @@ class PyExLingWrapper(Analyzer):
         res: AnalyzerResult = {
             "nodes": [],
             "relationships": [],
+            "commands_to_run": [],
         }
 
         text_node = Node("Text", text=text)
         res["nodes"].append(text_node)
 
+        self.logger.debug("using titanis in pyexling")
+        titanis_res: Dict[str, Dict[str, Any]] = cast(Dict[str, Dict[str, Any]], self.titanis(text))
+        titanis_psy_res = {
+            **{f"PsyCues_{k}": v for k, v in dict(titanis_res["PsyCues"]).items()},
+            **{f"PsyDict_{k}": v for k, v in dict(titanis_res["PsyDict"]).items()},
+        }
+        self.logger.debug("titanis in pyexling result: %s", titanis_psy_res)
+
+        titanis_node = Node("Psy", **titanis_psy_res)
+        res["nodes"].append(text_node)
+        res["relationships"].append(Relationship(text_node, "analyze_result", titanis_node))
+
         for sent in xml_document:
-            sent_node = Node("sentence", **sent.attrib)
+            sent_node = Node("Sentence", **sent.attrib)
             res["nodes"].append(sent_node)
             sent_rel = Relationship(text_node, "contains", sent_node)
             res["relationships"].append(sent_rel)
@@ -344,7 +357,7 @@ class PyExLingWrapper(Analyzer):
                     word_idx2word_node[attribs["idx"]] = word_node
 
             words = [
-                v for (_, v) in sorted(word_idx2word_node.items(), key=lambda k, _: k)
+                v for _, v in sorted(word_idx2word_node.items(), key=lambda kv: kv[0])
             ]
 
             for i in range(len(words) - 1):
@@ -370,7 +383,7 @@ class PyExLingWrapper(Analyzer):
                         role_id=int(arg.attrib["role_id"]),
                     )
                     res["relationships"].append(arg_rel)
-        res["commands_to_run"] = [
+        res["commands_to_run"].append(
             """
             MATCH (s:sentence)-[*2]->(c:word {new:true})
             WITH c,s
@@ -378,8 +391,9 @@ class PyExLingWrapper(Analyzer):
             WHERE c.syntax_parent_idx = p.idx
             CREATE (p)-[:syntax_link{link_name:c.syntax_link_name}]->(c)
             SET c.new = false, p.new = false
-            """,
-            "MATCH (w:word) REMOVE w.new",
-        ]
+            """)
+        res["commands_to_run"].append(
+            "MATCH (w:word) REMOVE w.new"
+        )
 
         return res

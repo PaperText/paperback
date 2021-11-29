@@ -7,6 +7,7 @@ AsyncLibName = Literal["asyncio", "uvloop"]
 def get_async_lib_name() -> AsyncLibName:
     try:
         import uvloop
+
         uvloop.install()
     except ImportError:
         uvloop = None
@@ -20,8 +21,6 @@ def get_response_class() -> Any:
     try:
         from fastapi.responses import ORJSONResponse
     except ImportError:
-        ORJSONResponse = None # noqa
+        ORJSONResponse = None  # noqa
 
     return ORJSONResponse or JSONResponse
-
-

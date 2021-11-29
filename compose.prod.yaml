@@ -1,0 +1,113 @@
+networks:
+  backend:
+  frontend:
+
+services:
+  paperback_dev:
+#    image: "paperback:latest-dev"
+    build:
+      dockerfile: ./Containerfile # relative to context
+      context: .
+    command: paperback -l DEBUG dev -r /root/paperback
+    networks:
+      - frontend
+      - backend
+    depends_on:
+      relational_db:
+        condition: service_healthy
+      graph_db:
+        condition: service_started
+      task_broker:
+        condition: service_started
+#      - task_backend
+    environment:
+      PT__core__host: "0.0.0.0"
+
+      PT__auth__IPstack_api_key: $IPstack_api_key
+
+      PT__auth__root__password: $papertext_auth_root_password
+
+      PT__auth__db__username: $psql_username
+      PT__auth__db__password: $psql_password
+      PT__auth__db__host: "relational_db"
+      PT__auth__db__db: "auth_module"
+
+      PT__auth__token__generate_keys: $PT__auth__token__generate_keys
+
+      PT__docs__db__username: $neo4j_username
+      PT__docs__db__password: $neo4j_password
+      PT__docs__db__host: "graph_db"
+
+      PT__docs__processor__host: $PT__docs__processor__host
+      PT__docs__processor__service: $PT__docs__processor__service
+
+      PT__docs__task_queue__user: $PT__docs__task_queue__user
+      PT__docs__task_queue__password: $PT__docs__task_queue__password
+      PT__docs__task_queue__host: task_broker
+    ports:
+      - "7878:7878"
+    volumes:
+      - "./src/paperback:/root/paperback/src/paperback:z"
+
+# auth
+
+  relational_db:
+    image: postgres:14
+    networks:
+      - backend
+    environment:
+      PGUSER: $psql_username
+      POSTGRES_USER: $psql_username
+      POSTGRES_PASSWORD: $psql_password
+      psql_papertext_username: $psql_papertext_username
+      psql_papertext_password: $psql_papertext_password
+    volumes:
+      - "./src/container/create_auth_user_and_db.sh:/docker-entrypoint-initdb.d/init-dev-user_db.sh:z"
+      - "~/.papertext/postgresql:/var/lib/postgresql/data:z"
+    ports:
+      - "5432:5432"
+    healthcheck:
+      test: [ "CMD-SHELL", "pg_isready" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+#    user: postgres
+
+# docs
+
+  graph_db:
+    image: neo4j:4.3.2
+    networks:
+      - backend
+    healthcheck:
+      test: [ "CMD-SHELL", "/usr/bin/wait-for-it.sh localhost:7687" ]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+    environment:
+      NEO4J_AUTH: "$neo4j_username/$neo4j_password"
+      # Raise memory limits
+      # NEO4J_dbms_memory_pagecache_size: "1G"
+      # NEO4J_dbms.memory.heap.initial_size: "1G"
+      # NEO4J_dbms_memory_heap_max__size: "1G"
+    ports:
+      - "7474:7474" # HTTP
+      - "7473:7473" # HTTPS
+      - "7687:7687" # BOLT
+    volumes:
+      - "~/.papertext/neo4j/conf:/conf:z"
+      - "~/.papertext/neo4j/data:/data:z"
+      - "~/.papertext/neo4j/import:/import:z"
+      - "~/.papertext/neo4j/logs:/logs:z"
+      - "~/.papertext/neo4j/plugins:/plugins:z"
+
+  task_broker:
+    image: rabbitmq:3-management
+    networks:
+      - backend
+#    hostname: "rabbitmq"
+    volumes:
+      - "./rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:z"
+    ports:
+      - "5672:5672" # default port
+      - "15672:15672" # web interface
