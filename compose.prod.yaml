@@ -1,13 +1,12 @@
 networks:
   backend:
+    external: false
   frontend:
+    external: false
 
 services:
   paperback_dev:
-#    image: "paperback:latest-dev"
-    build:
-      dockerfile: ./Containerfile # relative to context
-      context: .
+    image: "registry.gitlab.com/papertext/paperback:latest"
     command: paperback -l DEBUG dev -r /root/paperback
     networks:
       - frontend

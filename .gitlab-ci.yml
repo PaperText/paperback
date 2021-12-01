@@ -1,28 +1,69 @@
 variables:
-  GIT_DEPTH: 10
-  GIT_SUBMODULE_STRATEGY: none
-  GROUP_NAME: papertext
-  PROJECT_NAME: paperback
+  GIT_DEPTH: 1
 
 stages:
   - build
   - deploy
 
+.ssh_before_script:
+  before_script:
+  ##
+  ## Install ssh-agent if not already installed, it is required by Docker.
+  ## (change apt-get to yum if you use an RPM-based image)
+  ##
+  - 'command -v ssh-agent > /dev/null || ( apt-get update -y && apt-get install openssh-client -y )'
+
+  ##
+  ## Run ssh-agent (inside the build environment)
+  ##
+  - eval $(ssh-agent -s)
+
+  ##
+  ## Add the SSH key stored in SSH_PRIVATE_KEY variable to the agent store
+  ## We're using tr to fix line endings which makes ed25519 keys work
+  ## without extra base64 encoding.
+  ## https://gitlab.com/gitlab-examples/ssh-private-key/issues/1#note_48526556
+  ##
+  - echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+
+  ##
+  ## Create the SSH directory and give it the right permissions
+  ##
+  - mkdir -p ~/.ssh
+  - chmod 700 ~/.ssh
+
+  ##
+  ## Auto add host to known_hosts to avoid ssh asking about it
+  ##
+  - ssh-keyscan -p $SSH_PORT $SSH_HOST >> ~/.ssh/known_hosts
+  - chmod 644 ~/.ssh/known_hosts
+
+  ##
+  ## Log into gitlab container registry
+  ##
+  - 'ssh $SSH_USER@$SSH_HOST -p $SSH_PORT "
+      echo $CONTAINER_REGISTRY_PASS |
+      docker login $CONTAINER_REGISTRY_LINK -u $CONTAINER_REGISTRY_USER --password-stdin
+    "'
+
+##
+## use buildah instead of DockerInDocker to build containers
+##
 conteinerize:
+  only:
+    refs:
+      - dev
   stage: build
   variables:
     STORAGE_DRIVER: vfs
     BUILDAH_FORMAT: docker
     BUILDAH_ISOLATION: rootless
-  ##
-  ## use buildah instead of dind to build containers
-  ##
   image:
     name: registry.gitlab.com/unrndm/buildah-in-container:latest
   before_script:
-    - echo $CONTAINER_REGISTRY_PASS | buildah login -u $CONTAINER_REGISTRY_USER --password-stdin $CONTAINER_REGISTRY_LINK
+    - echo $CONTAINER_REGISTRY_PASS | buildah login -u $CONTAINER_REGISTRY_USER --password-stdin registry.gitlab.com
   script:
-    # builda doesn't currently support cache-from, uncomment and remove next command when added
+    # buildah doesn't currently support cache-from, uncomment and remove next command when added
     # - buildah pull registry.gitlab.com/papertext/paperback:latest || true
     # - buildah bud \
     #   --cache-from registry.gitlab.com/papertext/paperback:latest \
@@ -33,20 +74,37 @@ conteinerize:
     - buildah push registry.gitlab.com/papertext/paperback:latest
     - buildah push registry.gitlab.com/papertext/paperback:$CI_COMMIT_SHA
 
-deploy prod:
+deploy:prod:
   stage: deploy
+  extends: .ssh_before_script
   only:
     refs:
       - prod
-  trigger:
-    project: papertext/papertext_dev
-    branch: prod
+  script:
+    ##
+    ## log into deploy server and run docker-compose
+    ## TODO: prod will use latest container, which is not always ready for production
+    ##
+    - 'ssh $SSH_USER@$SSH_HOST -p $SSH_PORT "
+        export COMPOSE_PROJECT_NAME=paperback-prod && \
+        docker-compose down && \
+        curl https://gitlab.com/papertext/paperback/-/raw/prod/compose.prod.yaml | docker-compose -f - up -d
+      "'
 
-deploy dev:
+
+deploy:dev:
   stage: deploy
+  extends: .ssh_before_script
   only:
     refs:
       - dev
-  trigger:
-    project: papertext/papertext_dev
-    branch: dev
+  script:
+    ##
+    ## log into deploy server and run docker-compose
+    ##
+    - 'ssh $SSH_USER@$SSH_HOST -p $SSH_PORT "
+        export COMPOSE_PROJECT_NAME=paperback-dev&& \
+        docker-compose down && \
+        curl https://gitlab.com/papertext/paperback/-/raw/dev/compose.prod.yaml | docker-compose -f - up -d
+      "'
+
