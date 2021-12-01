@@ -87,10 +87,9 @@ deploy:prod:
     ##
     - 'ssh $SSH_USER@$SSH_HOST -p $SSH_PORT "
         export COMPOSE_PROJECT_NAME=paperback-prod &&
-        docker-compose down &&
+        docker ps --filter "label=com.docker.compose.project=$COMPOSE_PROJECT_NAME" --format {{.ID}} | xargs -n 1 docker rm --force --volumes &&
         curl https://gitlab.com/papertext/paperback/-/raw/prod/compose.prod.yaml | docker-compose -f - up -d
       "'
-
 
 deploy:dev:
   stage: deploy
@@ -104,7 +103,6 @@ deploy:dev:
     ##
     - 'ssh $SSH_USER@$SSH_HOST -p $SSH_PORT "
         export COMPOSE_PROJECT_NAME=paperback-dev &&
-        docker-compose down &&
+        docker ps --filter "label=com.docker.compose.project=$COMPOSE_PROJECT_NAME" --format {{.ID}} | xargs -n 1 docker rm --force --volumes &&
         curl https://gitlab.com/papertext/paperback/-/raw/dev/compose.prod.yaml | docker-compose -f - up -d
       "'
-
