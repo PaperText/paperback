@@ -104,5 +104,5 @@ deploy:dev:
     - 'ssh $SSH_USER@$SSH_HOST -p $SSH_PORT "
         export COMPOSE_PROJECT_NAME=paperback-dev &&
         docker ps --filter "label=com.docker.compose.project=$COMPOSE_PROJECT_NAME" --format {{.ID}} | xargs --no-run-if-empty -n 1 docker rm --force --volumes &&
-        curl https://gitlab.com/papertext/paperback/-/raw/dev/compose.prod.yaml | docker-compose -f - up -d
+        curl https://gitlab.com/papertext/paperback/-/raw/dev/compose.prod.yaml | docker-compose -f - config
       "'
