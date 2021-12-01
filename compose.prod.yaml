@@ -1,16 +1,14 @@
 networks:
   backend:
-    external: false
   frontend:
-    external: false
 
 services:
-  paperback_dev:
+  paperback_prod:
     image: "registry.gitlab.com/papertext/paperback:latest"
     command: paperback -l DEBUG dev -r /root/paperback
     networks:
-      - frontend
       - backend
+      - frontend
     depends_on:
       relational_db:
         condition: service_healthy
