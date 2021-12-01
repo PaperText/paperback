@@ -86,8 +86,8 @@ deploy:prod:
     ## TODO: prod will use latest container, which is not always ready for production
     ##
     - 'ssh $SSH_USER@$SSH_HOST -p $SSH_PORT "
-        export COMPOSE_PROJECT_NAME=paperback-prod && \
-        docker-compose down && \
+        export COMPOSE_PROJECT_NAME=paperback-prod &&
+        docker-compose down &&
         curl https://gitlab.com/papertext/paperback/-/raw/prod/compose.prod.yaml | docker-compose -f - up -d
       "'
 
@@ -103,8 +103,8 @@ deploy:dev:
     ## log into deploy server and run docker-compose
     ##
     - 'ssh $SSH_USER@$SSH_HOST -p $SSH_PORT "
-        export COMPOSE_PROJECT_NAME=paperback-dev&& \
-        docker-compose down && \
+        export COMPOSE_PROJECT_NAME=paperback-dev &&
+        docker-compose down &&
         curl https://gitlab.com/papertext/paperback/-/raw/dev/compose.prod.yaml | docker-compose -f - up -d
       "'
 
