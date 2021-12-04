@@ -1,15 +1,15 @@
-FROM registry.hub.docker.com/library/python:3.8-slim
+FROM docker.io/library/python:3.8-slim
 
 EXPOSE 7878
 
 # install deps
 ENV DEBIAN_FRONTEND="noninteractive"
-RUN apt update
-RUN apt install --no-install-recommends -y \
-    git \
-    build-essential \
-    libmpc-dev
-RUN apt clean
+RUN apt update && \
+    apt install --no-install-recommends -y \
+        git \
+        build-essential \
+        libmpc-dev && \
+    apt clean
 
 # upgrade pip and setuptools
 RUN python3.8 -m pip install --upgrade pip setuptools

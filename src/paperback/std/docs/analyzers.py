@@ -313,6 +313,7 @@ class PyExLingWrapper(Analyzer):
 
         text_node = Node("Text", text=text)
         res["nodes"].append(text_node)
+        res["relationships"].append(Relationship(parent_node, "contains", text_node))
 
         self.logger.debug("using titanis in pyexling")
         titanis_res: Dict[str, Dict[str, Any]] = cast(Dict[str, Dict[str, Any]], self.titanis(text))
@@ -366,6 +367,7 @@ class PyExLingWrapper(Analyzer):
                 )
 
             for role in [child for child in sent if child.tag == "role"]:
+                self.logger.debug("role: %s", role)
                 role_node = Node("role")
                 res["nodes"].append(role_node)
                 role_rel = Relationship(

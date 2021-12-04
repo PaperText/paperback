@@ -371,6 +371,121 @@ class BaseDocs(Base, metaclass=ABCMeta):
         """
         raise NotImplementedError
 
+    # dicts
+
+    @abstractmethod
+    async def create_dict(
+        self,
+        user_id: str,
+        dict_id: str,
+        words: List[str],
+        private: bool = False,
+        name: Optional[str] = None,
+        has_access: Optional[List[str]] = None,
+    ) -> Dict[str, Any]:
+        """
+        create dict with specified parameters
+
+        Parameters
+        ----------
+        user_id : str
+        dict_id: str
+        words: List[str]
+        private: bool, optional
+            default is False
+        name: str, optional
+        has_access: List[str], optional
+
+        Returns
+        -------
+        Dict[str, Any]
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    async def read_dicts(
+        self,
+        user_id: str,
+    ) -> List[Dict[str, Any]]:
+        """
+        read dicts
+
+        Parameters
+        ----------
+        user_id: str
+
+        Returns
+        -------
+        List[Dict[str, Any]]
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    async def read_dict(
+        self,
+        user_id: str,
+        dict_id: str,
+    ) -> Dict[str, Any]:
+        """
+        read dict with specified id
+
+        Parameters
+        ----------
+        user_id: str
+        dict_id: str
+            id of dict to read
+
+        Returns
+        -------
+        Dict[str, Any]
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    async def update_dict(
+        self,
+        user_id: str,
+        dict_id: str,
+        words: List[str],
+        private: bool = False,
+        name: Optional[str] = None,
+        has_access: Optional[List[str]] = None,
+    ) -> Dict[str, Any]:
+        """
+        update dict with specified id and specified new attributes
+
+        Parameters
+        ----------
+        user_id: str
+        dict_id: str
+        words: List[str]
+        name: str, optional
+        private: bool, optional
+            default is False
+        has_access: List[str], optional
+
+        Returns
+        -------
+        Dict[str, Any]
+        """
+        raise NotImplementedError
+
+    @abstractmethod
+    async def delete_dict(
+        self,
+        user_id: str,
+        corp_id: str
+    ):
+        """
+        delete corpus with specified id
+
+        Parameters
+        ----------
+        corp_id: str
+        user_id: str
+        """
+        raise NotImplementedError
+
     def create_router(self, token_tester: TokenTester) -> APIRouter:
         router = APIRouter()
 
@@ -511,22 +626,31 @@ class BaseDocs(Base, metaclass=ABCMeta):
 
         # dictionary management
         @router.post("/dicts", tags=["docs_module", "dict"])
-        async def create_dict(dict: CreateDict):
+        async def create_dict(
+            dict_model: CreateDict,
+            requester: UserInfo = Depends(token_tester(greater_or_equal=0)),
+        ):
             """
             creates dictionaries with given id if it's not occupied
             """
-            return None
+            return await self.create_dict(
+                user_id=requester.user_id, **dict_model.dict()
+            )
 
         @router.get(
             "/dicts",
             tags=["docs_module", "dict"],
             response_model=ReadDicts,
         )
-        async def read_dicts() -> ReadDicts:
+        async def read_dicts(
+            requester: UserInfo = Depends(token_tester(greater_or_equal=0)),
+        ) -> ReadDicts:
             """
             returns list of all dictionaries, accessible to user
             """
-            return []
+            return await self.read_dicts(
+                user_id=requester.user_id
+            )
 
         @router.get(
             "/dicts/{dict_id}",
