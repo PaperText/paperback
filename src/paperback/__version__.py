@@ -1,11 +1,10 @@
 from typing import Tuple
+from importlib.metadata import version
 
-__version__: str = "0.2.0"
-version_slpitted = __version__.split(".")
-if len(version_slpitted) != 3:
-    raise ValueError("")
-__tuple_version__: Tuple[str, str, str] = (
-    version_slpitted[0],
-    version_slpitted[1],
-    version_slpitted[2],
+__version__ = version("paperback")
+version_split = __version__.split(".")
+__tuple_version__ = (
+    version_split[0],
+    version_split[1],
+    version_split[2],
 )
