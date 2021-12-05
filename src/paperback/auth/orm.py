@@ -1,19 +1,13 @@
-from datetime import datetime
-from uuid import uuid4
-
-from sqlalchemy import Column, DateTime, ForeignKey, Integer, String, Text
-from sqlalchemy.dialects.postgresql import UUID
+from sqlalchemy import Column, ForeignKey, Integer, String, Text, LargeBinary
 from sqlalchemy.orm import relationship
 
 from paperback.auth.database import Base
 
 
 class User(Base):
-    __tablename__ = "user"
+    __tablename__ = "users"
 
-    user_uuid = Column(
-        UUID(as_uuid=True), unique=True, primary_key=True, default=uuid4, index=True
-    )
+    user_id = Column(String, unique=True, primary_key=True)
 
     username = Column(String, unique=True)
     hashed_password = Column(Text)
@@ -22,16 +16,13 @@ class User(Base):
 
     level_of_access = Column(Integer)
 
-    tokens = relationship("Token", back_populates="user")
+    tokens = relationship("Token")
 
 
 class Token(Base):
-    __tablename__ = "token"
+    __tablename__ = "tokens"
 
-    token_uuid = Column(
-        UUID(as_uuid=True), primary_key=True, unique=True, default=uuid4, index=True
-    )
-    issued_at = Column(DateTime, default=datetime)
+    token_uuid = Column(LargeBinary(16), primary_key=True, unique=True)
+    issued_at = Column(Text)
 
-    user_uuid = Column(UUID(as_uuid=True), ForeignKey("user.user_uuid"))
-    user = relationship("User", back_populates="tokens")
+    issued_by = relationship("User")

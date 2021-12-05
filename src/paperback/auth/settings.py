@@ -1,38 +1,15 @@
 from functools import lru_cache
-from pathlib import Path
 
-from pydantic import BaseSettings, Field
+from pydantic import BaseSettings
 
 
 class AuthSettings(BaseSettings):
-    db_user: str
-    db_pass: str
-    db_host: str
-    db_port: str = "5432"
-    db_name: str = "auth_module"
-
-    create_root_user: bool = False
-    root_user_password: str | None = None
-
-    storage_path: Path
-
-    recreate_keys: bool = False
-    curve: str = "secp521r1"
+    database_url: str
 
     class Config:
-        env_prefix = "auth__"
+        env_prefix = "auth_"
 
 
 @lru_cache()
-def get_auth_settings():
-    auth_settings = AuthSettings()
-
-    # storage path
-    auth_settings.storage_path = Path(auth_settings.storage_path).resolve()
-    if not auth_settings.storage_path.exists():
-        auth_settings.storage_path.mkdir(parents=True, exist_ok=True)
-    else:
-        if not auth_settings.storage_path.is_dir():
-            raise Exception("Auth settings: storage path exists, but isn't a dir")
-
-    return auth_settings
+def get_settings():
+    return AuthSettings()

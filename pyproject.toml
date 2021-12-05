@@ -51,6 +51,7 @@ pyexling = { git = "https://gitlab.com/papertext/pyexling.git", branch="main" }
 ### add later
 #celery = {extras = ["redis"], version = "^5.1.2"}
 # librabbitmq = { version = "^2.0.0", optional = true } # consider in future?
+SQLAlchemy = {extras = ["asyncio"], version = "^1.4.27"}
 
 #databases = {version = "^0.4.0", extras = ["postgresql"]}
 #ua-parser = "^0.10.0"

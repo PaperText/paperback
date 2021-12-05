@@ -3,8 +3,8 @@ from pathlib import Path
 
 from pydantic import BaseSettings
 
-# from paperback.auth.settings import AuthSettings, get_auth_settings
-# from paperback.docs.settings import DocsSettings, get_docs_settings
+from paperback.auth.settings import AuthSettings, get_settings as get_auth_setting
+from paperback.docs.settings import DocsSettings, get_settings as get_docs_setting
 
 
 class AppSettings(BaseSettings):
@@ -15,3 +15,4 @@ class AppSettings(BaseSettings):
 @lru_cache()
 def get_settings():
     return AppSettings()
+
