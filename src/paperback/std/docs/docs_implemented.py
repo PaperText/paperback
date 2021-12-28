@@ -15,7 +15,7 @@ from paperback.abc import BaseAuth, BaseDocs
 from paperback.std.docs.abc import Analyzer, AnalyzerResult
 from paperback.abc.models import CreateDoc, ReadMinimalCorp, TokenTester, UserInfo
 from paperback.exceptions import PaperBackError
-from paperback.exceptions.docs import CorpusDoesntExist, DocumentNameError
+from paperback.exceptions.docs import CorpusDoesntExist, DocumentNameError, DictNameError
 from paperback.std.docs.analyzers import PyExLingWrapper, TitanisWrapper
 from paperback.std.docs.tasks import add_document
 
@@ -466,6 +466,106 @@ class DocsImplemented(BaseDocs):
         pass
 
     async def delete_corp(self, corp_id: str):
+        pass
+
+    async def create_dict(
+        self,
+        user_id: str,
+        dict_id: str,
+        words: List[str],
+        private: bool = False,
+        name: Optional[str] = None,
+        has_access: Optional[List[str]] = None,
+    ) -> Dict[str, Any]:
+        self.logger.debug("adding new document")
+
+        tx = self.graph_db.begin()
+
+        # check that Document with the same id
+
+        dict_with_same_name = tx.graph.nodes.match(
+            "Dictionary", dict_id=dict_id,
+        ).first()
+
+        if dict_with_same_name is not None:
+            raise DictNameError
+
+        # create Dict
+
+        dict_node = py2neo.Node(
+            "Dictionary",
+            dict_id=dict_id,
+            words=words,
+            private=private,
+            name=name,
+        )
+        tx.create(dict_node)
+
+        # connect Dict with creator
+
+        author = tx.graph.nodes.match(
+            "user", user_id=user_id
+        ).first()
+        tx.create(py2neo.Relationship(author, "created", dict_node))
+
+        tx.commit()
+
+    async def read_dicts(
+        self,
+        user_id: str,
+    ) -> List[Dict[str, Any]]:
+        tx = self.graph_db.begin()
+
+        query_res = tx.run(
+            """
+            match (:user {user_id: "root"})-[created]->(d:Dictionary)
+            return d
+            """
+        )
+        self.logger.debug("read dicts: %s", query_res)
+
+
+        author = tx.graph.nodes.match(
+            "user", user_id=user_id
+        ).first()
+
+        dicts: list[py2neo.Node] = tx.graph.match((author, ), r_type="created").where("_ = Dictionary")
+        self.logger.debug("read dicts: %s", list(dicts))
+        self.logger.info("read dicts")
+        return [dict(d) for d in dicts]
+
+    async def read_dict(
+        self,
+        user_id: str,
+        dict_id: str,
+    ) -> Dict[str, Any]:
+        tx = self.graph_db.begin()
+
+        author = tx.graph.nodes.match(
+            "user", user_id=user_id
+        ).first()
+
+        dict_node: py2neo.Node = tx.graph.match((author, "Dictionary"), r_type="created").where(dict_id=dict_id)
+        self.logger.debug("read dict: %s", dict_node)
+        self.logger.info("read dict")
+        return dict(dict_node)
+
+    async def update_dict(
+        self,
+        user_id: str,
+        dict_id: str,
+        words: List[str],
+        private: bool = False,
+        name: Optional[str] = None,
+        has_access: Optional[List[str]] = None,
+    ) -> Dict[str, Any]:
+        pass
+
+    async def delete_dict(
+        self,
+        user_id: str,
+        corp_id: str
+    ):
         pass
 
     def add_routes(self, router: APIRouter, token_tester: TokenTester):

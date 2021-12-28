@@ -474,15 +474,15 @@ class BaseDocs(Base, metaclass=ABCMeta):
     async def delete_dict(
         self,
         user_id: str,
-        corp_id: str
+        dict_id: str
     ):
         """
         delete corpus with specified id
 
         Parameters
         ----------
-        corp_id: str
         user_id: str
+        dict_id: str
         """
         raise NotImplementedError
 
