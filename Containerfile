@@ -2,6 +2,8 @@ FROM docker.io/library/python:3.8-slim
 
 EXPOSE 7878
 
+ENV PYTHONDONTWRITEBYTECODE=1
+
 # install deps
 ENV DEBIAN_FRONTEND="noninteractive"
 RUN apt update && \
