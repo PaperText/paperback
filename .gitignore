@@ -1,8 +1,11 @@
-# config
+# IDE
 .vscode/
 .idea/
-.run/
+
+# local config
+.env
 .python-version
+poetry.toml
 
 # cache
 **/__pycache__/
@@ -14,7 +17,8 @@
 dist
 
 # other
-.env
 rabbitmq.conf
+
+# remove latere
 to_source.sh
 tmpdir/
