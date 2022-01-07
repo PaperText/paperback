@@ -96,7 +96,9 @@ class DocsImplemented(BaseDocs):
     def get_analyzers(self, analyzers: SimpleNamespace) -> Dict[AnalyzerEnum, Analyzer]:
         return {
             AnalyzerEnum.pyexling: PyExLingWrapper(
-                analyzers.pyexling.host, analyzers.pyexling.service, analyzers.pyexling.titanis_host
+                analyzers.pyexling.host,
+                analyzers.pyexling.service,
+                analyzers.pyexling.titanis_host,
             ),
             AnalyzerEnum.titanis_open: TitanisWrapper(analyzers.titanis.host),
         }
@@ -197,7 +199,8 @@ class DocsImplemented(BaseDocs):
         # check that Document with the same id
 
         docs_with_same_name = tx.graph.nodes.match(
-            "Document", doc_id=doc_id,
+            "Document",
+            doc_id=doc_id,
         ).first()
 
         if docs_with_same_name is not None:
@@ -220,9 +223,7 @@ class DocsImplemented(BaseDocs):
         # connect Document with creator
 
         if creator_type == "user":
-            author = tx.graph.nodes.match(
-                "user", user_id=creator_id
-            ).first()
+            author = tx.graph.nodes.match("user", user_id=creator_id).first()
         else:
             self.logger.warning("unknown user type: %s", creator_type)
 
@@ -246,7 +247,9 @@ class DocsImplemented(BaseDocs):
 
         # add
 
-        analyzer_result: AnalyzerResult = self.analyzers[analyzer_id](text, analyzer_res_node)
+        analyzer_result: AnalyzerResult = self.analyzers[analyzer_id](
+            text, analyzer_res_node
+        )
 
         for node in analyzer_result["nodes"]:
             tx.create(node)

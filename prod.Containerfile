@@ -44,6 +44,7 @@ COPY pyproject.toml                  ./
 COPY ./src/paperback                 ./src/paperback
 COPY ./src/container/install_deps.sh ./install_deps.sh
 
+RUN python3.8 -m pip install .
 RUN ./install_deps.sh
 
-CMD python3.8 -m pip install -e . && paperback -l DEBUG dev -r /root/paperback/
+CMD paperback run

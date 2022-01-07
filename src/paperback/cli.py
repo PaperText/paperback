@@ -60,8 +60,8 @@ uvicorn_log_config = uvicorn.config.LOGGING_CONFIG
 def cli(ctx: click.Context, config_dir: Path, log_level: str, host: str, port: int):
     ctx.ensure_object(dict)
 
-    os.environ["PT__config_dir"] = str(config_dir)
-    os.environ["PT__log_level"] = str(log_level)
+    os.environ["config_dir"] = str(config_dir)
+    os.environ["log_level"] = str(log_level)
 
     ctx.obj["host"] = str(host)
     ctx.obj["port"] = int(port)
@@ -102,14 +102,16 @@ def dev(ctx: click.Context, reload_dirs: List[Path]):
     command for running API in development mode
     """
     uvicorn.run(
-        "paperback.app:api",
+        "paperback.app:app",
         host=ctx.obj["host"],
         port=ctx.obj["port"],
         log_config=uvicorn_log_config,
         log_level=ctx.obj["log_level"].lower(),
         loop=get_async_lib_name(),
         proxy_headers=True,
+        # debug=True,
         reload=True,
-        reload_dirs=reload_dirs,
+        access_log=False,
+        # reload_dirs=reload_dirs,
         use_colors=True,
     )

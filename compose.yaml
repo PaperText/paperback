@@ -7,7 +7,6 @@ services:
     build:
       dockerfile: ./Containerfile # relative to context
       context: .
-    command: paperback -l DEBUG dev -r /root/paperback/
     networks:
       - frontend
       - backend
@@ -16,20 +15,21 @@ services:
         condition: service_healthy
       graph_db:
         condition: service_started
-      task_broker:
-        condition: service_started
+#      task_broker:
+#        condition: service_started
 #      - task_backend
     environment:
+      auth__db_user: $psql_papertext_username
+      auth__db_pass: $psql_papertext_password
+      auth__db_host: "relational_db"
+
+      SQLALCHEMY_WARN_20: 1
+
       PT__core__host: "0.0.0.0"
 
       PT__auth__IPstack_api_key: $IPstack_api_key
 
       PT__auth__root__password: $papertext_auth_root_password
-
-      PT__auth__db__username: $psql_username
-      PT__auth__db__password: $psql_password
-      PT__auth__db__host: "relational_db"
-      PT__auth__db__db: "auth_module"
 
       PT__auth__token__generate_keys: $PT__auth__token__generate_keys
 
@@ -56,13 +56,14 @@ services:
     networks:
       - backend
     environment:
-      PGUSER: $psql_username
+#      PGUSER: $psql_username
       POSTGRES_USER: $psql_username
       POSTGRES_PASSWORD: $psql_password
       psql_papertext_username: $psql_papertext_username
       psql_papertext_password: $psql_papertext_password
+#    user: $psql_username
     volumes:
-      - "./create_auth_user_and_db.sh:/docker-entrypoint-initdb.d/init-dev-user_db.sh:z"
+      - "./src/container/create_auth_user_and_db.sh:/docker-entrypoint-initdb.d/init-dev-user_db.sh:z"
       - "~/.papertext/postgresql:/var/lib/postgresql/data:z"
     ports:
       - "5432:5432"
@@ -100,13 +101,13 @@ services:
       - "~/.papertext/neo4j/logs:/logs:z"
       - "~/.papertext/neo4j/plugins:/plugins:z"
 
-  task_broker:
-    image: rabbitmq:3-management
-    networks:
-      - backend
-#    hostname: "rabbitmq"
-    volumes:
-      - "../../rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:z"
-    ports:
-      - "5672:5672" # default port
-      - "15672:15672" # web interface
+#  task_broker:
+#    image: rabbitmq:3-management
+#    networks:
+#      - backend
+##    hostname: "rabbitmq"
+#    volumes:
+#      - "../../rabbitmq.conf:/etc/rabbitmq/rabbitmq.conf:z"
+#    ports:
+#      - "5672:5672" # default port
+#      - "15672:15672" # web interface

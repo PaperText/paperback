@@ -9,6 +9,7 @@ class DocsSettings(BaseSettings):
     class Config:
         env_prefix = "docs_"
 
+
 @lru_cache()
 def get_settings():
     return DocsSettings()

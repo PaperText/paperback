@@ -261,16 +261,17 @@ class PyExLingWrapper(Analyzer):
         self.pyexling = PyExLing(host, service)
         self.titanis = Titanis(
             host=titanis_host,
-            psy_cues=True,                   # Рассчитывать психолингвистические/морфологические маркеры
+            psy_cues=True,  # Рассчитывать психолингвистические/морфологические маркеры
             psy_cues_normalization="words",  # Условия нормализации для психолингвистических/морфологических маркеров
-            psy_dict=True,                   # Расчет словарных маркеров
+            psy_dict=True,  # Расчет словарных маркеров
             psy_dict_normalization="words",  # Условия нормализации для словарных маркеров
         )
 
         self.logger = logging.getLogger(__name__)
         self.logger.setLevel(logging.getLogger("paperback").level)
         self.logger.info(
-            "using pyexling analyzer with `%s` host and `%s` service and `%s` titanis host" % (host, service, titanis_host)
+            "using pyexling analyzer with `%s` host and `%s` service and `%s` titanis host"
+            % (host, service, titanis_host)
         )
 
     @staticmethod
@@ -316,7 +317,9 @@ class PyExLingWrapper(Analyzer):
         res["relationships"].append(Relationship(parent_node, "contains", text_node))
 
         self.logger.debug("using titanis in pyexling")
-        titanis_res: Dict[str, Dict[str, Any]] = cast(Dict[str, Dict[str, Any]], self.titanis(text))
+        titanis_res: Dict[str, Dict[str, Any]] = cast(
+            Dict[str, Dict[str, Any]], self.titanis(text)
+        )
         titanis_psy_res = {
             **{f"PsyCues_{k}": v for k, v in dict(titanis_res["PsyCues"]).items()},
             **{f"PsyDict_{k}": v for k, v in dict(titanis_res["PsyDict"]).items()},
@@ -325,7 +328,9 @@ class PyExLingWrapper(Analyzer):
 
         titanis_node = Node("Psy", **titanis_psy_res)
         res["nodes"].append(text_node)
-        res["relationships"].append(Relationship(text_node, "analyze_result", titanis_node))
+        res["relationships"].append(
+            Relationship(text_node, "analyze_result", titanis_node)
+        )
 
         for sent in xml_document:
             sent_node = Node("Sentence", **sent.attrib)
@@ -393,9 +398,8 @@ class PyExLingWrapper(Analyzer):
             WHERE c.syntax_parent_idx = p.idx
             CREATE (p)-[:syntax_link{link_name:c.syntax_link_name}]->(c)
             SET c.new = false, p.new = false
-            """)
-        res["commands_to_run"].append(
-            "MATCH (w:word) REMOVE w.new"
+            """
         )
+        res["commands_to_run"].append("MATCH (w:word) REMOVE w.new")
 
         return res
