@@ -37,7 +37,7 @@ async def get_users(session=Depends(get_session)) -> List[models.User]:
     """
     generates new token if provided user_id and password are correct
     """
-    logger.debug("route test 2")
+    logger.debug("route test")
     result = await crud.get_users(session)
     print(result)
     return result
