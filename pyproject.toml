@@ -1,5 +1,6 @@
 [build-system]
-requires = ["poetry_core>=1.0.0"]
+#requires = ["poetry_core>=1.0.0"]
+requires = ["poetry-core @ git+https://github.com/python-poetry/poetry-core.git@master"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
@@ -18,19 +19,20 @@ include = ["LICENSE", "pyproject.toml"]
 "Issue Tracker" = "https://gitlab.com/papertext/paperback/-/issues"
 
 [tool.poetry.scripts]
+paperback = "paperback.cli:cli"
 fix = "paperback.scripts:Scripts.fix"
 lint = "paperback.scripts:Scripts.lint"
 build = "paperback.scripts:Scripts.docs_build"
 clean = "paperback.scripts:Scripts.docs_clean"
 
 [tool.poetry.dependencies]
-python = "^3.10"
+python = "^3.8"
 # cli, locked version for cellery
 click = "^7.0.0"
 # framework
 fastapi = "^0.65.2"
 ## ASGI runner for fastapi
-uvicorn = {extras = ["standard"], version = "^0.17.0"}
+uvicorn = {extras = ["standard"], version = "^0.14.0"}
 ## dep of fastapi, allows for creation of type checked classes
 pydantic = {extras = ["email"], version = "^1.8.2"}
 ## dep of fastapi
@@ -41,8 +43,8 @@ orjson = {version = "^3.5.4", optional = true}
 ecdsa = "^0.17.0"
 authlib = "^0.15.0"
 passlib = "^1.7.2"
-SQLAlchemy = {extras = ["postgresql_psycopg2binary"], version = "^1.4.27"}
-argon2-cffi = "^20.1.0"
+SQLAlchemy = {extras = ["asyncio", "postgresql_asyncpg"], version = "^1.4.27"}
+argon2-cffi = {version="^20.1.0", optional=true}
 gmpy2 = {version="^2.0.8", optional=true}
 ### docs deps
 py2neo = "^2021.1.5"
@@ -51,7 +53,6 @@ pyexling = { git = "https://gitlab.com/papertext/pyexling.git", branch="main" }
 ### add later
 #celery = {extras = ["redis"], version = "^5.1.2"}
 # librabbitmq = { version = "^2.0.0", optional = true } # consider in future?
-SQLAlchemy = {extras = ["asyncio"], version = "^1.4.27"}
 
 #databases = {version = "^0.4.0", extras = ["postgresql"]}
 #ua-parser = "^0.10.0"
@@ -62,6 +63,7 @@ SQLAlchemy = {extras = ["asyncio"], version = "^1.4.27"}
 [tool.poetry.extras]
 fast_json = ["orjson"]
 # fast = ["librabbitmq"]
+argon2 = ["argon2-cffi"]
 fast_ecdsa = ["gmpy2"]
 
 [tool.poetry.dev-dependencies]
@@ -106,7 +108,7 @@ recommonmark = "^0.7.1"
 sphinx_rtd_theme = "^0.5.0"
 
 [tool.black]
-target-version = ['py310']
+target-version = ['py38']
 
 [tool.flake8]
 exclude = ["__pycahce__"]
@@ -123,7 +125,7 @@ docstring-convention="numpy"
 
 [tool.isort]
 profile="black"
-py_version="310"
+py_version="38"
 color_output=true
 skip_gitignore=true
 group_by_package=true

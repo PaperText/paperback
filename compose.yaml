@@ -7,7 +7,6 @@ services:
     build:
       dockerfile: ./Containerfile # relative to context
       context: .
-    command: uvicorn --host 0.0.0.0 --port 7878 --log-level debug --use-colors --log-config ./src/container/uvicorn_log.json --reload --reload-dir /root/paperback/ paperback.app:app
     networks:
       - frontend
       - backend
@@ -20,40 +19,35 @@ services:
 #        condition: service_started
 #      - task_backend
     environment:
-      SQLALCHEMY_WARN_20: 1
-
-      log_level: "DEBUG"
-
       auth__db_user: $psql_papertext_username
       auth__db_pass: $psql_papertext_password
       auth__db_host: "relational_db"
 
-      auth__create_root_user: 1
-      auth__root_user_password: $psql_root_user_password
+      SQLALCHEMY_WARN_20: 1
 
-      auth__storage_path: "/root/.papertext/storage/auth"
-      auth__recreate_keys: 1
-
-      docs__db_host: "graph_db"
-      docs__db_user: $neo4j_username
-      docs__db_pass: $neo4j_password
-
-      docs__analyzers_titanis_host: $titanis_host
-
-      docs__analyzers_pyexling_host:  $pyexling_host
-      docs__analyzers_pyexling_service: $pyexling_service
-
-      # old
+      PT__core__host: "0.0.0.0"
 
       PT__auth__IPstack_api_key: $IPstack_api_key
+
       PT__auth__root__password: $papertext_auth_root_password
+
       PT__auth__token__generate_keys: $PT__auth__token__generate_keys
 
+      PT__docs__db__username: $neo4j_username
+      PT__docs__db__password: $neo4j_password
+      PT__docs__db__host: "graph_db"
+
+      PT__docs__analyzers__pyexling__host: $PT__docs__analyzers__pyexling__host
+      PT__docs__analyzers__pyexling__service: $PT__docs__analyzers__pyexling__service
+      PT__docs__analyzers__pyexling__titanis_host: $PT__docs__analyzers__pyexling__titanis_host
+
+      PT__docs__task_queue__user: $PT__docs__task_queue__user
+      PT__docs__task_queue__password: $PT__docs__task_queue__password
+      PT__docs__task_queue__host: task_broker
     ports:
       - "7878:7878"
     volumes:
       - "./src/paperback:/root/paperback/src/paperback:z"
-      - "./src/container/uvicorn_log.json:/root/paperback/src/container/uvicorn_log.json:z"
 
 # auth
 
