@@ -19,6 +19,10 @@ RUN apt update && \
 # upgrade pip and setuptools
 RUN python3.8 -m pip install --upgrade pip setuptools
 
+# install poetry
+RUN pip install poetry
+ENV PATH /root/.local/bin:$PATH
+
 ## install optional dependency of paperback
 RUN pip install --no-cache-dir orjson
 
@@ -41,9 +45,11 @@ WORKDIR /root/paperback
 COPY LICENSE                         ./
 COPY README.md                       ./
 COPY pyproject.toml                  ./
+COPY poetry.toml                  ./
 COPY ./src/paperback                 ./src/paperback
 COPY ./src/container/install_deps.sh ./install_deps.sh
 
 RUN ./install_deps.sh
 
-CMD python3.8 -m pip install -e . && paperback -l DEBUG dev -r /root/paperback/
+# CMD python3.8 -m pip install -e . && paperback -l DEBUG dev -r /root/paperback/
+CMD poetry install && paperback -l DEBUG dev -r /root/paperback/
