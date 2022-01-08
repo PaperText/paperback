@@ -28,8 +28,6 @@ class User(UserBase):
 
     level_of_access: int
 
-    tokens: List[Token] = []
-
     class Config:
         orm_mode = True
 
