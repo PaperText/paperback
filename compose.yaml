@@ -7,6 +7,7 @@ services:
     build:
       dockerfile: ./Containerfile # relative to context
       context: .
+    command: uvicorn --host 0.0.0.0 --port 7878 --log-level debug --color --reload --reload-dir /root/paperback/ paperback.app:app
     networks:
       - frontend
       - backend
@@ -19,11 +20,14 @@ services:
 #        condition: service_started
 #      - task_backend
     environment:
+      SQLALCHEMY_WARN_20: 1
+
+      log_level: "DEBUG"
+
       auth__db_user: $psql_papertext_username
       auth__db_pass: $psql_papertext_password
       auth__db_host: "relational_db"
 
-      SQLALCHEMY_WARN_20: 1
 
       PT__core__host: "0.0.0.0"
 

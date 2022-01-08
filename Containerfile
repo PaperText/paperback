@@ -44,14 +44,18 @@ RUN mkdir ~/.papertext
 
 WORKDIR /root/paperback
 
-COPY LICENSE                         ./
-COPY README.md                       ./
-COPY pyproject.toml                  ./
-COPY poetry.toml                  ./
-COPY ./src/paperback                 ./src/paperback
-COPY ./src/container/install_deps.sh ./install_deps.sh
+COPY pyproject.toml             ./
+COPY poetry.lock                ./
+COPY ./src/paperback/scripts.py ./src/paperback/
+COPY LICENSE                    ./
+COPY README.md                  ./
 
-RUN ./install_deps.sh
+RUN poetry config --local virtualenvs.create false
+RUN poetry install
 
-# CMD python3.8 -m pip install -e . && paperback -l DEBUG dev -r /root/paperback/
-CMD poetry install && paperback -l DEBUG dev -r /root/paperback/
+# COPY ./src/paperback/                ./src/paperback/
+COPY ./src/container/install_deps.sh ./src/container/install_deps.sh
+
+RUN ./src/container/install_deps.sh
+
+CMD uvicorn --host 0.0.0.0 --port 7878 --log-level info --color paperback.app:app
