@@ -2,6 +2,7 @@ import logging
 from typing import List
 
 from fastapi import APIRouter, Depends, HTTPException, status
+from sqlalchemy.ext.asyncio import AsyncSession
 
 from paperback.auth.database import engine, Base, async_session
 from paperback.auth import models, crud
@@ -13,7 +14,7 @@ logger = logging.getLogger("paperback.auth")
 
 
 # Dependency
-async def get_session():
+async def get_session() -> AsyncSession:
     async with async_session() as session:
         yield session
 
@@ -37,7 +38,4 @@ async def get_users(session=Depends(get_session)) -> List[models.User]:
     """
     generates new token if provided user_id and password are correct
     """
-    logger.debug("route test")
-    result = await crud.get_users(session)
-    print(result)
-    return result
+    return await crud.get_users(session)
