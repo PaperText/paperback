@@ -3,7 +3,7 @@ from pathlib import Path
 
 from pydantic import BaseSettings
 
-from paperback.auth.settings import AuthSettings, get_settings as get_auth_setting
+from paperback.auth.settings import AuthSettings, get_auth_settings as get_auth_setting
 from paperback.docs.settings import DocsSettings, get_settings as get_docs_setting
 
 

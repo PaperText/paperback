@@ -1,12 +1,15 @@
-from pydantic import BaseModel, EmailStr, Field
-from typing import Optional, Union, List
+from __future__ import annotations
+
+from pydantic import BaseModel, EmailStr, Field, UUID4
 from datetime import datetime
-from uuid import UUID, uuid4
 
 
 class Token(BaseModel):
-    token_uuid: UUID
+    token_uuid: UUID4
+    user_uuid: UUID4
     issued_at: datetime
+
+    user: User
 
     class Config:
         orm_mode = True
@@ -14,7 +17,7 @@ class Token(BaseModel):
 
 class UserBase(BaseModel):
     username: str
-    email: Optional[str] = None
+    email: str | None = None
 
 
 class UserCreate(UserBase):
@@ -22,18 +25,24 @@ class UserCreate(UserBase):
 
 
 class User(UserBase):
-    user_uuid: UUID
+    user_uuid: UUID4
 
     hashed_password: str
 
     level_of_access: int
 
+    tokens: list[Token] = []
+
     class Config:
         orm_mode = True
 
 
+# makes Token.user work
+Token.update_forward_refs()
+
+
 class Credentials(BaseModel):
-    identifier: Union[str, EmailStr] = Field(
+    identifier: str | EmailStr = Field(
         ..., description="email or username of user"
     )
     password: str
