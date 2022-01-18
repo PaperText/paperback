@@ -1,24 +1,29 @@
 import asyncio
 
-from sqlalchemy.ext.asyncio import create_async_engine, AsyncSession
+from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
-from sqlalchemy.orm import sessionmaker
+from sqlalchemy.orm import sessionmaker, Session
 
-from paperback.auth.settings import get_settings
+from paperback.auth.settings import get_auth_settings
 
-settings = get_settings()
+settings = get_auth_settings()
 
-engine = create_async_engine(
-    f"postgresql+asyncpg://{settings.db_user}:{settings.db_pass}@{settings.db_host}:{settings.db_port}/{settings.db_name}",
+engine = create_engine(
+    f"postgresql+psycopg2://{settings.db_user}:{settings.db_pass}@{settings.db_host}:{settings.db_port}/{settings.db_name}",
     future=True,
 )
-async_session = sessionmaker(
+local_session = sessionmaker(
     engine,
     autocommit=False,
     autoflush=False,
     expire_on_commit=False,
-    class_=AsyncSession,
     future=True,
 )
 
 Base = declarative_base()
+
+
+# Dependency
+def get_session() -> Session:
+    with local_session() as session:
+        yield session

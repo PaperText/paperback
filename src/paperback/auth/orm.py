@@ -1,7 +1,7 @@
 from datetime import datetime
 from uuid import uuid4
 
-from sqlalchemy import Column, Integer, String, Text, DateTime
+from sqlalchemy import Column, Integer, String, Text, DateTime, ForeignKey
 from sqlalchemy.orm import relationship
 from sqlalchemy.dialects.postgresql import UUID
 
@@ -9,7 +9,7 @@ from paperback.auth.database import Base
 
 
 class User(Base):
-    __tablename__ = "users"
+    __tablename__ = "user"
 
     user_uuid = Column(
         UUID(as_uuid=True), unique=True, primary_key=True, default=uuid4, index=True
@@ -22,15 +22,16 @@ class User(Base):
 
     level_of_access = Column(Integer)
 
-    # tokens = relationship("Token", back_populates="users")
+    tokens = relationship("Tokens", back_populates="user")
 
 
 class Token(Base):
-    __tablename__ = "tokens"
+    __tablename__ = "token"
 
     token_uuid = Column(
         UUID(as_uuid=True), primary_key=True, unique=True, default=uuid4, index=True
     )
     issued_at = Column(DateTime, default=datetime)
 
-    # user = relationship("User", back_populates="tokens")
+    user_uuid = Column(UUID(as_uuid=True), ForeignKey("user.user_uuid"))
+    user = relationship("Users", back_populates="tokens")
