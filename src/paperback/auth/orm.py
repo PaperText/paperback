@@ -22,7 +22,7 @@ class User(Base):
 
     level_of_access = Column(Integer)
 
-    tokens = relationship("Tokens", back_populates="user")
+    tokens = relationship("Token", back_populates="user")
 
 
 class Token(Base):
@@ -34,4 +34,4 @@ class Token(Base):
     issued_at = Column(DateTime, default=datetime)
 
     user_uuid = Column(UUID(as_uuid=True), ForeignKey("user.user_uuid"))
-    user = relationship("Users", back_populates="tokens")
+    user = relationship("User", back_populates="tokens")
