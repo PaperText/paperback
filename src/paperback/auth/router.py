@@ -1,12 +1,30 @@
-from typing import List, Optional, Dict, Any
+import datetime
+import uuid
+from typing import List, Optional, Dict, Any, cast, Iterator
 
-from fastapi import APIRouter, Depends, HTTPException, status, Header, Request, BackgroundTasks
+from authlib.jose import jwt
+from fastapi import (
+    APIRouter,
+    Depends,
+    HTTPException,
+    status,
+    Header,
+    Request,
+    BackgroundTasks,
+)
+from pydantic import EmailStr
+from email_validator import validate_email, EmailNotValidError
+from sqlalchemy.orm import Session
+
 from paperback.settings import (
     get_settings as get_root_settings,
     AppSettings as RootSettings,
 )
+
+# from paperback.app import app
 from paperback.auth.database import engine, Base, local_session, get_session
-from paperback.auth.jwt import get_decode_token
+from paperback.auth.hash import crypto_context
+from paperback.auth.jwt import get_decode_token, get_jwt_keys, JWTKeys
 from paperback.auth import schemas, crud, orm
 from paperback.auth.logging import logger
 from paperback.auth.settings import AuthSettings, get_auth_settings
@@ -29,15 +47,10 @@ def get_level_of_access(
     def return_function(
         x_authentication: str = Header(...),
         decode_token=Depends(get_decode_token),
-        session=Depends(get_session)
+        session=Depends(get_session),
     ) -> schemas.Token:
         # TODO: change to this in python3.9
-        # token: str = x_authentication.removeprefix("Bearer: ")
-        token: str = (
-            x_authentication[8:]
-            if x_authentication.startswith("Bearer: ")
-            else x_authentication
-        )
+        token: str = x_authentication.removeprefix("Bearer: ")
 
         token: schemas.Token = decode_token(token)
 
@@ -64,38 +77,123 @@ def get_level_of_access(
     return return_function
 
 
+# idk where to put this, but this won't work in testing (with overrides in general)
 @auth_router.on_event("startup")
 async def startup():
+    settings = get_auth_settings()
+    logger.debug("settings on startup of auth module: %s", settings)
+
     logger.debug("creating ORM classes")
     orm.Base.metadata.create_all(bind=engine)
     # with engine.begin() as conn:
     #     await conn.run_sync(Base.metadata.create_all)
 
+    match settings:
+        case AuthSettings(
+            create_root_user=True, root_user_password=root_user_password
+        ) if root_user_password is not None:
+            logger.debug("trying to create root user")
 
-@auth_router.get("/signin", tags=["auth"], response_model=str)
+            session = next(get_session())
+
+            logger.debug("getting root user")
+            root_user = crud.get_user_by_username(session, "root")
+            if root_user is None:
+                logger.debug("can't find root user, creating it")
+                root_user = schemas.UserCreate(
+                    username="root",
+                    password=root_user_password,
+                )
+                logger.debug("root user to create: %s", root_user)
+                crud.create_user(session, root_user)
+            else:
+                logger.debug("found root user: %s", root_user)
+                if not crypto_context.verify(root_user_password, root_user.hashed_password):
+                    logger.error("root user already exists, but password is incorrect")
+                    raise Exception(
+                        "root user already exists, but password is incorrect"
+                    )
+        case AuthSettings(
+            create_root_user=False, root_user_password=root_user_password
+        ) if root_user_password is not None:
+            logger.error(
+                "`create_root_user` is set to `False`, but `root_user_password` is provided"
+            )
+        case AuthSettings(
+            create_root_user=True, root_user_password=root_user_password
+        ) if root_user_password is None:
+            logger.error(
+                "`create_root_user` is set to `True`, but `root_user_password` is not provided"
+            )
+
+
+@auth_router.post("/signin", tags=["auth"], response_model=str)
 async def signin(
     credentials: schemas.Credentials,
-    request: Request,
     background_tasks: BackgroundTasks,
+    session: Session = Depends(get_session),
+    jwt_keys: JWTKeys = Depends(get_jwt_keys),
 ) -> str:
     """
     generates new token if provided user_id and password are correct
     """
-    return "token"
+    logger.debug("logging in user with identifier %s", credentials.identifier)
+    try:
+        validated_email = validate_email(credentials.identifier)
+        email = validated_email.email
+        user = crud.get_user_by_email(session, email)
+    except EmailNotValidError:
+        username = credentials.identifier
+        user = crud.get_user_by_username(session, username)
+
+    if not crypto_context.verify(credentials.password, user.hashed_password):
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail="Incorrect password",
+        )
+    else:
+        logger.debug("password of user %s was correct", user)
+
+    now = datetime.datetime.now()
+
+    new_token = schemas.CreateToken(
+        issued_at=now,
+        user_uuid=user.user_uuid,
+    )
+    token = crud.create_token(session, new_token)
+
+    header: dict[str, str] = {"alg": "ES384", "typ": "JWT"}
+    payload: dict[str, str | int] = {
+        "iss": "paperback",
+        "sub": str(token.user_uuid),
+        "exp": int(round((now + datetime.timedelta(days=2)).timestamp(), 0)),
+        "iat": int(round(now.timestamp(), 0)),
+        "jti": str(token.token_uuid),
+    }
+    encoded_jwt = jwt.encode(header, payload, jwt_keys["private_key"])
+    return encoded_jwt
+
+
+@auth_router.post("/signup", tags=["auth"], response_model=schemas.User)
+async def signup(new_user: schemas.UserCreate, session=Depends(get_session)) -> schemas.User:
+    """
+    creates new user with specified info
+    """
+    logger.debug("creating new user: %s", new_user)
+    user = crud.create_user(session, new_user)
+    return user
 
 
 # TODO: remove
 
-@auth_router.get("/user", tags=["auth"], response_model=list[schemas.User])
-async def get_users(session=Depends(get_session)) -> list[schemas.User]:
-    """
-    generates new token if provided user_id and password are correct
-    """
-    return crud.get_users(session)
+
+
 
 
 @auth_router.get("/test", tags=["auth"], response_model=schemas.User)
-async def test(user: schemas.User = Depends(get_level_of_access(greater_or_equal=1))) -> schemas.User:
+async def test(
+    user: schemas.User = Depends(get_level_of_access(greater_or_equal=1)),
+) -> schemas.User:
     """
     generates new token if provided user_id and password are correct
     """
