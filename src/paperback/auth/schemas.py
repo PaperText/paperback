@@ -4,10 +4,17 @@ from pydantic import BaseModel, EmailStr, Field, UUID4
 from datetime import datetime
 
 
-class Token(BaseModel):
-    token_uuid: UUID4
-    user_uuid: UUID4
+class TokenBase(BaseModel):
     issued_at: datetime
+    user_uuid: UUID4
+
+
+class CreateToken(TokenBase):
+    pass
+
+
+class Token(TokenBase):
+    token_uuid: UUID4
 
     user: User
 
@@ -42,9 +49,7 @@ Token.update_forward_refs()
 
 
 class Credentials(BaseModel):
-    identifier: str | EmailStr = Field(
-        ..., description="email or username of user"
-    )
+    identifier: str | EmailStr = Field(..., description="email or username of user")
     password: str
 
     class Config:

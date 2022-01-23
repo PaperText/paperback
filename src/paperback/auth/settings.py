@@ -11,6 +11,9 @@ class AuthSettings(BaseSettings):
     db_port: str = "5432"
     db_name: str = "auth_module"
 
+    create_root_user: bool = False
+    root_user_password: str | None = None
+
     storage_path: Path
 
     recreate_keys: bool = False

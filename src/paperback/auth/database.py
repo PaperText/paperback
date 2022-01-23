@@ -1,4 +1,5 @@
 import asyncio
+from typing import Iterator
 
 from sqlalchemy import create_engine
 from sqlalchemy.ext.declarative import declarative_base
@@ -24,6 +25,9 @@ Base = declarative_base()
 
 
 # Dependency
-def get_session() -> Session:
-    with local_session() as session:
+def get_session() -> Iterator[Session]:
+    session = local_session()
+    try:
         yield session
+    finally:
+        session.close()
