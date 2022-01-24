@@ -31,17 +31,18 @@ class UserCreate(UserBase):
     password: str
 
 
-class User(UserBase):
-    user_uuid: UUID4
-
-    hashed_password: str
-
+class UserOut(UserBase):
     level_of_access: int
-
-    tokens: list[Token] = []
 
     class Config:
         orm_mode = True
+
+
+class User(UserOut):
+    user_uuid: UUID4
+    hashed_password: str
+
+    tokens: list[Token] = []
 
 
 # makes Token.user work

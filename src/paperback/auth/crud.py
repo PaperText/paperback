@@ -62,13 +62,16 @@ def create_user(session: Session, user: schemas.UserCreate) -> orm.User:
 
 def get_token(session: Session, token_uuid: uuid4) -> orm.Token:
     res = (
-        session.execute(
-            select(orm.Token).filter(schemas.Token.token_uuid == token_uuid)
-        )
+        session.execute(select(orm.Token).filter(orm.Token.token_uuid == token_uuid))
         .scalars()
         .first()
     )
     return res
+
+
+def delete_token(session: Session, token_uuid: uuid4):
+    session.delete(get_token(session, token_uuid))
+    session.commit()
 
 
 def create_token(session: Session, token: schemas.CreateToken) -> orm.Token:
@@ -83,15 +86,3 @@ def create_token(session: Session, token: schemas.CreateToken) -> orm.Token:
     logger.debug("created token: %s", db_token)
     logger.debug("user in created token: %s", db_token.user)
     return db_token
-
-
-def get_user_by_token_uuid(session: Session, token_uuid: uuid4) -> orm.User:
-    res = (
-        session.execute(
-            select(orm.Token).filter(schemas.Token.token_uuid == token_uuid)
-        )
-        .scalars()
-        .first()
-        .user
-    )
-    return res

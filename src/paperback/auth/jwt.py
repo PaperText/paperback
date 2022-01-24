@@ -8,7 +8,6 @@ from authlib.jose import jwt
 import ecdsa
 
 from paperback.auth.logging import logger
-from paperback.auth.crud import get_user_by_token_uuid
 from paperback.auth.settings import AuthSettings, get_auth_settings
 from paperback.auth import schemas
 from paperback.auth.crud import get_token
