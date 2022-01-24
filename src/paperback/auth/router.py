@@ -2,7 +2,7 @@ import datetime
 import uuid
 from typing import List, Optional, Dict, Any, cast, Iterator
 
-from authlib.jose import jwt
+from authlib.jose import jwt, errors as jwt_errors
 from fastapi import (
     APIRouter,
     Depends,
@@ -11,6 +11,7 @@ from fastapi import (
     Header,
     Request,
     BackgroundTasks,
+    Body,
 )
 from pydantic import EmailStr
 from email_validator import validate_email, EmailNotValidError
@@ -24,7 +25,7 @@ from paperback.settings import (
 # from paperback.app import app
 from paperback.auth.database import engine, Base, local_session, get_session
 from paperback.auth.hash import crypto_context
-from paperback.auth.jwt import get_decode_token, get_jwt_keys, JWTKeys
+from paperback.auth.jwt import get_decode_token, get_jwt_keys, JWTKeys, claim_option
 from paperback.auth import schemas, crud, orm
 from paperback.auth.logging import logger
 from paperback.auth.settings import AuthSettings, get_auth_settings
@@ -49,7 +50,6 @@ def get_level_of_access(
         decode_token=Depends(get_decode_token),
         session=Depends(get_session),
     ) -> schemas.Token:
-        # TODO: change to this in python3.9
         token: str = x_authentication.removeprefix("Bearer: ")
 
         token: schemas.Token = decode_token(token)
@@ -179,7 +179,7 @@ async def signin(
 @auth_router.post("/signup", tags=["auth"], response_model=schemas.UserOut)
 async def signup(
     new_user: schemas.UserCreate, session=Depends(get_session)
-) -> schemas.UserOut:
+) -> orm.User:
     """
     creates new user with specified info
     """
@@ -213,3 +213,48 @@ async def signout_everywhere(
     logger.debug("tokens to delete: %s", tokens)
     for t in tokens:
         crud.delete_token(session, t.token_uuid)
+
+
+@auth_router.get("/tokens", tags=["token"], response_model=list[schemas.TokenOut])
+async def get_tokens(
+    token: orm.Token = Depends(get_level_of_access(greater_or_equal=0)),
+) -> list[orm.Token]:
+    """
+    returns all tokens of requester
+    """
+    return token.user.tokens
+
+
+@auth_router.delete("/tokens", tags=["token"])
+async def delete_tokens(
+    token_identifier: str = Body(..., description="token itself of uuid of token"),
+    jwt_keys: JWTKeys = Depends(get_jwt_keys),
+    session=Depends(get_session),
+    token: orm.Token = Depends(get_level_of_access(greater_or_equal=0)),
+) -> list[orm.Token]:
+    """
+    removes specefied token
+    """
+    claim_option: dict[str, dict[str, bool|list[str]]] = {
+        "iss": {
+            "essential": True,
+            "values": ["paperback"],
+        },
+        "sub": {
+            "essential": True,
+        },
+        "exp": {
+            "essential": True,
+        },
+        "jti": {
+            "essential": True,
+        },
+    }
+
+    try:
+        claims = jwt.decode(token, jwt_keys["public_key"], claim_option=claim_option)
+        claims.validate()
+        token_uuid = claims["jti"]
+    except jwt_errors.DecodeError:
+        token_uuid = token
+    crud.delete_token(session, token_uuid)
