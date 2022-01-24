@@ -3,8 +3,9 @@ from pathlib import Path
 from typing import List, Optional, Dict, Any, Callable, TypedDict
 from functools import lru_cache
 
+
 from fastapi import HTTPException, status, Depends
-from authlib.jose import jwt
+from authlib.jose import jwt, errors as jwt_errors
 import ecdsa
 
 from paperback.auth.logging import logger
@@ -137,7 +138,7 @@ def get_decode_token(
                 token, jwt_keys["public_key"], claims_options=claim_option
             )
             claims.validate()
-        except Exception as exception:
+        except authlib.jose.errors.DecodeError as exception:
             logger.error("can't verify token %s", token)
             logger.error(exception)
             raise HTTPException(
