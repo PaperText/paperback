@@ -108,7 +108,9 @@ async def startup():
                 crud.create_user(session, root_user)
             else:
                 logger.debug("found root user: %s", root_user)
-                if not crypto_context.verify(root_user_password, root_user.hashed_password):
+                if not crypto_context.verify(
+                    root_user_password, root_user.hashed_password
+                ):
                     logger.error("root user already exists, but password is incorrect")
                     raise Exception(
                         "root user already exists, but password is incorrect"
@@ -174,8 +176,10 @@ async def signin(
     return encoded_jwt
 
 
-@auth_router.post("/signup", tags=["auth"], response_model=schemas.User)
-async def signup(new_user: schemas.UserCreate, session=Depends(get_session)) -> schemas.User:
+@auth_router.post("/signup", tags=["auth"], response_model=schemas.UserOut)
+async def signup(
+    new_user: schemas.UserCreate, session=Depends(get_session)
+) -> schemas.UserOut:
     """
     creates new user with specified info
     """
@@ -184,17 +188,13 @@ async def signup(new_user: schemas.UserCreate, session=Depends(get_session)) -> 
     return user
 
 
-# TODO: remove
-
-
-
-
-
-@auth_router.get("/test", tags=["auth"], response_model=schemas.User)
-async def test(
-    user: schemas.User = Depends(get_level_of_access(greater_or_equal=1)),
-) -> schemas.User:
+@auth_router.get("/signout", tags=["auth"])
+async def signout(
+    token: orm.Token = Depends(get_level_of_access(greater_or_equal=0)),
+    session=Depends(get_session),
+):
     """
-    generates new token if provided user_id and password are correct
+    removes token used for execution from database
     """
-    return user
+    crud.delete_token(session, token.token_uuid)
+    return
