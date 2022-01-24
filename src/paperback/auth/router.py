@@ -197,4 +197,19 @@ async def signout(
     removes token used for execution from database
     """
     crud.delete_token(session, token.token_uuid)
-    return
+
+
+@auth_router.get("/signout_everywhere", tags=["auth"])
+async def signout_everywhere(
+    token: orm.Token = Depends(get_level_of_access(greater_or_equal=0)),
+    session=Depends(get_session),
+):
+    """
+    removes token used for execution from database
+    """
+    user = token.user
+    logger.debug("deleting tokens of user %s", user)
+    tokens = user.tokens
+    logger.debug("tokens to delete: %s", tokens)
+    for t in tokens:
+        crud.delete_token(session, t.token_uuid)
