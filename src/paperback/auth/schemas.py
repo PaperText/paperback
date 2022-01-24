@@ -13,9 +13,14 @@ class CreateToken(TokenBase):
     pass
 
 
-class Token(TokenBase):
+class TokenOut(TokenBase):
     token_uuid: UUID4
 
+    class Config:
+        orm_mode = True
+
+
+class Token(TokenOut):
     user: User
 
     class Config:
