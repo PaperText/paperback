@@ -231,26 +231,10 @@ async def delete_tokens(
     jwt_keys: JWTKeys = Depends(get_jwt_keys),
     session=Depends(get_session),
     token: orm.Token = Depends(get_level_of_access(greater_or_equal=0)),
-) -> list[orm.Token]:
+):
     """
     removes specefied token
     """
-    claim_option: dict[str, dict[str, bool|list[str]]] = {
-        "iss": {
-            "essential": True,
-            "values": ["paperback"],
-        },
-        "sub": {
-            "essential": True,
-        },
-        "exp": {
-            "essential": True,
-        },
-        "jti": {
-            "essential": True,
-        },
-    }
-
     try:
         claims = jwt.decode(token, jwt_keys["public_key"], claim_option=claim_option)
         claims.validate()
