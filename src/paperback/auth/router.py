@@ -214,6 +214,8 @@ async def signout_everywhere(
     for t in tokens:
         crud.delete_token(session, t.token_uuid)
 
+# tokens
+
 
 @auth_router.get("/tokens", tags=["token"], response_model=list[schemas.TokenOut])
 async def get_tokens(
@@ -233,7 +235,7 @@ async def delete_tokens(
     token: orm.Token = Depends(get_level_of_access(greater_or_equal=0)),
 ):
     """
-    removes specefied token
+    removes specified token
     """
     try:
         claims = jwt.decode(token, jwt_keys["public_key"], claim_option=claim_option)
@@ -242,3 +244,96 @@ async def delete_tokens(
     except jwt_errors.DecodeError:
         token_uuid = token
     crud.delete_token(session, token_uuid)
+
+# users
+
+
+@auth_router.get("/me", tags=["user"], response_model=schemas.UserOut)
+async def get_me(
+    token: orm.Token = Depends(get_level_of_access(greater_or_equal=0)),
+):
+    """
+    returns current user
+    """
+    return token.user
+
+
+@auth_router.get("/user", tags=["user"], response_model=list[schemas.UserOut], deprecated=True)
+async def get_users(
+    token: orm.Token = Depends(get_level_of_access(greater_or_equal=3)),
+):
+    """
+    reads all existing users
+    """
+    raise NotImplementedError
+
+
+@auth_router.post("/user", tags=["user"], response_model=schemas.UserOut, deprecated=True)
+async def create_user(
+    user: schemas.UserCreate,
+):
+    """
+    creates user with provided user_id, password and user_name
+
+    Note
+    ----
+    * created users are assigned to public organisation
+    * created users loa is 1
+
+    """
+    raise NotImplementedError
+
+
+@auth_router.get("/user/{username}", tags=["user"], response_model=schemas.UserOut, deprecated=True)
+async def get_user_by_username(
+    username: str,
+    token: orm.Token = Depends(get_level_of_access(greater_or_equal=0)),
+):
+    """
+    return info about user with given username
+    """
+    raise NotImplementedError
+
+
+@auth_router.patch("/user/{username}/promote", tags=["user"], response_model=schemas.UserOut, deprecated=True)
+async def promote_user_by_username(
+    username: str,
+    token: orm.Token = Depends(get_level_of_access(greater_or_equal=0)),
+):
+    """
+    promotes (increases loa) user with given username
+    """
+    raise NotImplementedError
+
+
+@auth_router.patch("/user/{username}/demote", tags=["user"], response_model=schemas.UserOut, deprecated=True)
+async def demote_user_by_username(
+    username: str,
+    token: orm.Token = Depends(get_level_of_access(greater_or_equal=0)),
+):
+    """
+    demotes (decreases loa) user with given username
+    """
+    raise NotImplementedError
+
+
+@auth_router.patch("/user/{username}/password", tags=["user"], response_model=schemas.UserOut, deprecated=True)
+async def update_password_of_user_by_username(
+    username: str,
+    token: orm.Token = Depends(get_level_of_access(greater_or_equal=0)),
+):
+    """
+    updates password of user with given username
+    """
+    raise NotImplementedError
+
+
+@auth_router.delete("/user/{username}", tags=["user"], response_model=schemas.UserOut, deprecated=True)
+async def delete_user_by_username(
+    username: str,
+    token: orm.Token = Depends(get_level_of_access(greater_or_equal=0)),
+):
+    """
+    removes user with given username
+    """
+    raise NotImplementedError
