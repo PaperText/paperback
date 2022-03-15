@@ -8,9 +8,7 @@ from paperback.docs.settings import get_docs_settings
 settings = get_docs_settings()
 
 
-repo = Repository(
-    f"{settings.db_scheme}://{settings.db_user}:{settings.db_pass}@{settings.db_host}:{settings.db_port}"
-)
+repo = Repository(f"{settings.db_scheme}://{settings.db_user}:{settings.db_pass}@{settings.db_host}:{settings.db_port}")
 
 
 # dependency
