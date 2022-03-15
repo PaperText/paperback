@@ -22,7 +22,6 @@ from paperback.settings import (
     AppSettings as RootSettings,
 )
 
-# from paperback.app import app
 from paperback.auth.database import engine, Base, local_session, get_session
 from paperback.auth.hash import crypto_context
 from paperback.auth.jwt import get_decode_token, get_jwt_keys, JWTKeys, claim_option
@@ -77,9 +76,13 @@ def get_level_of_access(
     return return_function
 
 
-# idk where to put this, but this won't work in testing (with overrides in general)
 @auth_router.on_event("startup")
 async def startup():
+    """
+    Note
+    ----
+    this won't work in testing as id doesn't account overrides
+    """
     settings = get_auth_settings()
     logger.debug("settings on startup of auth module: %s", settings)
 

@@ -104,8 +104,8 @@ logger.info("adding default routers")
 logger.debug("adding auth routers")
 app.include_router(auth_router)
 
-# logger.debug("adding docs routers")
-# app.include_router(docs_router)
+logger.debug("adding docs routers")
+app.include_router(docs_router)
 
 # adding middleware
 

@@ -7,7 +7,7 @@ from py2neo import Node, Relationship
 from pyexling import PyExLing
 from titanis import Titanis
 
-from paperback.std.docs.abc import Analyzer, AnalyzerResult
+from paperback.docs.analyzers.abc import Analyzer, AnalyzerResult
 
 
 class TitanisWrapper(Analyzer):
