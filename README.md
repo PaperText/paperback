@@ -3,7 +3,7 @@ PaperBack
 
 [![Documentation Status][docs_badge]][docs_link]
 
-[comment]: <> (TODO: add container registry link)
+[//]: # (TODO: add container registry link)
 
 [![Checked with mypy][mypy_badge]](http://mypy-lang.org/)
 [![Code style: black][black_badge]](https://github.com/psf/black)
@@ -13,10 +13,6 @@ PaperBack
 
 TODO
 ----
-- [x] add root logger
-- [ ] remove core
-- [ ] add fastAPI config?
-- [x] test PyCharm community (docker&database not supported)
 - [ ] add defaults folder with uvicorn config and config folder path
 
 Features
@@ -24,19 +20,20 @@ Features
 - Uses modern async typed python framework [fastapi](https://fastapi.tiangolo.com/)
 - Manages package in `pyproject.toml` with [poetry](https://python-poetry.org/)
 - Implements modular system with 3 types of modules managed by pythons entrypoints
-- Has a multilayer configuration system, capable of picking up environment variables and config files
+
+[//]: # (- Has a multilayer configuration system, capable of picking up environment variables and config files)
 
 Usage
 -----
-1. Install `paperback` with any `auth` and `docs` modules.
-    You can use standard implementation: [`papertext_auth`]() and [`papertext_docs`]().
-2. Install any other module you want.
-3. Run paperback with `paperback run`
+1. Install `paperback`
+
+[//]: # (1. Install any other module you want.)
+1. Run paperback with `paperback run`
 
 Container
 ---------
 Paperback is also available as a container. You can read more in [docs][docs_link]
-\
+
 example: `docker build -f ./src/container/Containerfile .`
 
 Contribute
@@ -46,8 +43,7 @@ Contribute
 
 Support
 -------
-If you are having issues, please let us know through
-    [issue tracker](https://github.com/PaperText/paperback/issues).
+If you are having issues, please let us know through [issue tracker](https://github.com/PaperText/paperback/issues).
 
 License
 -------
