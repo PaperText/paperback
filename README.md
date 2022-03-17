@@ -1,7 +1,7 @@
 PaperBack
 =========
 
-[![Documentation Status][docs_badge]][docs_link]
+[//]: # ([![Documentation Status][docs_badge]][docs_link])
 
 [//]: # (TODO: add container registry link)
 
@@ -26,9 +26,11 @@ Features
 Usage
 -----
 1. Install `paperback`
-
+2. Run paperback with `paperback run`
+ 
 [//]: # (1. Install any other module you want.)
-1. Run paperback with `paperback run`
+
+
 
 Container
 ---------
