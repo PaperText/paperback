@@ -16,7 +16,8 @@ services:
         condition: service_started
       task_broker:
         condition: service_started
-#      - task_backend
+      # task_backend:
+      #   condition: service_started
     environment:
       PT__core__host: "0.0.0.0"
 
@@ -46,8 +47,7 @@ services:
     volumes:
       - "./src/paperback:/root/paperback/src/paperback:z"
 
-# auth
-
+  # auth
   relational_db:
     image: postgres:14
     networks:
@@ -68,10 +68,9 @@ services:
       interval: 10s
       timeout: 5s
       retries: 5
-#    user: postgres
+    # user: postgres
 
-# docs
-
+  # docs
   graph_db:
     image: neo4j:4.3.2
     networks:

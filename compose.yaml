@@ -7,7 +7,7 @@ services:
     build:
       dockerfile: ./Containerfile # relative to context
       context: .
-    command: uvicorn --host 0.0.0.0 --port 7878 --log-level debug --use-colors --log-config ./src/container/uvicorn_log.json --reload --reload-dir /root/paperback/ --reload-exclude ./.papertext/storage/auth paperback.app:app
+    command: uvicorn --host 0.0.0.0 --port 7878 --log-level debug --use-colors --log-config ./src/container/uvicorn_log.json --reload --reload-dir /root/paperback/ paperback.app:app
     networks:
       - frontend
       - backend
@@ -31,7 +31,7 @@ services:
       auth__create_root_user: 1
       auth__root_user_password: $psql_root_user_password
 
-      auth__storage_path: "./.papertext/storage/auth"
+      auth__storage_path: "/root/.papertext/storage/auth"
       auth__recreate_keys: 1
 
       docs__db_host: "graph_db"

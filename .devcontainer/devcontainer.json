@@ -1,0 +1,20 @@
+{
+	"name": "paperback devcontainer",
+  // compose settings
+  "dockerComposeFile": [
+		"../compose.yaml",
+		"./compose.extend.yaml"
+	],
+  "service": "paperback",
+	"workspaceFolder": "/root/paperback/",
+  // IDE settings
+  "settings": {
+		"python.defaultInterpreterPath": "/usr/local/bin/python",
+    "scm.defaultViewMode": "tree",
+	},
+  // IDE extensions
+  "extensions": [
+		"ms-python.python",
+		"EditorConfig.EditorConfig",
+	],
+}
