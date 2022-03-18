@@ -25,11 +25,7 @@ Features
 Usage
 -----
 1. Install `paperback`
-2. Run paperback with `paperback run`
- 
-[//]: # (1. Install any other module you want.)
-
-
+3. Run paperback with `paperback run`
 
 Development
 -----------
