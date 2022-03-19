@@ -45,12 +45,8 @@ services:
 
       # old
 
-      PT__core__host: "0.0.0.0"
-
       PT__auth__IPstack_api_key: $IPstack_api_key
-
       PT__auth__root__password: $papertext_auth_root_password
-
       PT__auth__token__generate_keys: $PT__auth__token__generate_keys
 
     ports:
