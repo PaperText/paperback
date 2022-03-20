@@ -1,7 +1,6 @@
 # local config
 .env
 .python-version
-poetry.toml
 
 # cache
 **/__pycache__/
