@@ -1,5 +1,5 @@
-from typing import Tuple
 from importlib.metadata import version
+from typing import Tuple
 
 __version__ = version("paperback")
 version_split = __version__.split(".")

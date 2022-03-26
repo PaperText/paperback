@@ -1,1 +1,5 @@
-{}
+{
+  "python.linting.enabled": true,
+  "python.linting.mypyEnabled": true,
+  "python.formatting.provider": "black",
+}

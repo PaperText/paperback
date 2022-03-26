@@ -1,33 +1,31 @@
 import datetime
 import uuid
-from typing import List, Optional, Dict, Any, cast, Iterator
+from typing import Any, cast, Dict, Iterator, List, Optional
 
-from authlib.jose import jwt, errors as jwt_errors
+from authlib.jose import errors as jwt_errors
+from authlib.jose import jwt
+from email_validator import EmailNotValidError, validate_email
 from fastapi import (
     APIRouter,
-    Depends,
-    HTTPException,
-    status,
-    Header,
-    Request,
     BackgroundTasks,
     Body,
+    Depends,
+    Header,
+    HTTPException,
+    Request,
+    status,
 )
 from pydantic import EmailStr
-from email_validator import validate_email, EmailNotValidError
 from sqlalchemy.orm import Session
 
-from paperback.settings import (
-    get_settings as get_root_settings,
-    AppSettings as RootSettings,
-)
-
-from paperback.auth.database import engine, Base, local_session, get_session
+from paperback.auth import crud, orm, schemas
+from paperback.auth.database import Base, engine, get_session, local_session
 from paperback.auth.hash import crypto_context
-from paperback.auth.jwt import get_decode_token, get_jwt_keys, JWTKeys, claim_option
-from paperback.auth import schemas, crud, orm
+from paperback.auth.jwt import claim_option, get_decode_token, get_jwt_keys, JWTKeys
 from paperback.auth.logging import logger
 from paperback.auth.settings import AuthSettings, get_auth_settings
+from paperback.settings import AppSettings as RootSettings
+from paperback.settings import get_settings as get_root_settings
 
 auth_router = APIRouter()
 
@@ -217,6 +215,7 @@ async def signout_everywhere(
     for t in tokens:
         crud.delete_token(session, t.token_uuid)
 
+
 # tokens
 
 
@@ -248,6 +247,7 @@ async def delete_tokens(
         token_uuid = token
     crud.delete_token(session, token_uuid)
 
+
 # users
 
 
@@ -261,7 +261,9 @@ async def get_me(
     return token.user
 
 
-@auth_router.get("/user", tags=["user"], response_model=list[schemas.UserOut], deprecated=True)
+@auth_router.get(
+    "/user", tags=["user"], response_model=list[schemas.UserOut], deprecated=True
+)
 async def get_users(
     token: orm.Token = Depends(get_level_of_access(greater_or_equal=3)),
 ):
@@ -271,7 +273,9 @@ async def get_users(
     raise NotImplementedError
 
 
-@auth_router.post("/user", tags=["user"], response_model=schemas.UserOut, deprecated=True)
+@auth_router.post(
+    "/user", tags=["user"], response_model=schemas.UserOut, deprecated=True
+)
 async def create_user(
     user: schemas.UserCreate,
 ):
@@ -287,7 +291,9 @@ async def create_user(
     raise NotImplementedError
 
 
-@auth_router.get("/user/{username}", tags=["user"], response_model=schemas.UserOut, deprecated=True)
+@auth_router.get(
+    "/user/{username}", tags=["user"], response_model=schemas.UserOut, deprecated=True
+)
 async def get_user_by_username(
     username: str,
     token: orm.Token = Depends(get_level_of_access(greater_or_equal=0)),
@@ -298,7 +304,12 @@ async def get_user_by_username(
     raise NotImplementedError
 
 
-@auth_router.patch("/user/{username}/promote", tags=["user"], response_model=schemas.UserOut, deprecated=True)
+@auth_router.patch(
+    "/user/{username}/promote",
+    tags=["user"],
+    response_model=schemas.UserOut,
+    deprecated=True,
+)
 async def promote_user_by_username(
     username: str,
     token: orm.Token = Depends(get_level_of_access(greater_or_equal=0)),
@@ -309,7 +320,12 @@ async def promote_user_by_username(
     raise NotImplementedError
 
 
-@auth_router.patch("/user/{username}/demote", tags=["user"], response_model=schemas.UserOut, deprecated=True)
+@auth_router.patch(
+    "/user/{username}/demote",
+    tags=["user"],
+    response_model=schemas.UserOut,
+    deprecated=True,
+)
 async def demote_user_by_username(
     username: str,
     token: orm.Token = Depends(get_level_of_access(greater_or_equal=0)),
@@ -320,7 +336,12 @@ async def demote_user_by_username(
     raise NotImplementedError
 
 
-@auth_router.patch("/user/{username}/password", tags=["user"], response_model=schemas.UserOut, deprecated=True)
+@auth_router.patch(
+    "/user/{username}/password",
+    tags=["user"],
+    response_model=schemas.UserOut,
+    deprecated=True,
+)
 async def update_password_of_user_by_username(
     username: str,
     token: orm.Token = Depends(get_level_of_access(greater_or_equal=0)),
@@ -331,7 +352,9 @@ async def update_password_of_user_by_username(
     raise NotImplementedError
 
 
-@auth_router.delete("/user/{username}", tags=["user"], response_model=schemas.UserOut, deprecated=True)
+@auth_router.delete(
+    "/user/{username}", tags=["user"], response_model=schemas.UserOut, deprecated=True
+)
 async def delete_user_by_username(
     username: str,
     token: orm.Token = Depends(get_level_of_access(greater_or_equal=0)),

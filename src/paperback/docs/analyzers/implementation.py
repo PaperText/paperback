@@ -1,7 +1,7 @@
 import logging
 import time
 from dataclasses import dataclass, field
-from typing import Any, cast, Dict, List, Tuple, Union, Optional
+from typing import Any, cast, Dict, List, Optional, Tuple, Union
 
 from py2neo import Node, Relationship
 from pyexling import PyExLing
