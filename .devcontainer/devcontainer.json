@@ -11,7 +11,6 @@
   // IDE settings
   "settings": {
 		"python.defaultInterpreterPath": "/usr/local/bin/python",
-    "scm.defaultViewMode": "tree",
 	},
   // IDE extensions
   "extensions": [
