@@ -2,7 +2,6 @@ from typing import Literal, Type
 
 from starlette.responses import JSONResponse
 
-
 AsyncLibName = Literal["asyncio", "uvloop"]
 
 
@@ -23,7 +22,6 @@ def get_async_lib_name() -> AsyncLibName:
 def get_response_class() -> Type[JSONResponse]:
     try:
         import orjson
-
         from fastapi.responses import ORJSONResponse
     except ImportError:
         ORJSONResponse = None  # noqa

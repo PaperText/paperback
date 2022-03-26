@@ -1,8 +1,8 @@
 from __future__ import annotations
 
-from pydantic import BaseModel, EmailStr, Field, UUID4
 from datetime import datetime
 
+from pydantic import BaseModel, EmailStr, Field, UUID4
 
 # tokens
 
@@ -18,9 +18,6 @@ class CreateToken(TokenBase):
 
 class TokenOut(TokenBase):
     token_uuid: UUID4
-
-    class Config:
-        orm_mode = True
 
 
 class Token(TokenOut):
@@ -44,9 +41,6 @@ class UserCreate(UserBase):
 
 class UserOut(UserBase):
     level_of_access: int
-
-    class Config:
-        orm_mode = True
 
 
 class User(UserOut):

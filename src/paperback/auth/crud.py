@@ -1,16 +1,15 @@
 import uuid
 from datetime import datetime
-from typing import List, Dict, Any
+from typing import Any, Dict, List
 from uuid import uuid4
 
-
+from sqlalchemy import inspect
 from sqlalchemy.future import select
 from sqlalchemy.orm import Session
-from sqlalchemy import inspect
 
-from paperback.auth import schemas, orm
-from paperback.auth.logging import logger
+from paperback.auth import orm, schemas
 from paperback.auth.hash import crypto_context
+from paperback.auth.logging import logger
 
 
 def get_user(session: Session, user_uuid: uuid4) -> orm.User:

@@ -11,6 +11,9 @@
   // IDE settings
   "settings": {
 		"python.defaultInterpreterPath": "/usr/local/bin/python",
+    "python.linting.mypyPath": "/usr/local/bin/mypy",
+    "python.formatting.blackPath": "/usr/local/bin/black",
+    "python.sortImports.path": "/usr/local/bin/isort",
 	},
   // IDE extensions
   "extensions": [

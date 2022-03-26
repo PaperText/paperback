@@ -12,10 +12,10 @@ import py2neo
 from fastapi import APIRouter, Depends, HTTPException, status
 
 from paperback.abc import BaseAuth, BaseDocs
-from paperback.std.docs.abc import Analyzer, AnalyzerResult
 from paperback.abc.models import CreateDoc, ReadMinimalCorp, TokenTester, UserInfo
 from paperback.exceptions import PaperBackError
 from paperback.exceptions.docs import CorpusDoesntExist, DocumentNameError
+from paperback.std.docs.abc import Analyzer, AnalyzerResult
 from paperback.std.docs.analyzers import PyExLingWrapper, TitanisWrapper
 from paperback.std.docs.tasks import add_document
 
@@ -93,6 +93,7 @@ class DocsImplemented(BaseDocs):
         self.analyzers = self.get_analyzers(cfg.analyzers)
         self.logger.debug("loaded analyzers")
 
+    # DONE
     def get_analyzers(self, analyzers: SimpleNamespace) -> Dict[AnalyzerEnum, Analyzer]:
         return {
             AnalyzerEnum.pyexling: PyExLingWrapper(
@@ -177,90 +178,91 @@ class DocsImplemented(BaseDocs):
 
         tx.commit()
 
-    async def create_doc(
-        self,
-        creator_id: str,
-        creator_type: str,
-        doc_id: str,
-        text: str,
-        analyzer_id: Optional[AnalyzerEnum] = "pyexling",
-        private: bool = False,
-        parent_corp_id: Optional[str] = None,
-        name: Optional[str] = None,
-        has_access: Optional[List[str]] = None,
-        author: Optional[str] = None,
-        created: Optional[datetime] = None,
-        tags: Optional[List[str]] = None,
-    ) -> Dict[str, Any]:
-        self.logger.debug("adding new document")
+    # DONE
+    # async def create_doc(
+    #     self,
+    #     creator_id: str,
+    #     creator_type: str,
+    #     doc_id: str,
+    #     text: str,
+    #     analyzer_id: Optional[AnalyzerEnum] = "pyexling",
+    #     private: bool = False,
+    #     parent_corp_id: Optional[str] = None,
+    #     name: Optional[str] = None,
+    #     has_access: Optional[List[str]] = None,
+    #     author: Optional[str] = None,
+    #     created: Optional[datetime] = None,
+    #     tags: Optional[List[str]] = None,
+    # ) -> Dict[str, Any]:
+    #     self.logger.debug("adding new document")
 
-        tx = self.graph_db.begin()
+    #     tx = self.graph_db.begin()
 
-        # check that Document with the same id
+    #     # check that Document with the same id
 
-        docs_with_same_name = tx.graph.nodes.match(
-            "Document",
-            doc_id=doc_id,
-        ).first()
+    #     docs_with_same_name = tx.graph.nodes.match(
+    #         "Document",
+    #         doc_id=doc_id,
+    #     ).first()
 
-        if docs_with_same_name is not None:
-            raise DocumentNameError
+    #     if docs_with_same_name is not None:
+    #         raise DocumentNameError
 
-        # create Document
+    #     # create Document
 
-        doc_node = py2neo.Node(
-            "Document",
-            doc_id=doc_id,
-            text=text,
-            private=private,
-            name=name,
-            author=author,
-            created=created,
-            tags=tags,
-        )
-        tx.create(doc_node)
+    #     doc_node = py2neo.Node(
+    #         "Document",
+    #         doc_id=doc_id,
+    #         text=text,
+    #         private=private,
+    #         name=name,
+    #         author=author,
+    #         created=created,
+    #         tags=tags,
+    #     )
+    #     tx.create(doc_node)
 
-        # connect Document with creator
+    #     # connect Document with creator
 
-        if creator_type == "user":
-            author = tx.graph.nodes.match("user", user_id=creator_id).first()
-        else:
-            self.logger.warning("unknown user type: %s", creator_type)
+    #     if creator_type == "user":
+    #         author = tx.graph.nodes.match("user", user_id=creator_id).first()
+    #     else:
+    #         self.logger.warning("unknown user type: %s", creator_type)
 
-        tx.create(py2neo.Relationship(author, "created", doc_node))
+    #     tx.create(py2neo.Relationship(author, "created", doc_node))
 
-        # connect Document with corpus
+    #     # connect Document with corpus
 
-        if parent_corp_id is not None:
-            parent_corp = tx.graph.nodes.match("Corp", corp_id=parent_corp_id).first()
-            if parent_corp is None:
-                raise CorpusDoesntExist
-        else:
-            parent_corp = self.root_corp
-        tx.create(py2neo.Relationship(parent_corp, "contains", doc_node))
+    #     if parent_corp_id is not None:
+    #         parent_corp = tx.graph.nodes.match("Corp", corp_id=parent_corp_id).first()
+    #         if parent_corp is None:
+    #             raise CorpusDoesntExist
+    #     else:
+    #         parent_corp = self.root_corp
+    #     tx.create(py2neo.Relationship(parent_corp, "contains", doc_node))
 
-        # add analyzer node
+    #     # add analyzer node
 
-        analyzer_res_node = py2neo.Node("AnalyzerResult", analyzer_id=analyzer_id)
-        tx.create(analyzer_res_node)
-        tx.create(py2neo.Relationship(doc_node, "analyzed", analyzer_res_node))
+    #     analyzer_res_node = py2neo.Node("AnalyzerResult", analyzer_id=analyzer_id)
+    #     tx.create(analyzer_res_node)
+    #     tx.create(py2neo.Relationship(doc_node, "analyzed", analyzer_res_node))
 
-        # add
+    #     # add
 
-        analyzer_result: AnalyzerResult = self.analyzers[analyzer_id](
-            text, analyzer_res_node
-        )
+    #     analyzer_result: AnalyzerResult = self.analyzers[analyzer_id](
+    #         text, analyzer_res_node
+    #     )
 
-        for node in analyzer_result["nodes"]:
-            tx.create(node)
+    #     for node in analyzer_result["nodes"]:
+    #         tx.create(node)
 
-        for relationship in analyzer_result["relationships"]:
-            tx.create(relationship)
+    #     for relationship in analyzer_result["relationships"]:
+    #         tx.create(relationship)
 
-        for command in analyzer_result["commands_to_run"]:
-            tx.run(command)
+    #     for command in analyzer_result["commands_to_run"]:
+    #         tx.run(command)
 
-        tx.commit()
+    #     tx.commit()
 
     async def read_docs(
         self,

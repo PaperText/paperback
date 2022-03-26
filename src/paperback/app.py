@@ -1,23 +1,21 @@
 import logging
-from logging.handlers import RotatingFileHandler
 import os
 import time
-from pathlib import Path
-from typing import List, Callable, Dict, Any, Set, Union
+import uuid
 from copy import deepcopy
+from logging.handlers import RotatingFileHandler
+from pathlib import Path
+from typing import Any, Callable, Dict, List, Set, Union
 
 from fastapi import FastAPI, Request
 from fastapi.middleware.cors import CORSMiddleware
-
-import uuid
+from uvicorn.logging import ColourizedFormatter
 
 from paperback import __version__
 from paperback.auth.router import auth_router
 from paperback.docs.router import docs_router
-from paperback.util import get_response_class
 from paperback.settings import get_settings
-
-from uvicorn.logging import ColourizedFormatter
+from paperback.util import get_response_class
 
 # from pkg_resources import iter_entry_points
 
