@@ -1,5 +1,6 @@
 import py2neo
 from fastapi import HTTPException, status
+from uuid import uuid4
 
 from paperback.docs import schemas
 from paperback.docs.analyzers import Analyzer, AnalyzerResult
@@ -22,24 +23,13 @@ def create_doc(
         "Document",
         name=doc.name,
         text=doc.text,
-        parent_corp_name=doc.parent_corp_name,
-        corp_name=doc.corp_name,
         tags=doc.tags,
+        doc_uuid=str(uuid4()),
     )
     tx.create(doc_node)
 
-    # connect to parent corpus if it exists
-    if doc.parent_corp_name is not None:
-        parent_corp = tx.graph.nodes.match("Corpus", name=doc.parent_corp_name).first()
-        if parent_corp is None:
-            raise HTTPException(
-                status_code=status.HTTP_404_NOT_FOUND,
-                detail="Can't find parent corpus with specified name",
-            )
-        tx.create(py2neo.Relationship(parent_corp, "contains", doc_node))
-
     # add node with analyzer results
-    analyzer_res_node = py2neo.Node("AnalyzerResult", analyzer_id=analyzer_id)
+    analyzer_res_node = py2neo.Node("AnalyzerResult", analyzer_id=analyzer_id.value)
     tx.create(analyzer_res_node)
     tx.create(py2neo.Relationship(doc_node, "analyzed", analyzer_res_node))
 
@@ -55,3 +45,5 @@ def create_doc(
         tx.run(command)
 
     tx.commit()
+
+    return schemas.Doc(**dict(doc_node))
