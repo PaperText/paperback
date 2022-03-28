@@ -1,3 +1,4 @@
+from email.policy import HTTP
 import py2neo
 from fastapi import HTTPException, status
 from uuid import uuid4
@@ -8,8 +9,18 @@ from paperback.docs.analyzers import Analyzer, AnalyzerResult
 # from py2neo import Node, Transaction
 
 
-def get_docs(tx: py2neo.Transaction) -> list[schemas.Doc]:
-    docs: list[py2neo.Node] = tx.graph.nodes.match("Document")
+def get_docs(
+    tx: py2neo.Transaction,
+    tags: list[str] | None = None,
+) -> list[schemas.Doc]:
+    if tags is None:
+        docs: list[py2neo.Node] = tx.graph.nodes.match("Document")
+    else:
+        #TODO: implement tags
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="tags are not supported"
+        )
     return [schemas.Doc(**d) for d in docs]
 
 
@@ -47,3 +58,10 @@ def create_doc(
     tx.commit()
 
     return schemas.Doc(**dict(doc_node))
+
+def get_doc_by_name(
+    tx: py2neo.Transaction,
+    name: str,
+) -> schemas.DocOut:
+    doc: py2neo.Node = tx.graph.nodes.match("Document", name=name)
+    return schemas.Doc(**dict(doc))
