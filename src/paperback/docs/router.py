@@ -25,13 +25,23 @@ async def startup():
     settings = get_docs_settings()
     logger.debug("settings on startup of docs module: %s", settings)
 
+    tx = next(get_transaction())
+
+    if len(tx.graph.schema.get_uniqueness_constraints("Document")) == 0:
+        tx.graph.schema.create_uniqueness_constraint("Document", "name")
+    if len(tx.graph.schema.get_uniqueness_constraints("Corpus")) == 0:
+        tx.graph.schema.create_uniqueness_constraint("Corpus", "name")
+
 
 @docs_router.get("/docs", tags=["docs"], response_model=list[schemas.DocOut])
-async def get_docs(tx: Transaction = Depends(get_transaction)):
+async def get_docs(
+    tags: list[str] | None = None,
+    tx: Transaction = Depends(get_transaction)
+):
     """
     returns list of all documents, accessible to user
     """
-    return crud.get_docs(tx)
+    return crud.get_docs(tx, tags)
 
 
 @docs_router.post("/docs", tags=["docs"], response_model=schemas.DocOut)
@@ -46,3 +56,14 @@ async def create_doc(
     """
     analyzer = get_analyzer(analyzer_id)
     return crud.create_doc(tx, doc, analyzer_id, analyzer)
+
+
+@docs_router.get("/docs/{name}", tags=["docs"], response_model=schemas.DocOut)
+async def get_doc_by_name(
+    name: str,
+    tx: Transaction = Depends(get_transaction),
+):
+    """
+    returns document with specified name
+    """
+    return crud.get_doc_by_name(tx, name)
