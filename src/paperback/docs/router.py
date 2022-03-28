@@ -33,17 +33,6 @@ async def startup():
         tx.graph.schema.create_uniqueness_constraint("Corpus", "name")
 
 
-@docs_router.get("/docs", tags=["docs"], response_model=list[schemas.DocOut])
-async def get_docs(
-    tags: list[str] | None = None,
-    tx: Transaction = Depends(get_transaction)
-):
-    """
-    returns list of all documents, accessible to user
-    """
-    return crud.get_docs(tx, tags)
-
-
 @docs_router.post("/docs", tags=["docs"], response_model=schemas.DocOut)
 async def create_doc(
     doc: schemas.DocCreate,
@@ -58,6 +47,16 @@ async def create_doc(
     return crud.create_doc(tx, doc, analyzer_id, analyzer)
 
 
+@docs_router.get("/docs", tags=["docs"], response_model=list[schemas.DocOut])
+async def get_docs(
+    tags: list[str] | None = None, tx: Transaction = Depends(get_transaction)
+):
+    """
+    returns list of all documents, accessible to user
+    """
+    return crud.get_docs(tx, tags)
+
+
 @docs_router.get("/docs/{name}", tags=["docs"], response_model=schemas.DocOut)
 async def get_doc_by_name(
     name: str,
@@ -67,3 +66,42 @@ async def get_doc_by_name(
     returns document with specified name
     """
     return crud.get_doc_by_name(tx, name)
+
+
+@docs_router.patch(
+    "/docs/{name}/tags/{tag}", tags=["docs"], response_model=schemas.DocOut
+)
+async def add_tag_to_doc_by_name(
+    name: str,
+    tag: str,
+    tx: Transaction = Depends(get_transaction),
+):
+    """
+    adds specefied tag to document with specified name
+    """
+    return crud.add_tag_to_doc_by_name(tx, name, tag)
+
+
+@docs_router.delete(
+    "/docs/{name}/tags/{tag}", tags=["docs"], response_model=schemas.DocOut
+)
+async def delete_tag_from_doc_by_name(
+    name: str,
+    tag: str,
+    tx: Transaction = Depends(get_transaction),
+):
+    """
+    removes specefied tag from document with specified name
+    """
+    return crud.delete_tag_from_doc_by_name(tx, name, tag)
+
+
+@docs_router.delete("/docs/{name}", tags=["docs"])
+async def delete_doc_by_name(
+    name: str,
+    tx: Transaction = Depends(get_transaction),
+):
+    """
+    removes document with specified name
+    """
+    return crud.delete_doc_by_name(tx, name)

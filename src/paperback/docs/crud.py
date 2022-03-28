@@ -1,27 +1,13 @@
 from email.policy import HTTP
+from uuid import uuid4
+
 import py2neo
 from fastapi import HTTPException, status
-from uuid import uuid4
 
 from paperback.docs import schemas
 from paperback.docs.analyzers import Analyzer, AnalyzerResult
 
 # from py2neo import Node, Transaction
-
-
-def get_docs(
-    tx: py2neo.Transaction,
-    tags: list[str] | None = None,
-) -> list[schemas.Doc]:
-    if tags is None:
-        docs: list[py2neo.Node] = tx.graph.nodes.match("Document")
-    else:
-        #TODO: implement tags
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="tags are not supported"
-        )
-    return [schemas.Doc(**d) for d in docs]
 
 
 def create_doc(
@@ -59,9 +45,54 @@ def create_doc(
 
     return schemas.Doc(**dict(doc_node))
 
+
+def get_docs(
+    tx: py2neo.Transaction,
+    tags: list[str] | None = None,
+) -> list[schemas.Doc]:
+    if tags is None:
+        docs: list[py2neo.Node] = tx.graph.nodes.match("Document")
+    else:
+        # TODO: implement tags
+        raise HTTPException(
+            status_code=status.HTTP_501_NOT_IMPLEMENTED,
+            detail="Not implemented: tags are not supported",
+        )
+    return [schemas.Doc(**d) for d in docs]
+
+
 def get_doc_by_name(
     tx: py2neo.Transaction,
     name: str,
 ) -> schemas.DocOut:
     doc: py2neo.Node = tx.graph.nodes.match("Document", name=name)
     return schemas.Doc(**dict(doc))
+
+
+def add_tag_to_doc_by_name(
+    tx: py2neo.Transaction,
+    name: str,
+    tag: str,
+) -> schemas.Doc:
+    raise HTTPException(
+        status_code=status.HTTP_501_NOT_IMPLEMENTED, detail="Not implemented"
+    )
+
+
+def delete_tag_from_doc_by_name(
+    tx: py2neo.Transaction,
+    name: str,
+    tag: str,
+) -> schemas.Doc:
+    raise HTTPException(
+        status_code=status.HTTP_501_NOT_IMPLEMENTED, detail="Not implemented"
+    )
+
+
+def delete_doc_by_name(
+    tx: py2neo.Transaction,
+    name: str,
+) -> schemas.Doc:
+    raise HTTPException(
+        status_code=status.HTTP_501_NOT_IMPLEMENTED, detail="Not implemented"
+    )
