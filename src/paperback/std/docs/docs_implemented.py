@@ -48,14 +48,14 @@ class DocsImplemented(BaseDocs):
     }
 
     def __init__(self, cfg: SimpleNamespace, storage_dir: Path, auth_module: BaseAuth):
-        self.logger = logging.getLogger(__name__)
-        self.logger.setLevel(logging.getLogger("paperback").level)
-        self.logger.info("initializing papertext_docs module")
+        # self.logger = logging.getLogger(__name__)
+        # self.logger.setLevel(logging.getLogger("paperback").level)
+        # self.logger.info("initializing papertext_docs module")
 
-        self.logger.debug("using storage dir %s", storage_dir)
-        self.logger.debug("using config %s", cfg)
-        self.storage_dir: Path = storage_dir
-        self.cfg: SimpleNamespace = cfg
+        # self.logger.debug("using storage dir %s", storage_dir)
+        # self.logger.debug("using config %s", cfg)
+        # self.storage_dir: Path = storage_dir
+        # self.cfg: SimpleNamespace = cfg
         # TODO: add check for configuration,
         #  i.e. that hash.algo lib and token.curve lib are present
         self.auth_module = auth_module
@@ -63,15 +63,15 @@ class DocsImplemented(BaseDocs):
         self.docs_backup_folder = self.storage_dir / "docs.bak"
         self.docs_backup_folder.mkdir(parents=True, exist_ok=True)
 
-        self.logger.debug("connecting to neo4j database")
-        self.graph_db = py2neo.Graph(
-            scheme=self.cfg.db.scheme,
-            user=self.cfg.db.username,
-            password=self.cfg.db.password,
-            host=self.cfg.db.host,
-            port=self.cfg.db.port,
-        )
-        self.logger.debug("connected to neo4j database")
+        # self.logger.debug("connecting to neo4j database")
+        # self.graph_db = py2neo.Graph(
+        #     scheme=self.cfg.db.scheme,
+        #     user=self.cfg.db.username,
+        #     password=self.cfg.db.password,
+        #     host=self.cfg.db.host,
+        #     port=self.cfg.db.port,
+        # )
+        # self.logger.debug("connected to neo4j database")
 
         self.logger.debug("creating default corpus")
         self.root_corp = self.graph_db.nodes.match("corp", corp_id="root").first()
@@ -84,41 +84,41 @@ class DocsImplemented(BaseDocs):
         else:
             self.logger.debug("using already existing root corpus")
 
-        self.logger.debug("syncing with auth module")
-        self.sync_modules_on_startup()
-        self.logger.debug("synced with auth module")
+        # self.logger.debug("syncing with auth module")
+        # self.sync_modules_on_startup()
+        # self.logger.debug("synced with auth module")
 
-        self.logger.debug("loading analyzers")
-        self.analyzers = self.get_analyzers(cfg.analyzers)
-        self.logger.debug("loaded analyzers")
+        # self.logger.debug("loading analyzers")
+        # self.analyzers = self.get_analyzers(cfg.analyzers)
+        # self.logger.debug("loaded analyzers")
 
     # DONE
-    def get_analyzers(self, analyzers: SimpleNamespace) -> Dict[AnalyzerEnum, Analyzer]:
-        return {
-            AnalyzerEnum.pyexling: PyExLingWrapper(
-                analyzers.pyexling.host,
-                analyzers.pyexling.service,
-                analyzers.pyexling.titanis_host,
-            ),
-            AnalyzerEnum.titanis_open: TitanisWrapper(analyzers.titanis.host),
-        }
+    # def get_analyzers(self, analyzers: SimpleNamespace) -> Dict[AnalyzerEnum, Analyzer]:
+    #     return {
+    #         AnalyzerEnum.pyexling: PyExLingWrapper(
+    #             analyzers.pyexling.host,
+    #             analyzers.pyexling.service,
+    #             analyzers.pyexling.titanis_host,
+    #         ),
+    #         AnalyzerEnum.titanis_open: TitanisWrapper(analyzers.titanis.host),
+    #     }
 
-    async def __async__init__(self):
-        await self.sync_modules()
-        self.set_constraints()
+    # async def __async__init__(self):
+    #     await self.sync_modules()
+    #     self.set_constraints()
 
-    def set_constraints(self):
-        if len(self.graph_db.schema.get_uniqueness_constraints("org")) == 0:
-            self.graph_db.schema.create_uniqueness_constraint("org", "org_id")
-        if len(self.graph_db.schema.get_uniqueness_constraints("user")) == 0:
-            self.graph_db.schema.create_uniqueness_constraint("user", "user_id")
-        if len(self.graph_db.schema.get_uniqueness_constraints("corp")) == 0:
-            self.graph_db.schema.create_uniqueness_constraint("corp", "corp_id")
-        if len(self.graph_db.schema.get_uniqueness_constraints("doc")) == 0:
-            self.graph_db.schema.create_uniqueness_constraint("doc", "doc_id")
+    # def set_constraints(self):
+    #     if len(self.graph_db.schema.get_uniqueness_constraints("org")) == 0:
+    #         self.graph_db.schema.create_uniqueness_constraint("org", "org_id")
+    #     if len(self.graph_db.schema.get_uniqueness_constraints("user")) == 0:
+    #         self.graph_db.schema.create_uniqueness_constraint("user", "user_id")
+    #     if len(self.graph_db.schema.get_uniqueness_constraints("corp")) == 0:
+    #         self.graph_db.schema.create_uniqueness_constraint("corp", "corp_id")
+    #     if len(self.graph_db.schema.get_uniqueness_constraints("doc")) == 0:
+    #         self.graph_db.schema.create_uniqueness_constraint("doc", "doc_id")
 
-    def sync_modules_on_startup(self):
-        pass
+    # def sync_modules_on_startup(self):
+    #     pass
 
     async def sync_modules(self):
         org_nodes: Dict[str, py2neo.Node] = {}
@@ -263,57 +263,57 @@ class DocsImplemented(BaseDocs):
 
     #     tx.commit()
 
-    async def read_docs(
-        self,
-        requester_id: str,
-        contains: Optional[str] = None,
-        author: Optional[str] = None,
-        created_before: Optional[datetime] = None,
-        created_after: Optional[datetime] = None,
-        tags: Optional[List[str]] = None,
-    ) -> List[Dict[str, Any]]:
-        self.logger.debug("reading documents")
+    # async def read_docs(
+    #     self,
+    #     requester_id: str,
+    #     contains: Optional[str] = None,
+    #     author: Optional[str] = None,
+    #     created_before: Optional[datetime] = None,
+    #     created_after: Optional[datetime] = None,
+    #     tags: Optional[List[str]] = None,
+    # ) -> List[Dict[str, Any]]:
+    #     self.logger.debug("reading documents")
 
-        if contains is not None:
-            raise PaperBackError(
-                status_code=status.HTTP_409_CONFLICT,
-                detail="option `contains` is currently unsupported",
-            )
-        elif author is not None:
-            raise PaperBackError(
-                status_code=status.HTTP_409_CONFLICT,
-                detail="option `author` is currently unsupported",
-            )
-        elif created_before is not None:
-            raise PaperBackError(
-                status_code=status.HTTP_409_CONFLICT,
-                detail="option `created_before` is currently unsupported",
-            )
-        elif created_after is not None:
-            raise PaperBackError(
-                status_code=status.HTTP_409_CONFLICT,
-                detail="option `created_after` is currently unsupported",
-            )
-        elif tags is not None:
-            raise PaperBackError(
-                status_code=status.HTTP_409_CONFLICT,
-                detail="option `tags` is currently unsupported",
-            )
-        # graph = init_graph(config)
-        # if only_inactive:
-        #     query = "MATCH (d:document {inactive : false}) RETURN id(d) as doc_id, d.name as name"
-        # else:
-        #     query = "MATCH (d:document {inactive : true}) RETURN id(d) as doc_id, d.name as name"
-        #
-        # result = graph.run(query).data()
-        #
-        # return {'documents': result}
+    #     if contains is not None:
+    #         raise PaperBackError(
+    #             status_code=status.HTTP_409_CONFLICT,
+    #             detail="option `contains` is currently unsupported",
+    #         )
+    #     elif author is not None:
+    #         raise PaperBackError(
+    #             status_code=status.HTTP_409_CONFLICT,
+    #             detail="option `author` is currently unsupported",
+    #         )
+    #     elif created_before is not None:
+    #         raise PaperBackError(
+    #             status_code=status.HTTP_409_CONFLICT,
+    #             detail="option `created_before` is currently unsupported",
+    #         )
+    #     elif created_after is not None:
+    #         raise PaperBackError(
+    #             status_code=status.HTTP_409_CONFLICT,
+    #             detail="option `created_after` is currently unsupported",
+    #         )
+    #     elif tags is not None:
+    #         raise PaperBackError(
+    #             status_code=status.HTTP_409_CONFLICT,
+    #             detail="option `tags` is currently unsupported",
+    #         )
+    #     # graph = init_graph(config)
+    #     # if only_inactive:
+    #     #     query = "MATCH (d:document {inactive : false}) RETURN id(d) as doc_id, d.name as name"
+    #     # else:
+    #     #     query = "MATCH (d:document {inactive : true}) RETURN id(d) as doc_id, d.name as name"
+    #     #
+    #     # result = graph.run(query).data()
+    #     #
+    #     # return {'documents': result}
 
-        tx = self.graph_db.begin()
-        docs: list[py2neo.Node] = tx.graph.nodes.match("document")
-        self.logger.debug("read documents: %s", list(docs))
-        self.logger.info("read documents")
-        return [dict(d) for d in docs]
+    #     tx = self.graph_db.begin()
+    #     docs: list[py2neo.Node] = tx.graph.nodes.match("document")
+    #     self.logger.debug("read documents: %s", list(docs))
+    #     self.logger.info("read documents")
+    #     return [dict(d) for d in docs]
 
     async def read_doc(self, doc_id: str) -> Dict[str, Any]:
         pass
