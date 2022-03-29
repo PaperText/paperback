@@ -61,7 +61,7 @@ def get_docs(
 def get_doc_by_name(
     tx: py2neo.Transaction,
     name: str,
-) -> schemas.Doc:
+) -> schemas.DocOut:
     doc: py2neo.Node = tx.graph.nodes.match("Document", name=name)
     return schemas.Doc(**dict(doc))
 

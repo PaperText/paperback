@@ -53,7 +53,6 @@ def add_document_to_corpus_by_name(
         status_code=status.HTTP_501_NOT_IMPLEMENTED, detail="Not implemented"
     )
 
-
 def remove_subcorpus_from_corpus_by_name(
     tx: py2neo.Transaction,
     name: str,

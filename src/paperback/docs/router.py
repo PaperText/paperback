@@ -33,6 +33,10 @@ async def startup():
         tx.graph.schema.create_uniqueness_constraint("Corpus", "name")
 
 
+# docs
+# ----
+
+
 @docs_router.post("/docs", tags=["docs"], response_model=schemas.DocOut)
 async def create_doc(
     doc: schemas.DocCreate,
@@ -41,7 +45,7 @@ async def create_doc(
     tx: Transaction = Depends(get_transaction),
 ):
     """
-    creates new document with specified info and return it
+    creates new document with specified info and returns it
     """
     analyzer = get_analyzer(analyzer_id)
     return crud.create_doc(tx, doc, analyzer_id, analyzer)
@@ -52,7 +56,7 @@ async def get_docs(
     tags: list[str] | None = None, tx: Transaction = Depends(get_transaction)
 ):
     """
-    returns list of all documents, accessible to user
+    returns list of all documents
     """
     return crud.get_docs(tx, tags)
 
@@ -105,3 +109,96 @@ async def delete_doc_by_name(
     removes document with specified name
     """
     return crud.delete_doc_by_name(tx, name)
+
+
+# corpus
+# ------
+
+
+@docs_router.post("/corp", tags=["corpus"], response_model=schemas.CorpusOut)
+async def create_corpus(
+    corp: schemas.CorpusCreate,
+    tx: Transaction = Depends(get_transaction),
+):
+    """
+    creates new corpus with specified info and returns it
+    """
+    return crud.create_corpus(tx, corp)
+
+
+@docs_router.get("/corp", tags=["corpus"], response_model=list[schemas.CorpusOut])
+async def get_corpuses(
+    tx: Transaction = Depends(get_transaction),
+):
+    """
+    returns list of all corpuses
+    """
+    return crud.get_corpuses(tx)
+
+
+@docs_router.get("/corp/{name}", tags=["corpus"], response_model=schemas.CorpusOut)
+async def get_corpus_by_name(name: str, tx: Transaction = Depends(get_transaction)):
+    """
+    returns corpus with specified name
+    """
+    return crud.get_corpus_by_name(tx, name)
+
+
+@docs_router.patch("/corp/{name}/corp/{sub_name}", tags=["corpus"], response_model=schemas.CorpusOut)
+async def add_subcorpus_to_corpus_by_name(
+    name: str,
+    sub_name: str,
+    tx: Transaction = Depends(get_transaction)
+):
+    """
+    adds a subcorpus with name `sub_name` to corpus with name `name`
+    """
+    return crud.add_subcorpus_to_corpus_by_name(tx, name, sub_name)
+
+
+@docs_router.patch("/corp/{name}/docs/{sub_name}", tags=["corpus"], response_model=schemas.CorpusOut)
+async def add_document_to_corpus_by_name(
+    name: str,
+    sub_name: str,
+    tx: Transaction = Depends(get_transaction)
+):
+    """
+    adds document with name `sub_name` to corpus with name `name`
+    """
+    return crud.add_document_to_corpus_by_name(tx, name, sub_name)
+
+
+@docs_router.delete("/corp/{name}/corp/{sub_name}", tags=["corpus"], response_model=schemas.CorpusOut)
+async def remove_subcorpus_from_corpus_by_name(
+    name: str,
+    sub_name: str,
+    tx: Transaction = Depends(get_transaction)
+):
+    """
+    removes subcorpus with name `sub_name` to corpus with name `name`
+    """
+    return crud.remove_subcorpus_from_corpus_by_name(tx, name, sub_name)
+
+
+@docs_router.delete("/corp/{name}/docs/{sub_name}", tags=["corpus"], response_model=schemas.CorpusOut)
+async def remove_document_from_corpus_by_name(
+    name: str,
+    sub_name: str,
+    tx: Transaction = Depends(get_transaction)
+):
+    """
+    removes document with name `sub_name` to corpus with name `name`
+    """
+    return crud.remove_document_from_corpus_by_name(tx, name, sub_name)
+
+
+@docs_router.delete("/corp/{name}", tags=["corpus"])
+async def delete_corpus_by_name(name: str, tx: Transaction = Depends(get_transaction)):
+    """
+    removes corpus with specified name
+    """
+    return crud.delete_corpus_by_name(tx, name)
+
+
+# dicts
+# -----
