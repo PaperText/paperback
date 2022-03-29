@@ -24,8 +24,6 @@ from paperback.auth.hash import crypto_context
 from paperback.auth.jwt import claim_option, get_decode_token, get_jwt_keys, JWTKeys
 from paperback.auth.logging import logger
 from paperback.auth.settings import AuthSettings, get_auth_settings
-from paperback.settings import AppSettings as RootSettings
-from paperback.settings import get_settings as get_root_settings
 
 auth_router = APIRouter()
 
@@ -133,7 +131,6 @@ async def startup():
 @auth_router.post("/signin", tags=["auth"], response_model=str)
 async def signin(
     credentials: schemas.Credentials,
-    background_tasks: BackgroundTasks,
     session: Session = Depends(get_session),
     jwt_keys: JWTKeys = Depends(get_jwt_keys),
 ) -> str:
@@ -262,7 +259,7 @@ async def get_me(
 
 
 @auth_router.get(
-    "/user", tags=["user"], response_model=list[schemas.UserOut], deprecated=True
+    "/user", tags=["user"], response_model=list[schemas.UserOut]
 )
 async def get_users(
     token: orm.Token = Depends(get_level_of_access(greater_or_equal=3)),
@@ -274,7 +271,7 @@ async def get_users(
 
 
 @auth_router.post(
-    "/user", tags=["user"], response_model=schemas.UserOut, deprecated=True
+    "/user", tags=["user"], response_model=schemas.UserOut
 )
 async def create_user(
     user: schemas.UserCreate,
@@ -292,7 +289,7 @@ async def create_user(
 
 
 @auth_router.get(
-    "/user/{username}", tags=["user"], response_model=schemas.UserOut, deprecated=True
+    "/user/{username}", tags=["user"], response_model=schemas.UserOut
 )
 async def get_user_by_username(
     username: str,
@@ -353,7 +350,7 @@ async def update_password_of_user_by_username(
 
 
 @auth_router.delete(
-    "/user/{username}", tags=["user"], response_model=schemas.UserOut, deprecated=True
+    "/user/{username}", tags=["user"], response_model=schemas.UserOut
 )
 async def delete_user_by_username(
     username: str,
