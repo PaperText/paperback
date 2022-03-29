@@ -2,7 +2,6 @@ PaperBack
 =========
 
 [//]: # ([![Documentation Status][docs_badge]][docs_link])
-
 [//]: # (TODO: add container registry link)
 
 [![Checked with mypy][mypy_badge]](http://mypy-lang.org/)
@@ -19,9 +18,9 @@ Features
 --------
 - Uses modern async typed python framework [fastapi](https://fastapi.tiangolo.com/)
 - Manages package in `pyproject.toml` with [poetry](https://python-poetry.org/)
-- Implements modular system with 3 types of modules managed by pythons entrypoints
 
 [//]: # (- Has a multilayer configuration system, capable of picking up environment variables and config files)
+[//]: # (- Implements modular system with 3 types of modules managed by pythons entrypoints)
 
 Usage
 -----
@@ -32,11 +31,18 @@ Usage
 
 
 
+Development
+-----------
+1. get source code
+2. run
+```shell
+docker compose down && docker compose build paperback && docker compose up
+```
+3. 
+
 Container
 ---------
-Paperback is also available as a container. You can read more in [docs][docs_link]
-
-example: `docker build -f ./src/container/Containerfile .`
+Paperback is also available as a container
 
 Contribute
 ----------
@@ -45,7 +51,7 @@ Contribute
 
 Support
 -------
-If you are having issues, please let us know through [issue tracker](https://github.com/PaperText/paperback/issues).
+If you are having issues, please let us know through [issue tracker](https://github.com/PaperText/paperback/issues)
 
 License
 -------
