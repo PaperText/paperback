@@ -258,9 +258,7 @@ async def get_me(
     return token.user
 
 
-@auth_router.get(
-    "/user", tags=["user"], response_model=list[schemas.UserOut]
-)
+@auth_router.get("/user", tags=["user"], response_model=list[schemas.UserOut])
 async def get_users(
     token: orm.Token = Depends(get_level_of_access(greater_or_equal=3)),
 ):
@@ -270,9 +268,7 @@ async def get_users(
     raise NotImplementedError
 
 
-@auth_router.post(
-    "/user", tags=["user"], response_model=schemas.UserOut
-)
+@auth_router.post("/user", tags=["user"], response_model=schemas.UserOut)
 async def create_user(
     user: schemas.UserCreate,
 ):
@@ -288,9 +284,7 @@ async def create_user(
     raise NotImplementedError
 
 
-@auth_router.get(
-    "/user/{username}", tags=["user"], response_model=schemas.UserOut
-)
+@auth_router.get("/user/{username}", tags=["user"], response_model=schemas.UserOut)
 async def get_user_by_username(
     username: str,
     token: orm.Token = Depends(get_level_of_access(greater_or_equal=0)),
@@ -349,9 +343,7 @@ async def update_password_of_user_by_username(
     raise NotImplementedError
 
 
-@auth_router.delete(
-    "/user/{username}", tags=["user"], response_model=schemas.UserOut
-)
+@auth_router.delete("/user/{username}", tags=["user"], response_model=schemas.UserOut)
 async def delete_user_by_username(
     username: str,
     token: orm.Token = Depends(get_level_of_access(greater_or_equal=0)),

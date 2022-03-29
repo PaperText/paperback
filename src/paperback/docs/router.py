@@ -1,12 +1,8 @@
-from fastapi import APIRouter, Depends, Body
+from fastapi import APIRouter, Body, Depends
 from py2neo import Transaction
 
-from paperback.docs import crud, schemas, analyze
-from paperback.docs.analyzers import (
-    AnalyzerEnum,
-    DEFAULT_ANALYZER,
-    get_analyzer,
-)
+from paperback.docs import analyze, crud, schemas
+from paperback.docs.analyzers import AnalyzerEnum, DEFAULT_ANALYZER, get_analyzer
 from paperback.docs.database import get_transaction
 from paperback.docs.logging import logger
 from paperback.docs.settings import get_docs_settings
@@ -145,11 +141,11 @@ async def get_corpus_by_name(name: str, tx: Transaction = Depends(get_transactio
     return crud.get_corpus_by_name(tx, name)
 
 
-@docs_router.patch("/corp/{name}/corp/{sub_name}", tags=["corpus"], response_model=schemas.CorpusOut)
+@docs_router.patch(
+    "/corp/{name}/corp/{sub_name}", tags=["corpus"], response_model=schemas.CorpusOut
+)
 async def add_subcorpus_to_corpus_by_name(
-    name: str,
-    sub_name: str,
-    tx: Transaction = Depends(get_transaction)
+    name: str, sub_name: str, tx: Transaction = Depends(get_transaction)
 ):
     """
     adds a subcorpus with name `sub_name` to corpus with name `name`
@@ -157,11 +153,11 @@ async def add_subcorpus_to_corpus_by_name(
     return crud.add_subcorpus_to_corpus_by_name(tx, name, sub_name)
 
 
-@docs_router.patch("/corp/{name}/docs/{sub_name}", tags=["corpus"], response_model=schemas.CorpusOut)
+@docs_router.patch(
+    "/corp/{name}/docs/{sub_name}", tags=["corpus"], response_model=schemas.CorpusOut
+)
 async def add_document_to_corpus_by_name(
-    name: str,
-    sub_name: str,
-    tx: Transaction = Depends(get_transaction)
+    name: str, sub_name: str, tx: Transaction = Depends(get_transaction)
 ):
     """
     adds document with name `sub_name` to corpus with name `name`
@@ -169,11 +165,11 @@ async def add_document_to_corpus_by_name(
     return crud.add_document_to_corpus_by_name(tx, name, sub_name)
 
 
-@docs_router.delete("/corp/{name}/corp/{sub_name}", tags=["corpus"], response_model=schemas.CorpusOut)
+@docs_router.delete(
+    "/corp/{name}/corp/{sub_name}", tags=["corpus"], response_model=schemas.CorpusOut
+)
 async def remove_subcorpus_from_corpus_by_name(
-    name: str,
-    sub_name: str,
-    tx: Transaction = Depends(get_transaction)
+    name: str, sub_name: str, tx: Transaction = Depends(get_transaction)
 ):
     """
     removes subcorpus with name `sub_name` to corpus with name `name`
@@ -181,11 +177,11 @@ async def remove_subcorpus_from_corpus_by_name(
     return crud.remove_subcorpus_from_corpus_by_name(tx, name, sub_name)
 
 
-@docs_router.delete("/corp/{name}/docs/{sub_name}", tags=["corpus"], response_model=schemas.CorpusOut)
+@docs_router.delete(
+    "/corp/{name}/docs/{sub_name}", tags=["corpus"], response_model=schemas.CorpusOut
+)
 async def remove_document_from_corpus_by_name(
-    name: str,
-    sub_name: str,
-    tx: Transaction = Depends(get_transaction)
+    name: str, sub_name: str, tx: Transaction = Depends(get_transaction)
 ):
     """
     removes document with name `sub_name` to corpus with name `name`
@@ -217,9 +213,7 @@ async def create_dict(
 
 
 @docs_router.get("/dict", tags=["dict"], response_model=list[schemas.DictionaryOut])
-async def get_dicts(
-    tx: Transaction = Depends(get_transaction)
-):
+async def get_dicts(tx: Transaction = Depends(get_transaction)):
     """
     returns list of all dictionary
     """
@@ -300,10 +294,19 @@ async def analyze_predicates(
     """
     analyzes predicates on list of given docs and corpuses
     """
-    return analyze.analyze_predicates(tx, body.docs_and_corpuses, body.argument, body.predicate, body.role, return_context)
+    return analyze.analyze_predicates(
+        tx,
+        body.docs_and_corpuses,
+        body.argument,
+        body.predicate,
+        body.role,
+        return_context,
+    )
 
 
-@docs_router.get("/analyze/available_statistics", tags=["analyzer"], response_model=list[str])
+@docs_router.get(
+    "/analyze/available_statistics", tags=["analyzer"], response_model=list[str]
+)
 async def available_statistics():
     """
     returns list of available stats
@@ -320,7 +323,9 @@ async def analyze_stats(
     """
     analyzes stats on list of given docs and corpuses
     """
-    return analyze.analyze_stats(tx, body.docs_and_corpuses, body.statistics, analyze_sub_entities)
+    return analyze.analyze_stats(
+        tx, body.docs_and_corpuses, body.statistics, analyze_sub_entities
+    )
 
 
 @docs_router.post("/analyze/compare", tags=["analyzer"])
@@ -331,5 +336,6 @@ async def analyze_compare(
     """
     analyzes stats between lists of given docs and corpuses
     """
-    return analyze.analyze_compare(tx, body.first_docs_and_corpuses, body.second_docs_and_corpuses, body.statistics)
-
+    return analyze.analyze_compare(
+        tx, body.first_docs_and_corpuses, body.second_docs_and_corpuses, body.statistics
+    )
