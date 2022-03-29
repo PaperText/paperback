@@ -84,8 +84,8 @@ app = FastAPI(
         # docs
         {"name": "docs", "description": "document manipulation"},
         {"name": "corpus", "description": "corpus manipulation"},
-        # {"name": "dict", "description": "dictionaries manipulation"},
-        # {"name": "analyzer", "description": "analyzer usage"},
+        {"name": "dict", "description": "dictionaries manipulation"},
+        {"name": "analyzer", "description": "analyzer usage"},
     ]
     # + [
     #     {

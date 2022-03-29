@@ -1,9 +1,8 @@
-from fastapi import APIRouter, Depends
+from fastapi import APIRouter, Depends, Body
 from py2neo import Transaction
 
-from paperback.docs import crud, schemas
+from paperback.docs import crud, schemas, analyze
 from paperback.docs.analyzers import (
-    Analyzer,
     AnalyzerEnum,
     DEFAULT_ANALYZER,
     get_analyzer,
@@ -29,8 +28,10 @@ async def startup():
 
     if len(tx.graph.schema.get_uniqueness_constraints("Document")) == 0:
         tx.graph.schema.create_uniqueness_constraint("Document", "name")
+        tx.graph.schema.create_uniqueness_constraint("Document", "doc_uuid")
     if len(tx.graph.schema.get_uniqueness_constraints("Corpus")) == 0:
         tx.graph.schema.create_uniqueness_constraint("Corpus", "name")
+        tx.graph.schema.create_uniqueness_constraint("Corpus", "corp_uuid")
 
 
 # docs
@@ -200,5 +201,135 @@ async def delete_corpus_by_name(name: str, tx: Transaction = Depends(get_transac
     return crud.delete_corpus_by_name(tx, name)
 
 
-# dicts
-# -----
+# dict
+# ----
+
+
+@docs_router.post("/dict", tags=["dict"], response_model=schemas.DictionaryOut)
+async def create_dict(
+    dictionary: schemas.DictionaryCreate,
+    tx: Transaction = Depends(get_transaction),
+):
+    """
+    creates new dictionary with specified info and returns it
+    """
+    return crud.create_dict(tx, dictionary)
+
+
+@docs_router.get("/dict", tags=["dict"], response_model=list[schemas.DictionaryOut])
+async def get_dicts(
+    tx: Transaction = Depends(get_transaction)
+):
+    """
+    returns list of all dictionary
+    """
+    return crud.get_dicts(tx)
+
+
+@docs_router.get("/dict/{name}", tags=["dict"], response_model=schemas.DictionaryOut)
+async def get_dict_by_name(
+    name: str,
+    tx: Transaction = Depends(get_transaction),
+):
+    """
+    returns dictionary with specified name
+    """
+    return crud.get_dict_by_name(tx, name)
+
+
+@docs_router.patch(
+    "/dict/{name}/words/{word}", tags=["dict"], response_model=schemas.DocOut
+)
+async def add_word_to_dict_by_name(
+    name: str,
+    word: str,
+    tx: Transaction = Depends(get_transaction),
+):
+    """
+    adds specefied wird to dictionary with specified name
+    """
+    return crud.add_word_to_dict_by_name(tx, name, word)
+
+
+@docs_router.delete(
+    "/dict/{name}/words/{word}", tags=["dict"], response_model=schemas.DocOut
+)
+async def delete_word_from_dict_by_name(
+    name: str,
+    word: str,
+    tx: Transaction = Depends(get_transaction),
+):
+    """
+    removes specefied word from dictionary with specified name
+    """
+    return crud.delete_word_from_dict_by_name(tx, name, word)
+
+
+@docs_router.delete("/dict/{name}", tags=["dict"])
+async def delete_dict_by_name(
+    name: str,
+    tx: Transaction = Depends(get_transaction),
+):
+    """
+    removes dictionary with specified name
+    """
+    return crud.delete_dict_by_name(tx, name)
+
+
+# analyze
+# -------
+
+
+@docs_router.post("/analyze/lexics", tags=["analyzer"])
+async def analyze_lexics(
+    body: schemas.AnalyzeLexics,
+    tx: Transaction = Depends(get_transaction),
+):
+    """
+    analyzes lexics on list of given docs and corpuses
+    """
+    return analyze.analyze_lexics(tx, body.docs_and_corpuses, body.dicts)
+
+
+@docs_router.post("/analyze/predicates", tags=["analyzer"])
+async def analyze_predicates(
+    body: schemas.AnalyzePredicates,
+    return_context: bool = False,
+    tx: Transaction = Depends(get_transaction),
+):
+    """
+    analyzes predicates on list of given docs and corpuses
+    """
+    return analyze.analyze_predicates(tx, body.docs_and_corpuses, body.argument, body.predicate, body.role, return_context)
+
+
+@docs_router.get("/analyze/available_statistics", tags=["analyzer"], response_model=list[str])
+async def available_statistics():
+    """
+    returns list of available stats
+    """
+    return analyze.available_statistics()
+
+
+@docs_router.post("/analyze/stats", tags=["analyzer"])
+async def analyze_stats(
+    body: schemas.AnalyzeStats,
+    analyze_sub_entities: bool = False,
+    tx: Transaction = Depends(get_transaction),
+):
+    """
+    analyzes stats on list of given docs and corpuses
+    """
+    return analyze.analyze_stats(tx, body.docs_and_corpuses, body.statistics, analyze_sub_entities)
+
+
+@docs_router.post("/analyze/compare", tags=["analyzer"])
+async def analyze_compare(
+    body: schemas.AnalyzeCompare,
+    tx: Transaction = Depends(get_transaction),
+):
+    """
+    analyzes stats between lists of given docs and corpuses
+    """
+    return analyze.analyze_compare(tx, body.first_docs_and_corpuses, body.second_docs_and_corpuses, body.statistics)
+
