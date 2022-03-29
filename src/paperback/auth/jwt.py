@@ -1,19 +1,18 @@
 import uuid
-from pathlib import Path
-from typing import List, Optional, Dict, Any, Callable, TypedDict
 from functools import lru_cache
+from pathlib import Path
+from typing import Any, Callable, Dict, List, Optional, TypedDict
 
-
-from fastapi import HTTPException, status, Depends
-from authlib.jose import jwt, errors as jwt_errors
 import ecdsa
+from authlib.jose import errors as jwt_errors
+from authlib.jose import jwt
+from fastapi import Depends, HTTPException, status
 
-from paperback.auth.logging import logger
-from paperback.auth.settings import AuthSettings, get_auth_settings
 from paperback.auth import schemas
 from paperback.auth.crud import get_token
 from paperback.auth.database import get_session
-
+from paperback.auth.logging import logger
+from paperback.auth.settings import AuthSettings, get_auth_settings
 
 claim_option: dict[str, dict[str, bool | list[str]]] = {
     "iss": {

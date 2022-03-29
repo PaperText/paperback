@@ -36,6 +36,7 @@ RUN pip install --no-cache-dir orjson
 ## install optional dependencies of auth module
 RUN pip install --no-cache-dir argon2-cffi gmpy2
 
+RUN poetry config virtualenvs.create false
 # changeable stuff
 COPY pyproject.toml             ./
 COPY poetry.lock                ./

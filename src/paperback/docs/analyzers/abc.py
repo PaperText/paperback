@@ -29,7 +29,7 @@ class Analyzer(metaclass=ABCMeta):
         AnalyzerResult
             nodes and relationships to create
         """
-        raise NotImplemented("method `process` must be implemented")
+        raise NotImplementedError("method `process` must be implemented")
 
     def __call__(self, text: str, parent_node: Node) -> AnalyzerResult:
         """shortcut to process"""

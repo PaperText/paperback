@@ -16,14 +16,14 @@ class CorpusCreate(CorpusBase):
 class CorpusOut(CorpusBase):
     includes: list[DocOut | CorpusOut]
 
-    class Config:
-        orm_mode = True
 
-
-class Corpus(CorpusOut):
+class Corpus(CorpusBase):
     corpus_uuid: UUID4
 
     includes: list[Doc | Corpus]
+
+    class Config:
+        orm_mode = True
 
 
 class DocBase(BaseModel):
@@ -40,14 +40,16 @@ class DocCreate(DocBase):
 
 
 class DocOut(DocBase):
-    class Config:
-        orm_mode = True
+    pass
 
 
-class Doc(DocOut):
+class Doc(DocBase):
     doc_uuid: UUID4
 
     corpus: Corpus | None
+
+    class Config:
+        orm_mode = True
 
 
 Corpus.update_forward_refs()
