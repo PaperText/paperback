@@ -4,6 +4,7 @@ FROM ${BUILD_FROM}
 EXPOSE 7878
 
 ENV PYTHONUNBUFFERED=1
+# ENV PYTHONDONTWRITEBYTECODE=1
 
 LABEL version="0.0"
 LABEL description="containerized version of paperback"
