@@ -1,7 +1,3 @@
-# IDE
-.vscode/
-.idea/
-
 # local config
 .env
 .python-version
