@@ -7,7 +7,7 @@ ENV PYTHONUNBUFFERED=1
 # ENV PYTHONDONTWRITEBYTECODE=1
 
 LABEL version="0.0"
-LABEL description="containerized version of paperback"
+LABEL description="development version of paperback doesn't build the app, only installs dependencies"
 LABEL org.opencontainers.image.authors="Danil Kireev <kireev@isa.ru>"
 
 RUN mkdir ~/.papertext
