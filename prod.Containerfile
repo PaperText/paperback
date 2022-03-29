@@ -2,11 +2,9 @@ FROM docker.io/library/python:3.8-slim
 
 EXPOSE 7878
 
-ENV PYTHONUNBUFFERED=1
-# ENV PYTHONDONTWRITEBYTECODE=1
-
 LABEL version="0.0"
-LABEL description="development version of paperback doesn't build the app, only installs dependencies"
+LABEL description="development version of paperback \
+doesn't build the app, only installs dependencies"
 LABEL org.opencontainers.image.authors="Danil Kireev <kireev@isa.ru>"
 
 # install deps
@@ -46,6 +44,7 @@ COPY pyproject.toml                  ./
 COPY ./src/paperback                 ./src/paperback
 COPY ./src/container/install_deps.sh ./install_deps.sh
 
+RUN python3.8 -m pip install .
 RUN ./install_deps.sh
 
-CMD python3.8 -m pip install -e . && paperback -l DEBUG dev -r /root/paperback/
+CMD paperback run

@@ -1,5 +1,6 @@
 [build-system]
-requires = ["poetry_core>=1.0.0"]
+#requires = ["poetry_core>=1.0.0"]
+requires = ["poetry-core @ git+https://github.com/python-poetry/poetry-core.git@master"]
 build-backend = "poetry.core.masonry.api"
 
 [tool.poetry]
@@ -28,8 +29,6 @@ clean = "paperback.scripts:Scripts.docs_clean"
 python = "^3.8"
 # cli, locked version for cellery
 click = "^7.0.0"
-# read configs from multiple sources
-python-configuration = {extras = ["toml"], version = "^0.8.0"}
 # framework
 fastapi = "^0.65.2"
 ## ASGI runner for fastapi
@@ -40,23 +39,26 @@ pydantic = {extras = ["email"], version = "^1.8.2"}
 python-multipart = "^0.0.5"
 # extra for faster json
 orjson = {version = "^3.5.4", optional = true}
-pyexling = { git = "https://gitlab.com/papertext/pyexling.git", branch="main" }
-sqlalchemy = {version = "^1.3.0", extras = ["postgresql_psycopg2binary"]}
-databases = {version = "^0.4.0", extras = ["postgresql"]}
-passlib = "^1.7.2"
+### auth deps
 ecdsa = "^0.17.0"
 authlib = "^0.15.0"
-ua-parser = "^0.10.0"
-user-agents = "^2.1"
-pyyaml = "^5.3.1"
-ipstack = "^0.1.4"
-py2neo = "^2021.1.5"
-celery = {extras = ["redis"], version = "^5.1.2"}
-titanis = {git = "https://github.com/tchewik/titanis-open.git"}
+passlib = "^1.7.2"
+SQLAlchemy = {extras = ["asyncio", "postgresql_asyncpg"], version = "^1.4.27"}
 argon2-cffi = {version="^20.1.0", optional=true}
 gmpy2 = {version="^2.0.8", optional=true}
+### docs deps
+py2neo = "^2021.1.5"
+titanis = {git = "https://github.com/tchewik/titanis-open.git"}
+pyexling = { git = "https://gitlab.com/papertext/pyexling.git", branch="main" }
+### add later
+#celery = {extras = ["redis"], version = "^5.1.2"}
 # librabbitmq = { version = "^2.0.0", optional = true } # consider in future?
-SQLAlchemy = {extras = ["asyncio"], version = "^1.4.27"}
+
+#databases = {version = "^0.4.0", extras = ["postgresql"]}
+#ua-parser = "^0.10.0"
+#user-agents = "^2.1"
+#pyyaml = "^5.3.1"
+#ipstack = "^0.1.4"
 
 [tool.poetry.extras]
 fast_json = ["orjson"]

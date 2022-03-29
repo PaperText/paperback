@@ -1,4 +1,15 @@
-from pydantic import BaseModel
+from pydantic import BaseModel, EmailStr, Field
+from typing import Optional, Union, List
+from datetime import datetime
+from uuid import UUID, uuid4
+
+
+class Token(BaseModel):
+    token_uuid: UUID
+    issued_at: datetime
+
+    class Config:
+        orm_mode = True
 
 
 class UserBase(BaseModel):
@@ -11,27 +22,38 @@ class UserCreate(UserBase):
 
 
 class User(UserBase):
-    user_id: str
+    user_uuid: UUID
+
+    hashed_password: str
+
     level_of_access: int
+
+    tokens: List[Token] = []
 
     class Config:
         orm_mode = True
 
 
+class Credentials(BaseModel):
+    identifier: Union[str, EmailStr] = Field(
+        ..., description="email or username of user"
+    )
+    password: str
+
+    class Config:
+        schema_extra = {
+            "example": {
+                "identifier": "user_id",
+                "password": "password",
+            }
+        }
 
 
+# =======
+# | old |
+# =======
 
-
-
-
-
-
-
-
-
-
-
-from __future__ import annotations
+# from __future__ import annotations
 
 import re
 import uuid
@@ -79,19 +101,6 @@ class TokenRes(BaseModel):
 
 class TokenListRes(BaseModel):
     response: List[TokenRes]
-
-
-# class Credentials(BaseModel):
-#     identifier: Union[str, EmailStr] = Field(...)
-#     password: str
-#
-#     class Config:
-#         schema_extra = {
-#             "example": {
-#                 "identifier": "user_id",
-#                 "password": "password",
-#             }
-#         }
 
 
 class NewUser(BaseModel):
