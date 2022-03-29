@@ -1,4 +1,3 @@
-from email.policy import HTTP
 from uuid import uuid4
 
 import py2neo
@@ -6,8 +5,6 @@ from fastapi import HTTPException, status
 
 from paperback.docs import schemas
 from paperback.docs.analyzers import Analyzer, AnalyzerResult
-
-# from py2neo import Node, Transaction
 
 
 def create_doc(
@@ -92,7 +89,7 @@ def delete_tag_from_doc_by_name(
 def delete_doc_by_name(
     tx: py2neo.Transaction,
     name: str,
-) -> schemas.Doc:
+):
     raise HTTPException(
         status_code=status.HTTP_501_NOT_IMPLEMENTED, detail="Not implemented"
     )

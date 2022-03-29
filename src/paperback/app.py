@@ -70,26 +70,31 @@ logger.info("initializing PaperBack app")
 
 app = FastAPI(
     title="PaperText backend [Paperback]",
+    # TODO: replace with description from package
     description="Backend API for PaperText",
     version=__version__,
     openapi_tags=[
+        {"name": "root", "description": "administrative functions"},
+        # auth
         {"name": "auth", "description": "authorization"},
         {"name": "token", "description": "token manipulation"},
         {"name": "user", "description": "users manipulation"},
-        {"name": "organisation", "description": "organisation manipulation"},
-        {"name": "invite", "description": "invite codes manipulation"},
+        # {"name": "organisation", "description": "organisation manipulation"},
+        # {"name": "invite", "description": "invite codes manipulation"},
+        # docs
         {"name": "docs", "description": "document manipulation"},
-        {"name": "corps", "description": "corpus manipulation"},
-        {"name": "dict", "description": "dictionaries manipulation"},
-        {"name": "analyzer", "description": "analyzer usage"},
+        {"name": "corpus", "description": "corpus manipulation"},
+        # {"name": "dict", "description": "dictionaries manipulation"},
+        # {"name": "analyzer", "description": "analyzer usage"},
     ]
-    + [
-        {
-            "name": f"access_level_{i}",
-            "description": f"paths that require level {i} access",
-        }
-        for i in range(4)
-    ],
+    # + [
+    #     {
+    #         "name": f"access_level_{i}",
+    #         "description": f"paths that require level {i} access",
+    #     }
+    #     for i in range(4)
+    # ]
+    ,
     docs_url="/spec",
     redoc_url="/re_spec",
     default_response_class=get_response_class(),

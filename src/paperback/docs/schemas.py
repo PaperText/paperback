@@ -47,3 +47,4 @@ class Doc(DocBase):
 
 
 Corpus.update_forward_refs()
+CorpusOut.update_forward_refs()
